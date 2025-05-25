@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Runner Watch",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "pub",
+        "run",
+        "build_runner",
+        "watch",
+        "--delete-conflicting-outputs"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Build Runner Build",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "pub",
+        "run",
+        "build_runner",
+        "build",
+        "--delete-conflicting-outputs"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Runner Clean",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "pub",
+        "run",
+        "build_runner",
+        "clean"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
