@@ -113,23 +113,23 @@ class _HomePageState extends ConsumerState<HomePage> {
         onPressed: _showGameMenu,
         backgroundColor: theme.colorScheme.primary,
         child: const Icon(Icons.videogame_asset),
-      )
-          .animate(
-            onPlay: (controller) => controller.repeat(),
-          )
-          .scale(
-            begin: const Offset(1.0, 0),
-            end: const Offset(1.1, 0),
-            duration: 1.seconds,
-            curve: Curves.easeInOut,
-          )
-          .then()
-          .scale(
-            begin: const Offset(1.1, 0),
-            end: const Offset(1.0, 0),
-            duration: 1.seconds,
-            curve: Curves.easeInOut,
-          ),
+      ),
+      // .animate(
+      //   onPlay: (controller) => controller.repeat(),
+      // )
+      // .scale(
+      //   begin: const Offset(1.0, 0),
+      //   end: const Offset(1.1, 0),
+      //   duration: 1.seconds,
+      //   curve: Curves.easeInOut,
+      // )
+      // .then()
+      // .scale(
+      //   begin: const Offset(1.1, 0),
+      //   end: const Offset(1.0, 0),
+      //   duration: 1.seconds,
+      //   curve: Curves.easeInOut,
+      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

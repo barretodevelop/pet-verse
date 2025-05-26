@@ -12,8 +12,8 @@ final userCoinsProvider = StreamProvider<int>((ref) {
 
   final firestore = ref.watch(firebaseFirestoreProvider);
   return firestore.collection('users').doc(user.uid).snapshots().map((doc) {
-    if (!doc.exists) return 0;
-    return doc.data()?['coins'] ?? 0;
+    if (!doc.exists) return 2000;
+    return doc.data()?['coins'] ?? 100;
   });
 });
 
