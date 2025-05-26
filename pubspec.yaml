@@ -36,6 +36,9 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2
+
+  # Notificações
+  flutter_local_notifications: ^16.3.2
   
   # UI
   shimmer: ^3.0.0
