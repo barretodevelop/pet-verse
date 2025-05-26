@@ -8,9 +8,6 @@ allprojects {
         google()
         mavenCentral()
     }
-     tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:deprecation"
-    }
 }
 
 rootProject.buildDir = file("../build")

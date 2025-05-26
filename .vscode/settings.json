@@ -1,55 +1,12 @@
 {
-  // Configurações do Dart
-  "dart.flutterSdkPath": null, // VS Code detecta automaticamente
+  "dart.flutterSdkPath": null,
   "dart.runPubGetOnPubspecChanges": true,
-  "dart.previewLsp": true,
-  
-  // Formatação
   "[dart]": {
     "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.rulers": [80],
-    "editor.selectionHighlight": false,
-    "editor.suggestSelection": "first",
-    "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": "off",
-    "editor.defaultFormatter": "Dart-Code.dart-code"
+    "editor.rulers": [80]
   },
-  
-  // Code Actions
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit"
-  },
-  
-  // Configurações do Flutter
-  "flutter.debugSdkLibraries": false,
-  "flutter.debugExternalPackageLibraries": false,
-  "flutter.showEmulators": true,
-  "flutter.experimentalRefactors": true,
-  
-  // Arquivos para ignorar
-  "files.exclude": {
-    "**/*.g.dart": true,
-    "**/*.freezed.dart": true,
-    "**/*.gr.dart": true,
-    "**/.*": true
-  },
-  
-  // Mas mostrar quando buscar
-  "search.exclude": {
-    "**/*.g.dart": false,
-    "**/*.freezed.dart": false
-  },
-  
-  // Terminal
-  "terminal.integrated.env.windows": {
-    "PATH": "${env:PATH};${workspaceFolder}\\windows\\flutter\\bin"
-  },
-  
-  // Outras configurações úteis
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.patterns": {
-    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart, ${capture}.gr.dart"
   }
 }
