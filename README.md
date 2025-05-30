@@ -136,3 +136,249 @@ Histórico limitado (50 msgs)  ---> poder compra mais mensagens
      outras considerações
    quero criar a economia do jogo global para o usuario , cada usuario tera sua economia no jogo e o seu inventario
    de itens que poderao usar em qualquer pet que ele esteja cuidando , o usuario tera um Slot de pets que se inicia com 4 slots que poderão se auemntado com compra de slote, o usuario podera adotar inicialmente ate 2 petz um solo e outro em co parent o usuario podera marca petz favoritos. e preciso ter o inventario do User as compras irao para o inventario , no momento de alimentar o item deve sair do inventario do usuario que execuou a ação , assim como todos os outros itens incluir na econia os tipos de moedas PETCOIN  e PETGEN que serão outras formas de pagamento. as missoes diarias nao estao funcionando , mesmo fazendo nao dao os pontos e nem atualiza a tela de missao  o jogos estao com erro , a comida nao caem , o o de pulo tambem esta ruim , diminuir tambem a scala de tamanho do itens no s jogos ,  diminuir tambem os itens na loja grid de 4x4 sera melhor   o status do pet nao esta se degradando automaticamente  , exibir informações do cuidadores na tela do pet o usuario logado exibir o Avatar o do outro um avatar com  interrogação incluir na loja itens de higiene para o banho , seguir mesma logica de comida abrir bootmsheet com os itens de higiene para a opção de banho , esse mecanismo e para toda a iteração com o pet liste todas as correções e mudancas que fara para vermos se esta correto.   
+
+
+
+
+
+
+ 
+🏠 2. Tela Home – Lógica de Entrada
+
+    Verificação: o usuário já possui um pet?
+
+        Sim → Redireciona para a tela do pet principal.
+
+        Não → Redireciona para a tela: “Você precisa adotar um pet!”
+
+🐾 3. Tela "Você precisa adotar um pet"
+
+    Exibe:
+
+        Explicação do processo de adoção colaborativa.
+
+        Botão "Explorar pets disponíveis"
+
+        Botão "Criar pedido de adoção"
+
+        Botão "Indicar adoção a um amigo (share)"
+
+📜 4. Sistema de Adoção Colaborativa
+4.1 Criar pedido de adoção:
+
+Lista de pets gerados automaticamente (mock).
+
+Usuário seleciona até 3 pets.
+
+Ao confirmar, a solicitação entra em uma lista pública de adoções pendentes (tempo de expiração: 5 dias).
+
+    Adição de tags no pedido: [Data criação], [ID usuário criador].
+
+4.2 Lista pública de adoções pendentes:
+
+Co-parent visualiza a lista.
+
+Pode abrir qualquer pedido e ver os 3 pets disponíveis.
+
+Escolhe 1 → Confirma → Adoção finalizada.
+
+Ambos usuários recebem o pet nas telas.
+
+    O “cuidador primário” recebe notificação interna.
+
+4.3 Compartilhar solicitação de adoção:
+
+Compartilhamento via Share Plus (link com identificador único).
+
+Receptor pode criar conta e aceitar a adoção.
+
+Após aceite, pet é atribuído a ambos os usuários.
+
+
+
+
+
+
+FASE - 2  iniciando
+
+
+🗺️ ROADMAP - LAYOUTS COM DADOS MOCK
+📋 FASE 1: Telas Básicas de Adoção
+1.1 Tela Lista de Adoções Anônimas
+
+Layout de cards com dados mock
+Contador de visualizações e interesse
+Sistema de filtros visuais
+Estados: Loading, vazio, lista cheia
+
+1.2 Tela Detalhes da Missão
+
+Card expandido com 3 pets
+Perfil anônimo do criador
+Botão "Quero Participar"
+Galeria de fotos dos pets
+
+1.3 Tela Criar Nova Adoção
+
+Formulário de seleção de 3 pets
+Preview do card que será criado
+Configurações de preferências
+Confirmação de criação
+
+
+📱 FASE 2: Sistema de Parceria Ativa
+2.1 Dashboard de Parceria
+
+Card do pet atual com barra de progresso
+Perfis anônimos dos parceiros
+Botões de ação rápida
+Histórico de cuidados
+
+2.2 Tela de Chat Pré-definido
+
+Interface com templates por categoria
+Histórico de mensagens enviadas
+Indicadores de status do pet
+Botões de ação rápida
+
+2.3 Tela de Progresso do Pet
+
+Gráfico de evolução por nível
+Conquistas desbloqueadas
+Timeline de cuidados
+Stats detalhadas
+
+
+🏆 FASE 3: Sistema de Revelação
+3.1 Modal de Revelação Disponível
+
+Notificação especial de nível 10+
+Explicação do sistema
+Botões de aceitar/recusar
+Preview do que será revelado
+
+3.2 Tela de Parceiros Revelados
+
+Perfis reais dos colaboradores
+Chat liberado
+Histórico da parceria
+Opções de continuar juntos
+
+3.3 Tela de Gerenciar Choice
+
+Opções pós-revelação
+Configurações de privacidade
+Sistema de avaliação mútua
+
+
+💰 FASE 4: Sistema de Penalidades
+4.1 Modal de Confirmação de Desistência
+
+Cálculo de penalidade em coins
+Opções disponíveis
+Consequências explicadas
+Botões de confirmar/cancelar
+
+4.2 Tela de Transição Solo
+
+Novo status de cuidador único
+Recursos extras desbloqueados
+Opção de buscar novo parceiro
+Timeline ajustada
+
+4.3 Tela de Solicitar Novo Parceiro
+
+Formulário de preferências
+Card do pet atualizado
+Lista de interessados
+Sistema de match
+
+
+🔄 FASE 5: Sistema de Recolocação
+5.1 Tela de Pets Veteranos
+
+Lista especial de pets experientes
+Badges e histórico visível
+Bonus XP destacado
+Filtro por experiência
+
+5.2 Modal de Devolução ao Sistema
+
+Confirmação de devolução
+Preview do status do pet
+Impacto no ranking
+Última chance de reconsiderar
+
+5.3 Tela de Adoção de Pet Experiente
+
+Layout diferenciado
+Histórico de cuidados anterior
+Bonus e vantagens
+Responsabilidades especiais
+
+
+📊 FASE 6: Dashboards e Analytics
+6.1 Perfil do Usuário
+
+Estatísticas pessoais
+Badges conquistadas
+Histórico de parcerias
+Ranking de cuidador
+
+6.2 Tela de Rankings
+
+Top parceiros estáveis
+Melhores tutores anônimos
+Heróis da segunda chance
+Stats da comunidade
+
+6.3 Dashboard Administrativo
+
+Métricas do sistema
+Pets em andamento
+Parcerias ativas
+Sistema de coins
+
+
+🎨 COMPONENTES REUTILIZÁVEIS
+Componentes Base:
+
+AnonymousProfileCard - Perfil anônimo
+PetProgressBar - Barra de progresso
+ChatTemplate - Templates de chat
+PenaltyCalculator - Calculadora de multas
+RevelationModal - Modal de revelação
+VeteranPetCard - Card de pet experiente
+
+Componentes de Layout:
+
+GameHeader - Header com stats
+BottomNavigation - Navegação principal
+FloatingChatButton - Chat flutuante
+NotificationBanner - Banners de notificação
+
+
+🎯 ORDEM DE DESENVOLVIMENTO SUGERIDA
+Sprint 1 (Semana 1-2):
+
+Fase 1.1: Lista de Adoções Anônimas
+Fase 1.2: Detalhes da Missão
+Componentes base
+
+Sprint 2 (Semana 3-4):
+
+Fase 2.1: Dashboard de Parceria
+Fase 2.2: Chat Pré-definido
+Fase 2.3: Progresso do Pet
+
+Sprint 3 (Semana 5-6):
+
+Fase 3.1: Sistema de Revelação
+Fase 4.1: Sistema de Penalidades
+Refinamentos e ajustes
+
+Sprint 4 (Semana 7-8):
+
+Fase 5: Sistema de Recolocação
+Fase 6: Dashboards
+Polimento final

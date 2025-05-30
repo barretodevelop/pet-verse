@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/auth_provider.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:petverse/feature/auth/providers/authentication_provider.dart';
+import 'package:petverse/feature/auth/state/authentication_state.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -14,53 +15,87 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLogin = true;
+  final _displayNameController =
+      TextEditingController(); // Novo controller para o nome de exibição
+  bool _isLogin = true; // true para Login, false para Cadastro
   bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _displayNameController
+        .dispose(); // Não esqueça de liberar o novo controller
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Valida todos os campos do formulário
+    if (!_formKey.currentState!.validate()) {
+      return; // Se a validação falhar, para a execução.
+    }
 
-    final controller = ref.read(authControllerProvider.notifier);
+    // Acessa a instância do AuthenticationNotifier para chamar os métodos
+    final controller = ref.read(authenticationNotifierProvider.notifier);
 
+    // Lógica condicional para Login ou Cadastro
     if (_isLogin) {
       await controller.signInWithEmail(
-        email: _emailController.text,
-        password: _passwordController.text,
+        email: _emailController.text.trim(), // Remove espaços em branco
+        password: _passwordController.text.trim(),
       );
     } else {
-      await controller.signUpWithEmail(
-        email: _emailController.text,
-        password: _passwordController.text,
+      // No modo de cadastro, chama createAccount e passa o nome de exibição
+      await controller.createAccount(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        displayName: _displayNameController.text.trim(),
       );
     }
   }
 
   Future<void> _signInWithGoogle() async {
-    await ref.read(authControllerProvider.notifier).signInWithGoogle();
+    // Chama o método de login com Google do seu notifier
+    await ref.read(authenticationNotifierProvider.notifier).signInWithGoogle();
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
+    // Observa o estado da autenticação para reconstruir a UI quando houver mudanças
+    final authState = ref.watch(authenticationNotifierProvider);
 
-    // Listener para erros
-    ref.listen<AsyncValue<void>>(authControllerProvider, (_, state) {
-      if (state.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_getErrorMessage(state.error)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    });
+    // Listener para lidar com efeitos colaterais, como mostrar SnackBar de erro ou navegar
+    ref.listen<AuthenticationState>(
+      authenticationNotifierProvider,
+      (previousState, newState) {
+        // --- Lógica de Erros ---
+        // Verifica se o novo estado tem um erro e se esse erro é diferente do estado anterior.
+        // Isso evita que a SnackBar seja exibida múltiplas vezes para o mesmo erro.
+        if (newState.error != null && previousState?.error != newState.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(newState
+                  .error!), // O Notifier já retorna a mensagem de erro traduzida
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4), // Duração da SnackBar
+            ),
+          );
+        }
+
+        // --- Lógica de Sucesso (Navegação) ---
+        // Se o usuário não estava autenticado e agora está, navegue para a próxima tela.
+        if (newState.isAuthenticated &&
+            !(previousState?.isAuthenticated ?? false)) {
+          // Exemplo de navegação para a tela 'home'. Ajuste conforme seu sistema de roteamento.
+          // Por exemplo, usando GoRouter: context.go('/home');
+          // Ou com Navigator.pushReplacement:
+          // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const HomePage()));
+          print(
+              'Usuário logado/cadastrado com sucesso: ${newState.userModel?.displayName}');
+          // Adicione sua navegação aqui
+        }
+      },
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -72,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
+                  // Logo do PetVerse
                   Container(
                     width: 120,
                     height: 120,
@@ -88,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Título
+                  // Título da Aplicação
                   Text(
                     'PetVerse',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -103,7 +138,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Email
+                  // Campo de Nome de Exibição (apenas para cadastro)
+                  if (!_isLogin) ...[
+                    TextFormField(
+                      controller: _displayNameController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: 'Nome de Exibição',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira seu nome de exibição';
+                        }
+                        if (value.length < 3) {
+                          return 'Nome deve ter pelo menos 3 caracteres';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Campo de Email
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -118,7 +178,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira seu email';
                       }
-                      if (!value.contains('@')) {
+                      // Regex simples para validação de formato de email
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                         return 'Email inválido';
                       }
                       return null;
@@ -126,7 +187,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Senha
+                  // Campo de Senha
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -151,7 +212,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, insira sua senha';
                       }
-                      if (!_isLogin && value.length < 6) {
+                      if (value.length < 6) {
                         return 'Senha deve ter pelo menos 6 caracteres';
                       }
                       return null;
@@ -159,17 +220,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Botão principal
+                  // Botão Principal (Login ou Criar Conta)
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
+                      // Desabilita o botão enquanto uma operação está em andamento
                       onPressed: authState.isLoading ? null : _submit,
                       child: authState.isLoading
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors
+                                      .white), // Indicador branco para contraste
                             )
                           : Text(
                               _isLogin ? 'Entrar' : 'Criar Conta',
@@ -179,9 +244,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Toggle Login/Cadastro
+                  // Botão para alternar entre Login e Cadastro
                   TextButton(
-                    onPressed: () => setState(() => _isLogin = !_isLogin),
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                        // Limpa os campos quando alterna entre login/cadastro
+                        _emailController.clear();
+                        _passwordController.clear();
+                        _displayNameController.clear();
+                        _formKey.currentState
+                            ?.reset(); // Reseta a validação visual
+                      });
+                    },
                     child: Text(
                       _isLogin
                           ? 'Não tem conta? Criar agora'
@@ -189,7 +264,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
 
-                  // Divider
+                  // Divisor visual
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -206,14 +281,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Google Sign In
+                  // Botão de Login com Google
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: OutlinedButton.icon(
                       onPressed: authState.isLoading ? null : _signInWithGoogle,
-                      icon: Image.network(
-                        'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                      icon: SvgPicture.network(
+                        'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg', // Imagem do Google
                         height: 24,
                         width: 24,
                       ),
@@ -230,24 +305,5 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
     );
-  }
-
-  String _getErrorMessage(Object? error) {
-    if (error == null) return 'Erro desconhecido';
-
-    final errorString = error.toString();
-    if (errorString.contains('user-not-found')) {
-      return 'Usuário não encontrado';
-    } else if (errorString.contains('wrong-password')) {
-      return 'Senha incorreta';
-    } else if (errorString.contains('email-already-in-use')) {
-      return 'Email já está em uso';
-    } else if (errorString.contains('weak-password')) {
-      return 'Senha muito fraca';
-    } else if (errorString.contains('invalid-email')) {
-      return 'Email inválido';
-    }
-
-    return 'Erro ao fazer login. Tente novamente.';
   }
 }

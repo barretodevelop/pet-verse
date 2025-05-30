@@ -13,7 +13,7 @@ class PetVerseApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'PetVerse',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme(),
+      theme: AppTheme.lightTheme,
       routerConfig: router,
     );
   }

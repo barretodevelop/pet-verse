@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:petverse/feature/room/model/message.dart';
+import 'package:petverse/backup/room/model/message.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMe;
 
-  const MessageBubble({super.key, 
+  const MessageBubble({
+    super.key,
     required this.message,
     required this.isMe,
   });
@@ -41,9 +42,9 @@ class MessageBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.7,
         ),
         decoration: BoxDecoration(
-          color: isMe 
-              ? Theme.of(context).colorScheme.primary 
-              : Theme.of(context).colorScheme.surfaceVariant,
+          color: isMe
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
