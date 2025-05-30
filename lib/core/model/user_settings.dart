@@ -116,6 +116,28 @@ class NotificationSettings {
       'social': social,
     };
   }
+
+  NotificationSettings copyWith({
+    bool? feeding,
+    bool? playing,
+    bool? cleaning,
+    bool? luckyHour,
+    bool? collaboration,
+    bool? missions,
+    bool? achievements,
+    bool? social,
+  }) {
+    return NotificationSettings(
+      feeding: feeding ?? this.feeding,
+      playing: playing ?? this.playing,
+      cleaning: cleaning ?? this.cleaning,
+      luckyHour: luckyHour ?? this.luckyHour,
+      collaboration: collaboration ?? this.collaboration,
+      missions: missions ?? this.missions,
+      achievements: achievements ?? this.achievements,
+      social: social ?? this.social,
+    );
+  }
 }
 
 class PrivacySettings {
@@ -157,6 +179,20 @@ class PrivacySettings {
       'showInLeaderboards': showInLeaderboards,
       'allowFriendRequests': allowFriendRequests,
     };
+  }
+
+  PrivacySettings copyWith({
+    bool? showOnlineStatus,
+    bool? allowCollaboration,
+    bool? showInLeaderboards,
+    bool? allowFriendRequests,
+  }) {
+    return PrivacySettings(
+      showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
+      allowCollaboration: allowCollaboration ?? this.allowCollaboration,
+      showInLeaderboards: showInLeaderboards ?? this.showInLeaderboards,
+      allowFriendRequests: allowFriendRequests ?? this.allowFriendRequests,
+    );
   }
 }
 
@@ -204,5 +240,21 @@ class GameplaySettings {
       'hapticFeedback': hapticFeedback,
       'volume': volume,
     };
+  }
+
+  GameplaySettings copyWith({
+    bool? autoSave,
+    bool? soundEffects,
+    bool? animations,
+    bool? hapticFeedback,
+    double? volume,
+  }) {
+    return GameplaySettings(
+      autoSave: autoSave ?? this.autoSave,
+      soundEffects: soundEffects ?? this.soundEffects,
+      animations: animations ?? this.animations,
+      hapticFeedback: hapticFeedback ?? this.hapticFeedback,
+      volume: volume ?? this.volume,
+    );
   }
 }

@@ -4,6 +4,24 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
+import 'package:petverse/feature/pet/presentation/pages/my_pets.dart';
+// import 'package:petverse/pages/my_pets_page.dart'; // Adicionar quando implementar
+
+// Navigation Service
+class NavigationService {
+  static void navigateToPetPage(
+      BuildContext context, MockPet pet, AnonymousAdoption adoption,
+      {bool isNewlyAdopted = false}) {
+    HapticFeedback.lightImpact();
+    // TODO: Implementar navegação para PetPage
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Abrindo ${pet.name}...'),
+        backgroundColor: const Color(0xFF10B981),
+      ),
+    );
+  }
+}
 
 // Providers
 final dashboardProvider =
@@ -171,41 +189,69 @@ class DashboardPage extends ConsumerWidget {
   void _onQuickAction(String action, BuildContext context) {
     HapticFeedback.lightImpact();
 
-    String message = '';
     switch (action) {
       case 'feed_all':
-        message = 'Alimentando todos os pets...';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Alimentando todos os pets...'),
+            backgroundColor: Color(0xFFF59E0B),
+            duration: Duration(seconds: 2),
+          ),
+        );
         break;
       case 'new_adoption':
-        message = 'Abrindo criação de adoção...';
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateAdoptionPage()));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Abrindo criação de adoção...'),
+            backgroundColor: Color(0xFF10B981),
+            duration: Duration(seconds: 2),
+          ),
+        );
         break;
       case 'browse_adoptions':
-        message = 'Buscando adoções disponíveis...';
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => const AdoptionListPage()));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Buscando adoções disponíveis...'),
+            backgroundColor: Color(0xFF3B82F6),
+            duration: Duration(seconds: 2),
+          ),
+        );
         break;
       case 'my_pets':
-        message = 'Abrindo meus pets...';
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MyPetsPage()),
+        );
         break;
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF3B82F6),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   void _onPetTap(Map<String, dynamic> petData, BuildContext context) {
-    HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Abrindo ${petData['pet'].name}...'),
-        backgroundColor: petData['needsAttention']
-            ? const Color(0xFFEF4444)
-            : const Color(0xFF10B981),
-      ),
+    final pet = petData['pet'] as MockPet;
+    final adoption = AnonymousAdoption(
+      missionId: 'ADT_001',
+      codename: petData['coGuardian'],
+      colorTheme: 0xFFEC4899,
+      level: 8,
+      badges: ['cat_lover'],
+      successRate: 89,
+      completedAdoptions: 7,
+      currentStreak: 3,
+      region: 'Centro - RJ',
+      views: 23,
+      interested: 8,
+      potentialMatches: 2,
+      timeLeftDays: 4.2,
+      pets: [],
+      codedMessage: 'Co-guardião experiente',
+      personalityTags: ['dedicado', 'carinhoso'],
+      status: 'normal',
+      isNew: false,
     );
+
+    NavigationService.navigateToPetPage(context, pet, adoption);
   }
 
   @override
@@ -594,7 +640,12 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
             GestureDetector(
-              onTap: () => _onQuickAction('my_pets', context),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyPetsPage()),
+                );
+              },
               child: Text(
                 'Ver todos',
                 style: TextStyle(

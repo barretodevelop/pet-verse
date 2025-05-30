@@ -1086,7 +1086,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
 
   Widget _buildAdoptionsList() {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
       itemCount: filteredAdoptions.length,
       itemBuilder: (context, index) {
         final adoption = filteredAdoptions[index];

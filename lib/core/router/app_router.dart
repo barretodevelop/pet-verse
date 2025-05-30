@@ -13,6 +13,8 @@ import 'package:petverse/feature/adoption/presentation/pages/public_adoptions_pa
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 import 'package:petverse/feature/home/presentation/pages/home_page.dart';
 import 'package:petverse/feature/pet/presentation/pages/pet_main_page.dart';
+import 'package:petverse/feature/profile/presentation/profile_page.dart';
+import 'package:petverse/feature/settings/presentation/settings_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authenticationNotifierProvider);
@@ -214,6 +216,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfilePage(),
+      ),
+
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsPage(),
       ),
 
       // Adoption Routes

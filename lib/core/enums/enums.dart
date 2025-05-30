@@ -30,3 +30,14 @@ enum AdoptionRequestStatus {
   expired,
   cancelled,
 }
+
+enum ItemCategory { food, toys, care, special }
+
+enum ItemRarity { common, rare, epic, legendary }
+
+enum PetType { cachorro, gato, coelho, hamster, passaro, tartaruga, furao }
+
+enum TransactionType { purchase, reward, daily, achievement, refund }
+
+// NOVO: Enum para identificar qual moeda foi usada
+enum CurrencyType { coins, gems, both, free }

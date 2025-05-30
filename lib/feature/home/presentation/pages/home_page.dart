@@ -10,9 +10,9 @@ import 'package:petverse/core/providers/user_provider.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/core/utils/app_utils.dart';
 import 'package:petverse/core/widgets/custom_bottom_navigation_bar.dart';
-import 'package:petverse/feature/adoption/presentation/pages/adoption_list_page.dart';
 import 'package:petverse/feature/dashoard/dashboard_page.dart';
 import 'package:petverse/feature/minigames/mini_games_bottom_sheet.dart';
+import 'package:petverse/feature/shop/presetation/shop.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -89,7 +89,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 children: [
                   _buildPetsTabPage(),
                   const DashboardPage(),
-                  _buildLojaTabPage(),
+                  const ShopPage(),
                   _buildMoreTabPage(),
                 ],
               ),
@@ -101,7 +101,7 @@ class _HomePageState extends ConsumerState<HomePage>
         selectedIndex: _selectedIndex,
         items: [
           BottomNavItem(icon: Icons.pets, label: 'Pet'),
-          BottomNavItem(icon: Icons.search, label: 'Explorar'),
+          BottomNavItem(icon: Icons.dashboard, label: 'Dashboard'),
           BottomNavItem(icon: Icons.store, label: 'Loja'),
           BottomNavItem(icon: Icons.more, label: 'Mais'),
         ],
@@ -140,43 +140,48 @@ class _HomePageState extends ConsumerState<HomePage>
                 // Avatar com nível
                 Stack(
                   children: [
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.primaryGradient,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2.w),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primarySoft.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: userAsync.when(
-                        data: (user) => user?.avatarUrl != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  user!.avatarUrl!,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 20.sp,
-                              ),
-                        loading: () => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 20.sp,
+                    InkWell(
+                      onTap: () {
+                        context.push('/profile');
+                      },
+                      child: Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.w),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primarySoft.withOpacity(0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        error: (_, __) => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 20.sp,
+                        child: userAsync.when(
+                          data: (user) => user?.avatarUrl != null
+                              ? ClipOval(
+                                  child: Image.network(
+                                    user!.avatarUrl!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
+                          loading: () => Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20.sp,
+                          ),
+                          error: (_, __) => Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20.sp,
+                          ),
                         ),
                       ),
                     ),
@@ -642,10 +647,6 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
       ),
     );
-  }
-
-  Widget _buildListPetsTabPage() {
-    return const AdoptionListPage();
   }
 
   Widget _buildLojaTabPage() {
