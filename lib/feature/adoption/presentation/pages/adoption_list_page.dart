@@ -1,21 +1,26 @@
+// lib/feature/adoption/presentation/pages/adoption_list_page.dart
+// UPDATE: Conectar com FirebaseAdoptionService
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:petverse/core/model/mocks.dart';
-import 'package:petverse/feature/pet/presentation/pages/pet_page.dart';
-// import 'package:petverse/pages/pet_page.dart'; // Adicionar quando implementar
+import 'package:petverse/core/model/firebase_pet_model.dart'; // NEW: Import Firebase models
+import 'package:petverse/core/providers/firebase_adoption_provider.dart'; // NEW: Import Firebase provider
 
-class AdoptionListPage extends StatefulWidget {
+class AdoptionListPage extends ConsumerStatefulWidget {
+  // UPDATE: ConsumerStatefulWidget
   const AdoptionListPage({super.key});
 
   @override
-  State<AdoptionListPage> createState() => _AdoptionListPageState();
+  ConsumerState<AdoptionListPage> createState() =>
+      _AdoptionListPageState(); // UPDATE: ConsumerState
 }
 
-class _AdoptionListPageState extends State<AdoptionListPage>
+class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     with TickerProviderStateMixin {
-  List<AnonymousAdoption> adoptions = [];
+  // UPDATE: Remover variáveis locais que agora vêm do Firebase
   bool isLoading = true;
   String selectedFilter = 'Todas';
 
@@ -40,7 +45,8 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
     _pulseController.repeat(reverse: true);
 
-    _loadAdoptions();
+    // NEW: Inicializar dados mock no Firebase
+    _initializeFirebaseData();
   }
 
   @override
@@ -49,71 +55,120 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     super.dispose();
   }
 
-  void _loadAdoptions() {
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        adoptions = MockDataProvider.getExtendedAdoptions();
-        isLoading = false;
-      });
+  // NEW: Inicializar dados do Firebase
+  Future<void> _initializeFirebaseData() async {
+    await ref.read(initializeMockDataProvider.future);
+    setState(() {
+      isLoading = false;
     });
   }
 
-  List<AnonymousAdoption> get filteredAdoptions {
+  // UPDATE: Filtrar adoptions usando dados do Firebase
+  List<CollaborativeAdoptionRequest> _getFilteredAdoptions(
+      List<CollaborativeAdoptionRequest> adoptions) {
     switch (selectedFilter) {
       case 'Urgentes':
-        return adoptions
-            .where((a) => a.status == 'urgent' || a.timeLeftDays < 1.0)
-            .toList();
+        return adoptions.where((a) => a.isUrgent).toList();
       case 'Novas':
         return adoptions.where((a) => a.isNew).toList();
       case 'Experientes':
-        return adoptions.where((a) => a.level >= 15).toList();
+        return adoptions.where((a) => a.requesterLevel >= 15).toList();
       case 'Filhotes':
-        return adoptions
-            .where((a) =>
-                a.pets.any((pet) => pet.traits?.contains('filhote') ?? false))
-            .toList();
+        return adoptions.where((a) => _hasTraitInPets(a, 'filhote')).toList();
       case 'Especiais':
-        return adoptions
-            .where((a) =>
-                a.pets.any((pet) => pet.traits?.contains('especial') ?? false))
-            .toList();
+        return adoptions.where((a) => _hasTraitInPets(a, 'especial')).toList();
       case 'Sênior':
-        return adoptions
-            .where((a) =>
-                a.pets.any((pet) => pet.traits?.contains('sênior') ?? false))
-            .toList();
+        return adoptions.where((a) => _hasTraitInPets(a, 'sênior')).toList();
       default:
-        return MockDataProvider.sortAdoptions([...adoptions], 'default');
+        return adoptions;
     }
   }
 
-  void _onAdoptionTap(AnonymousAdoption adoption) {
+  // NEW: Helper para verificar traits nos pets
+  bool _hasTraitInPets(CollaborativeAdoptionRequest adoption, String trait) {
+    // TODO: Implementar verificação de traits quando tiver acesso aos pets
+    // Por enquanto, retornar baseado em alguma lógica
+    return adoption.requesterLevel > 10; // Placeholder
+  }
+
+  void _onAdoptionTap(CollaborativeAdoptionRequest adoption) {
     HapticFeedback.lightImpact();
-    // TODO: Navegar para tela de detalhes da adoção
+
+    // NEW: Incrementar views no Firebase
+    ref
+        .read(firebaseAdoptionNotifierProvider.notifier)
+        .incrementViews(adoption.id);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Abrindo adoção ${adoption.codename}...'),
-        backgroundColor: Color(adoption.colorTheme),
+        content: Text('Abrindo adoção ${adoption.requesterCodename}...'),
+        backgroundColor: Color(adoption.requesterColorTheme),
       ),
     );
   }
 
-  void _onPetTap(MockPet pet, AnonymousAdoption adoption) {
+  void _onPetTap(String petId, CollaborativeAdoptionRequest adoption) {
     HapticFeedback.lightImpact();
-    _showPetDetailsModal(pet, adoption);
+    _showPetDetailsModal(petId, adoption);
   }
 
-  void _showPetDetailsModal(MockPet pet, AnonymousAdoption adoption) {
+  void _showPetDetailsModal(
+      String petId, CollaborativeAdoptionRequest adoption) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildPetDetailsModal(pet, adoption),
+      builder: (context) => _buildPetDetailsModal(petId, adoption),
     );
   }
 
-  Widget _buildPetDetailsModal(MockPet pet, AnonymousAdoption adoption) {
+  Widget _buildPetDetailsModal(
+      String petId, CollaborativeAdoptionRequest adoption) {
+    // UPDATE: Usar FutureBuilder para carregar dados do pet do Firebase
+    return FutureBuilder<List<FirebasePetModel>>(
+      future: ref.read(petsFromRequestProvider(adoption.id).future),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
+              ),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
+              ),
+            ),
+            child: const Center(child: Text('Erro ao carregar pet')),
+          );
+        }
+
+        final pets = snapshot.data!;
+        final pet = pets.firstWhere(
+          (p) => p.id == petId,
+          orElse: () => pets.first,
+        );
+
+        return _buildPetDetailsContent(pet, adoption);
+      },
+    );
+  }
+
+  Widget _buildPetDetailsContent(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
@@ -194,7 +249,9 @@ class _AdoptionListPageState extends State<AdoptionListPage>
         .slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutCubic);
   }
 
-  Widget _buildPetPhoto(MockPet pet, AnonymousAdoption adoption) {
+  // UPDATE: Adaptar para FirebasePetModel
+  Widget _buildPetPhoto(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Center(
       child: Stack(
         children: [
@@ -204,20 +261,20 @@ class _AdoptionListPageState extends State<AdoptionListPage>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(adoption.colorTheme).withOpacity(0.1),
-                  Color(adoption.colorTheme).withOpacity(0.05),
+                  Color(adoption.requesterColorTheme).withOpacity(0.1),
+                  Color(adoption.requesterColorTheme).withOpacity(0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Color(adoption.colorTheme).withOpacity(0.3),
+                color: Color(adoption.requesterColorTheme).withOpacity(0.3),
                 width: 3.w,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Color(adoption.colorTheme).withOpacity(0.2),
+                  color: Color(adoption.requesterColorTheme).withOpacity(0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -237,25 +294,30 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                 duration: 2000.ms,
               ),
 
-          // Badge de status no canto
+          // Badge de status
           Positioned(
             top: 10.h,
             right: 10.w,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981),
+                color: pet.isAvailable
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEF4444),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.3),
+                    color: (pet.isAvailable
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444))
+                        .withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Text(
-                'DISPONÍVEL',
+                pet.isAvailable ? 'DISPONÍVEL' : 'RESERVADO',
                 style: TextStyle(
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w700,
@@ -269,7 +331,8 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildPetInfo(MockPet pet) {
+  // UPDATE: Adaptar para FirebasePetModel
+  Widget _buildPetInfo(FirebasePetModel pet) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -335,8 +398,10 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildPetTraits(MockPet pet, AnonymousAdoption adoption) {
-    if (pet.traits == null || pet.traits!.isEmpty) return const SizedBox();
+  // UPDATE: Adaptar para FirebasePetModel
+  Widget _buildPetTraits(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
+    if (pet.traits.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,14 +418,14 @@ class _AdoptionListPageState extends State<AdoptionListPage>
         Wrap(
           spacing: 8.w,
           runSpacing: 8.h,
-          children: pet.traits!.map((trait) {
+          children: pet.traits.map((trait) {
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: Color(adoption.colorTheme).withOpacity(0.1),
+                color: Color(adoption.requesterColorTheme).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: Color(adoption.colorTheme).withOpacity(0.3),
+                  color: Color(adoption.requesterColorTheme).withOpacity(0.3),
                   width: 1.w,
                 ),
               ),
@@ -369,7 +434,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
-                  color: Color(adoption.colorTheme),
+                  color: Color(adoption.requesterColorTheme),
                 ),
               ),
             );
@@ -379,9 +444,11 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildPetDescription(MockPet pet) {
-    if (pet.description == null || pet.description!.isEmpty)
+  // UPDATE: Adaptar para FirebasePetModel
+  Widget _buildPetDescription(FirebasePetModel pet) {
+    if (pet.description == null || pet.description!.isEmpty) {
       return const SizedBox();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +485,8 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildAdopterInfo(AnonymousAdoption adoption) {
+  // UPDATE: Adaptar para CollaborativeAdoptionRequest
+  Widget _buildAdopterInfo(CollaborativeAdoptionRequest adoption) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -436,13 +504,13 @@ class _AdoptionListPageState extends State<AdoptionListPage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(adoption.colorTheme).withOpacity(0.1),
-                Color(adoption.colorTheme).withOpacity(0.05),
+                Color(adoption.requesterColorTheme).withOpacity(0.1),
+                Color(adoption.requesterColorTheme).withOpacity(0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Color(adoption.colorTheme).withOpacity(0.2),
+              color: Color(adoption.requesterColorTheme).withOpacity(0.2),
               width: 1.w,
             ),
           ),
@@ -452,20 +520,23 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                 width: 50.w,
                 height: 50.w,
                 decoration: BoxDecoration(
-                  color: Color(adoption.colorTheme).withOpacity(0.2),
+                  color: Color(adoption.requesterColorTheme).withOpacity(0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Color(adoption.colorTheme),
+                    color: Color(adoption.requesterColorTheme),
                     width: 2.w,
                   ),
                 ),
                 child: Center(
                   child: Text(
-                    adoption.codename.split(' ').map((word) => word[0]).join(),
+                    adoption.requesterCodename
+                        .split(' ')
+                        .map((word) => word[0])
+                        .join(),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
-                      color: Color(adoption.colorTheme),
+                      color: Color(adoption.requesterColorTheme),
                     ),
                   ),
                 ),
@@ -476,7 +547,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      adoption.codename,
+                      adoption.requesterCodename,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -484,7 +555,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                       ),
                     ),
                     Text(
-                      'Lv.${adoption.level} • ${adoption.successRate}% sucesso',
+                      'Lv.${adoption.requesterLevel} • ${adoption.region}',
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: const Color(0xFF64748B),
@@ -493,22 +564,6 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                   ],
                 ),
               ),
-              if (adoption.badges.isNotEmpty)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Color(adoption.colorTheme),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    adoption.badges.first.replaceAll('_', ' '),
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -516,7 +571,8 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildModalBottomAction(MockPet pet, AnonymousAdoption adoption) {
+  Widget _buildModalBottomAction(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -550,7 +606,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Ao adotar, você se tornará co-guardião junto com ${adoption.codename}',
+                      'Ao adotar, você se tornará co-guardião junto com ${adoption.requesterCodename}',
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: const Color(0xFF3B82F6),
@@ -632,15 +688,37 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  void _adoptPet(MockPet pet, AnonymousAdoption adoption) {
+  void _adoptPet(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) async {
     HapticFeedback.mediumImpact();
     Navigator.pop(context); // Fechar modal
 
-    // TODO: Implementar lógica de adoção com verificação de concorrência
-    _showAdoptionSuccessDialog(pet, adoption);
+    // NEW: Implementar adoção via Firebase
+    try {
+      // TODO: Pegar dados do usuário atual
+      await ref
+          .read(firebaseAdoptionNotifierProvider.notifier)
+          .acceptAdoptionRequest(
+            requestId: adoption.id,
+            petId: pet.id,
+            coParentId: 'current_user_id', // TODO: pegar do auth
+            coParentDisplayName: 'Usuário Atual', // TODO: pegar do auth
+            coParentCodename: 'Guardian Misterioso', // TODO: gerar
+          );
+
+      _showAdoptionSuccessDialog(pet, adoption);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao processar adoção: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _showAdoptionSuccessDialog(MockPet pet, AnonymousAdoption adoption) {
+  void _showAdoptionSuccessDialog(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -683,40 +761,12 @@ class _AdoptionListPageState extends State<AdoptionListPage>
             ),
             SizedBox(height: 8.h),
             Text(
-              'Parabéns! Você e ${adoption.codename} agora são co-guardiões de ${pet.name}!',
+              'Parabéns! Você e ${adoption.requesterCodename} agora são co-guardiões de ${pet.name}!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
                 color: const Color(0xFF64748B),
                 height: 1.5,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: const Color(0xFF3B82F6),
-                    size: 16.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Agora você pode começar a cuidar do seu novo pet!',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
@@ -740,17 +790,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
             onPressed: () {
               Navigator.pop(context); // Fechar dialog
               Navigator.pop(context); // Voltar para lista
-              // Navegar para a página do pet
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PetPage(
-                    pet: pet,
-                    adoption: adoption,
-                    isNewlyAdopted: true,
-                  ),
-                ),
-              );
+              // TODO: Navegar para a página do pet
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
@@ -784,7 +824,6 @@ class _AdoptionListPageState extends State<AdoptionListPage>
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
       body: isLoading ? _buildLoadingState() : _buildContent(),
-      // floatingActionButton: _buildCreateButton(),
     );
   }
 
@@ -810,7 +849,10 @@ class _AdoptionListPageState extends State<AdoptionListPage>
       ),
       actions: [
         IconButton(
-          onPressed: _loadAdoptions,
+          onPressed: () {
+            // NEW: Refresh dos dados do Firebase
+            ref.invalidate(publicAdoptionRequestsFirebaseProvider);
+          },
           icon: Icon(
             Icons.refresh,
             color: const Color(0xFF64748B),
@@ -859,7 +901,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Text(
-              'Buscando guardiões anônimos que precisam de parceiros',
+              'Conectando com Firebase...',
               style: TextStyle(
                 fontSize: 14.sp,
                 color: const Color(0xFF64748B),
@@ -873,16 +915,28 @@ class _AdoptionListPageState extends State<AdoptionListPage>
   }
 
   Widget _buildContent() {
-    return Column(
-      children: [
-        _buildFilters(),
-        _buildStats(),
-        Expanded(
-          child: filteredAdoptions.isEmpty
-              ? _buildEmptyState()
-              : _buildAdoptionsList(),
-        ),
-      ],
+    // NEW: Usar dados do Firebase através dos providers
+    final adoptionRequestsAsync =
+        ref.watch(publicAdoptionRequestsFirebaseProvider);
+
+    return adoptionRequestsAsync.when(
+      data: (adoptions) {
+        final filteredAdoptions = _getFilteredAdoptions(adoptions);
+
+        return Column(
+          children: [
+            _buildFilters(),
+            _buildStats(adoptions, filteredAdoptions),
+            Expanded(
+              child: filteredAdoptions.isEmpty
+                  ? _buildEmptyState()
+                  : _buildAdoptionsList(filteredAdoptions),
+            ),
+          ],
+        );
+      },
+      loading: () => _buildLoadingState(),
+      error: (error, stackTrace) => _buildErrorState(error.toString()),
     );
   }
 
@@ -940,11 +994,11 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildStats() {
-    final totalAdoptions = adoptions.length;
-    final urgentAdoptions = adoptions
-        .where((a) => a.status == 'urgent' || a.timeLeftDays < 1.0)
-        .length;
+  // UPDATE: Stats usando dados reais do Firebase
+  Widget _buildStats(List<CollaborativeAdoptionRequest> allAdoptions,
+      List<CollaborativeAdoptionRequest> filteredAdoptions) {
+    final totalAdoptions = allAdoptions.length;
+    final urgentAdoptions = allAdoptions.where((a) => a.isUrgent).length;
     final filteredCount = filteredAdoptions.length;
 
     return Container(
@@ -1084,20 +1138,61 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildAdoptionsList() {
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64.sp,
+            color: const Color(0xFFEF4444),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Erro ao carregar dados',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            error,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF64748B),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16.h),
+          ElevatedButton(
+            onPressed: () {
+              ref.invalidate(publicAdoptionRequestsFirebaseProvider);
+            },
+            child: const Text('Tentar Novamente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdoptionsList(List<CollaborativeAdoptionRequest> adoptions) {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
-      itemCount: filteredAdoptions.length,
+      itemCount: adoptions.length,
       itemBuilder: (context, index) {
-        final adoption = filteredAdoptions[index];
+        final adoption = adoptions[index];
         return _buildAdoptionCard(adoption, index);
       },
     );
   }
 
-  Widget _buildAdoptionCard(AnonymousAdoption adoption, int index) {
-    final isUrgent = adoption.status == 'urgent' || adoption.timeLeftDays < 1.0;
-    final isHot = adoption.status == 'hot';
+  // UPDATE: Adaptar card para CollaborativeAdoptionRequest
+  Widget _buildAdoptionCard(CollaborativeAdoptionRequest adoption, int index) {
+    final isUrgent = adoption.isUrgent;
+    final isHot = adoption.isHot;
 
     return GestureDetector(
       onTap: () => _onAdoptionTap(adoption),
@@ -1128,7 +1223,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
           children: [
             _buildCardHeader(adoption),
             SizedBox(height: 12.h),
-            _buildCardPets(adoption),
+            _buildCardPetsPreview(adoption),
             SizedBox(height: 12.h),
             _buildCardMessage(adoption),
             SizedBox(height: 12.h),
@@ -1142,9 +1237,10 @@ class _AdoptionListPageState extends State<AdoptionListPage>
         .slideX(begin: 0.3, end: 0);
   }
 
-  Widget _buildCardHeader(AnonymousAdoption adoption) {
-    final isUrgent = adoption.status == 'urgent' || adoption.timeLeftDays < 1.0;
-    final isHot = adoption.status == 'hot';
+  // UPDATE: Header do card usando dados do Firebase
+  Widget _buildCardHeader(CollaborativeAdoptionRequest adoption) {
+    final isUrgent = adoption.isUrgent;
+    final isHot = adoption.isHot;
 
     return Row(
       children: [
@@ -1153,20 +1249,23 @@ class _AdoptionListPageState extends State<AdoptionListPage>
           width: 50.w,
           height: 50.w,
           decoration: BoxDecoration(
-            color: Color(adoption.colorTheme).withOpacity(0.1),
+            color: Color(adoption.requesterColorTheme).withOpacity(0.1),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Color(adoption.colorTheme),
+              color: Color(adoption.requesterColorTheme),
               width: 2.w,
             ),
           ),
           child: Center(
             child: Text(
-              adoption.codename.split(' ').map((word) => word[0]).join(),
+              adoption.requesterCodename
+                  .split(' ')
+                  .map((word) => word[0])
+                  .join(),
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
-                color: Color(adoption.colorTheme),
+                color: Color(adoption.requesterColorTheme),
               ),
             ),
           ),
@@ -1183,7 +1282,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
                 children: [
                   Expanded(
                     child: Text(
-                      adoption.codename,
+                      adoption.requesterCodename,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -1213,24 +1312,16 @@ class _AdoptionListPageState extends State<AdoptionListPage>
               Row(
                 children: [
                   Text(
-                    'Lv.${adoption.level}',
+                    'Lv.${adoption.requesterLevel}',
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: Color(adoption.colorTheme),
+                      color: Color(adoption.requesterColorTheme),
                     ),
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '${adoption.successRate}% sucesso',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    '${adoption.completedAdoptions} adoções',
+                    adoption.region,
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: const Color(0xFF64748B),
@@ -1280,7 +1371,7 @@ class _AdoptionListPageState extends State<AdoptionListPage>
               ),
             SizedBox(height: 4.h),
             Text(
-              '${adoption.timeLeftDays.toStringAsFixed(1)} dias',
+              '${adoption.daysRemaining.toStringAsFixed(1)} dias',
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
@@ -1295,12 +1386,13 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildCardPets(AnonymousAdoption adoption) {
+  // NEW: Preview dos pets (placeholder até implementar busca de pets)
+  Widget _buildCardPetsPreview(CollaborativeAdoptionRequest adoption) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Pets da Missão',
+          'Pets da Missão (${adoption.selectedPetIds.length})',
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
@@ -1308,59 +1400,26 @@ class _AdoptionListPageState extends State<AdoptionListPage>
           ),
         ),
         SizedBox(height: 8.h),
-        Row(
-          children: adoption.pets.map((pet) {
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => _onPetTap(pet, adoption),
-                child: Container(
-                  margin: EdgeInsets.only(
-                      right: adoption.pets.last == pet ? 0 : 8.w),
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Color(adoption.colorTheme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: Color(adoption.colorTheme).withOpacity(0.2),
-                      width: 1.w,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        pet.photo,
-                        style: TextStyle(fontSize: 20.sp),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        pet.name,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        pet.type,
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+        // TODO: Implementar preview real dos pets
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Color(adoption.requesterColorTheme).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Text(
+            '${adoption.selectedPetIds.length} pets selecionados para adoção',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Color(adoption.requesterColorTheme),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildCardMessage(AnonymousAdoption adoption) {
+  Widget _buildCardMessage(CollaborativeAdoptionRequest adoption) {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -1396,27 +1455,27 @@ class _AdoptionListPageState extends State<AdoptionListPage>
     );
   }
 
-  Widget _buildCardFooter(AnonymousAdoption adoption) {
+  Widget _buildCardFooter(CollaborativeAdoptionRequest adoption) {
     return Row(
       children: [
-        // Badges
-        if (adoption.badges.isNotEmpty)
+        // Tags de personalidade
+        if (adoption.personalityTags.isNotEmpty)
           Expanded(
             child: Wrap(
               spacing: 4.w,
-              children: adoption.badges.take(2).map((badge) {
+              children: adoption.personalityTags.take(2).map((tag) {
                 return Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: Color(adoption.colorTheme).withOpacity(0.1),
+                    color: Color(adoption.requesterColorTheme).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    badge.replaceAll('_', ' '),
+                    tag,
                     style: TextStyle(
                       fontSize: 9.sp,
                       fontWeight: FontWeight.w500,
-                      color: Color(adoption.colorTheme),
+                      color: Color(adoption.requesterColorTheme),
                     ),
                   ),
                 );
@@ -1460,37 +1519,5 @@ class _AdoptionListPageState extends State<AdoptionListPage>
         ),
       ],
     );
-  }
-
-  Widget _buildCreateButton() {
-    return FloatingActionButton.extended(
-      onPressed: () {
-        HapticFeedback.lightImpact();
-        // TODO: Navegar para CreateAdoptionPage
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Navegando para criar nova adoção...'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
-      },
-      backgroundColor: const Color(0xFF10B981),
-      icon: Icon(
-        Icons.add,
-        color: Colors.white,
-        size: 24.sp,
-      ),
-      label: Text(
-        'Criar Adoção',
-        style: TextStyle(
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
-      ),
-    )
-        .animate()
-        .fadeIn(delay: 1000.ms)
-        .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.0, 1.0));
   }
 }
