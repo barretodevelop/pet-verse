@@ -4,8 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/model/pet_model.dart';
+import 'package:petverse/core/providers/active_request_provider.dart';
 import 'package:petverse/core/providers/app_state_provider.dart';
+import 'package:petverse/core/providers/firebase_adoption_provider.dart';
 import 'package:petverse/core/providers/pet_provider.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/core/utils/app_utils.dart';
@@ -473,12 +476,466 @@ class _HomePageState extends ConsumerState<HomePage>
     final authState = ref.watch(authenticationNotifierProvider);
     final user = authState.userModel;
 
-    if (hasActivePet && activePetId != null) {
-      return _buildPetStatusCard(activePetId);
-    } else if (user != null) {
-      return AdoptionOptionsWidget(user: user);
-    } else {
-      return _buildLoadingState();
+    // NEW: Verificar se tem solicitação ativa
+    final activeRequestAsync = ref.watch(watchUserActiveRequestProvider);
+
+    return activeRequestAsync.when(
+      data: (activeRequest) {
+        // Se tem solicitação ativa, mostrar status
+        if (activeRequest != null) {
+          return _buildActiveRequestCard(activeRequest);
+        }
+
+        // Se tem pet ativo, mostrar pet
+        if (hasActivePet && activePetId != null) {
+          return _buildPetStatusCard(activePetId);
+        }
+
+        // Senão, mostrar opções de adoção
+        if (user != null) {
+          return AdoptionOptionsWidget(user: user);
+        }
+
+        return _buildLoadingState();
+      },
+      loading: () => _buildLoadingState(),
+      error: (_, __) {
+        // Em caso de erro, mostrar interface normal
+        if (hasActivePet && activePetId != null) {
+          return _buildPetStatusCard(activePetId);
+        } else if (user != null) {
+          return AdoptionOptionsWidget(user: user);
+        } else {
+          return _buildLoadingState();
+        }
+      },
+    );
+  }
+
+// NEW: Widget para mostrar solicitação ativa
+  Widget _buildActiveRequestCard(CollaborativeAdoptionRequest activeRequest) {
+    final petsAsync = ref.watch(userActiveRequestPetsProvider);
+
+    return Container(
+      margin: EdgeInsets.all(20.w),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header da solicitação
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(24.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(activeRequest.requesterColorTheme).withOpacity(0.1),
+                    Color(activeRequest.requesterColorTheme).withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24.r),
+                border: Border.all(
+                  color:
+                      Color(activeRequest.requesterColorTheme).withOpacity(0.3),
+                  width: 2.w,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(activeRequest.requesterColorTheme)
+                        .withOpacity(0.15),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Status icon
+                  Container(
+                    width: 80.w,
+                    height: 80.w,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(activeRequest.requesterColorTheme),
+                          Color(activeRequest.requesterColorTheme)
+                              .withOpacity(0.7),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(activeRequest.requesterColorTheme)
+                              .withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.schedule,
+                      size: 40.sp,
+                      color: Colors.white,
+                    ),
+                  )
+                      .animate(
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true))
+                      .scale(
+                        begin: const Offset(1.0, 1.0),
+                        end: const Offset(1.1, 1.1),
+                        duration: 2000.ms,
+                      ),
+
+                  SizedBox(height: 20.h),
+
+                  // Título
+                  Text(
+                    'Solicitação Ativa',
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  // Tempo restante
+                  Text(
+                    'Expira em ${activeRequest.daysRemaining.toStringAsFixed(1)} dias',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: activeRequest.isUrgent
+                          ? const Color(0xFFEF4444)
+                          : Color(activeRequest.requesterColorTheme),
+                    ),
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Stats da solicitação
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStat(
+                          '👁️', '${activeRequest.views}', 'Visualizações'),
+                      _buildStat(
+                          '❤️', '${activeRequest.interested}', 'Interessados'),
+                      _buildStat('🎯', '${activeRequest.selectedPetIds.length}',
+                          'Pets'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20.h),
+
+            // Pets da solicitação
+            petsAsync.when(
+              data: (pets) => _buildRequestPetsList(pets, activeRequest),
+              loading: () => _buildPetsLoading(),
+              error: (_, __) => _buildPetsError(),
+            ),
+
+            SizedBox(height: 20.h),
+
+            // Ações
+            _buildRequestActions(activeRequest),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Helper para stats
+  Widget _buildStat(String emoji, String value, String label) {
+    return Column(
+      children: [
+        Text(emoji, style: TextStyle(fontSize: 20.sp)),
+        SizedBox(height: 4.h),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+// Lista de pets da solicitação
+  Widget _buildRequestPetsList(
+      List<FirebasePetModel> pets, CollaborativeAdoptionRequest request) {
+    if (pets.isEmpty) {
+      return Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Text(
+          'Erro ao carregar pets da solicitação',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: const Color(0xFF64748B),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64748B).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20.w),
+            child: Text(
+              'Seus Pets Selecionados',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+          ...pets.asMap().entries.map((entry) {
+            final index = entry.key;
+            final pet = entry.value;
+
+            return Container(
+              margin: EdgeInsets.only(
+                left: 20.w,
+                right: 20.w,
+                bottom: index == pets.length - 1 ? 20.w : 12.w,
+              ),
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Color(request.requesterColorTheme).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Color(request.requesterColorTheme).withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Pet emoji
+                  Text(
+                    pet.photo,
+                    style: TextStyle(fontSize: 32.sp),
+                  ),
+
+                  SizedBox(width: 16.w),
+
+                  // Pet info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pet.name,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        Text(
+                          '${pet.breed} • ${pet.age}',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Status
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      'ATIVO',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+// Loading para pets
+  Widget _buildPetsLoading() {
+    return Container(
+      height: 120.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+// Erro para pets
+  Widget _buildPetsError() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Text(
+        'Erro ao carregar pets',
+        style: TextStyle(
+          fontSize: 14.sp,
+          color: const Color(0xFFEF4444),
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+// Ações da solicitação
+  Widget _buildRequestActions(CollaborativeAdoptionRequest request) {
+    return Column(
+      children: [
+        // Botão para ver na lista
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              AppUtils.lightImpact();
+              context.push('/list-adoption');
+            },
+            icon: const Icon(Icons.list),
+            label: const Text('Ver na Lista Pública'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(request.requesterColorTheme),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(height: 12.h),
+
+        // Botão para cancelar
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showCancelRequestDialog(request),
+            icon: const Icon(Icons.close),
+            label: const Text('Cancelar Solicitação'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFEF4444),
+              side: const BorderSide(color: Color(0xFFEF4444)),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+// Dialog para cancelar solicitação
+  void _showCancelRequestDialog(CollaborativeAdoptionRequest request) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar Solicitação'),
+        content: const Text(
+          'Tem certeza que deseja cancelar sua solicitação de adoção? '
+          'Esta ação não pode ser desfeita e você precisará criar uma nova solicitação.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Não'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _cancelRequest(request.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text('Sim, Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Cancelar solicitação
+  Future<void> _cancelRequest(String requestId) async {
+    try {
+      await ref
+          .read(firebaseAdoptionNotifierProvider.notifier)
+          .cancelAdoptionRequest(requestId);
+
+      // Invalidar providers para atualizar UI
+      ref.invalidate(userActiveRequestProvider);
+      ref.invalidate(publicAdoptionRequestsFirebaseProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Solicitação cancelada com sucesso'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao cancelar: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     }
   }
 

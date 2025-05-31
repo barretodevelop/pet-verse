@@ -20,7 +20,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: '/splash',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: false,
 
     // --- LÓGICA DE REDIRECIONAMENTO CORRIGIDA ---
     redirect: (context, state) {

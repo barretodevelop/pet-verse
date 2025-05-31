@@ -266,7 +266,6 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Criar pedido de adoção colaborativa
   static Future<String> createCollaborativeAdoptionRequest({
     required String requesterId,
     required String requesterDisplayName,
@@ -279,35 +278,58 @@ class FirebaseAdoptionService {
     required String region,
   }) async {
     try {
-      final request = CollaborativeAdoptionRequest(
-        id: '',
-        requesterId: requesterId,
-        requesterDisplayName: requesterDisplayName,
-        requesterCodename: requesterCodename,
-        requesterColorTheme: requesterColorTheme,
-        requesterLevel: requesterLevel,
-        selectedPetIds: selectedPetIds,
-        createdAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(days: 5)),
-        codedMessage: codedMessage,
-        personalityTags: personalityTags,
-        region: region,
-      );
+      // SOLUÇÃO 1: Verificar ANTES da transação
+      final existingQuery = await collaborativeRequests
+          .where('requesterId', isEqualTo: requesterId)
+          .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
+          .where('expiresAt', isGreaterThan: Timestamp.now())
+          .limit(1)
+          .get();
 
-      final docRef = await collaborativeRequests.add(request.toFirestore());
-
-      // NEW: Marcar pets como não disponíveis
-      final batch = FirebaseFirestore.instance.batch();
-      for (final petId in selectedPetIds) {
-        batch.update(collaborativePets.doc(petId), {
-          'isAvailable': false,
-          'adoptionRequestId': docRef.id,
-        });
+      if (existingQuery.docs.isNotEmpty) {
+        throw Exception('Você já possui uma solicitação ativa');
       }
-      await batch.commit();
 
-      print('✅ Pedido de adoção criado: ${docRef.id}');
-      return docRef.id;
+      // Agora executar a transação sem queries complexas
+      final String requestId = await FirebaseFirestore.instance
+          .runTransaction<String>((transaction) async {
+        // Criar o pedido de adoção
+        final request = CollaborativeAdoptionRequest(
+          id: '',
+          requesterId: requesterId,
+          requesterDisplayName: requesterDisplayName,
+          requesterCodename: requesterCodename,
+          requesterColorTheme: requesterColorTheme,
+          requesterLevel: requesterLevel,
+          selectedPetIds: selectedPetIds,
+          createdAt: DateTime.now(),
+          expiresAt: DateTime.now().add(const Duration(days: 5)),
+          codedMessage: codedMessage,
+          personalityTags: personalityTags,
+          region: region,
+        );
+
+        // Criar documento de referência
+        final docRef = collaborativeRequests.doc();
+
+        // Adicionar o pedido
+        transaction.set(docRef, request.copyWith(id: docRef.id).toFirestore());
+
+        // Marcar pets como não disponíveis
+        for (final petId in selectedPetIds) {
+          final petRef = collaborativePets.doc(petId);
+          transaction.update(petRef, {
+            'isAvailable': false,
+            'adoptionRequestId': docRef.id,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        return docRef.id;
+      });
+
+      print('✅ Pedido de adoção criado: $requestId');
+      return requestId;
     } catch (e) {
       print('❌ Erro ao criar pedido de adoção: $e');
       rethrow;
@@ -372,7 +394,6 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Aceitar pedido de adoção (escolher um pet)
   static Future<void> acceptAdoptionRequest({
     required String requestId,
     required String petId,
@@ -393,9 +414,20 @@ class FirebaseAdoptionService {
 
         final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
 
+        // VERIFICAR se não é o próprio dono tentando aceitar
+        if (request.requesterId == coParentId) {
+          throw Exception(
+              'Você não pode aceitar sua própria solicitação de adoção');
+        }
+
         if (request.status != AdoptionRequestStatus.pending ||
             request.isExpired) {
           throw Exception('Pedido de adoção não está mais disponível');
+        }
+
+        // VERIFICAR se o pet está na lista de pets selecionados
+        if (!request.selectedPetIds.contains(petId)) {
+          throw Exception('Este pet não faz parte desta solicitação');
         }
 
         // Atualizar pedido de adoção
@@ -432,6 +464,9 @@ class FirebaseAdoptionService {
             );
           }
         }
+
+        // TODO: Adicionar pets aos perfis dos usuários
+        // Isso será implementado quando tivermos o UserService
       });
 
       print('✅ Adoção aceita com sucesso!');
@@ -569,4 +604,51 @@ class FirebaseAdoptionService {
       rethrow;
     }
   }
+
+  /// NEW: Verificar se usuário já tem solicitação ativa
+  static Future<CollaborativeAdoptionRequest?> getUserActiveRequest(
+      String userId) async {
+    try {
+      final query = await collaborativeRequests
+          .where('requesterId', isEqualTo: userId)
+          .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
+          .where('expiresAt', isGreaterThan: Timestamp.now())
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) return null;
+
+      return CollaborativeAdoptionRequest.fromFirestore(query.docs.first);
+    } catch (e) {
+      print('❌ Erro ao buscar solicitação ativa: $e');
+      return null;
+    }
+  }
+
+  /// NEW: Stream para monitorar solicitação ativa do usuário
+  static Stream<CollaborativeAdoptionRequest?> watchUserActiveRequest(
+      String userId) {
+    return collaborativeRequests
+        .where('requesterId', isEqualTo: userId)
+        .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
+        .where('expiresAt', isGreaterThan: Timestamp.now())
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return null;
+      return CollaborativeAdoptionRequest.fromFirestore(snapshot.docs.first);
+    });
+  }
 }
+
+
+
+
+
+
+// lib/core/services/firebase_adoption_service.dart - MÉTODOS ADICIONAIS
+
+// Adicionar estes métodos à classe FirebaseAdoptionService existente:
+ 
+
+/// UPDATE: Aceitar pedido com verificação de proprietário

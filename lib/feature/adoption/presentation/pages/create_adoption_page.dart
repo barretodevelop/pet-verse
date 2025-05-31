@@ -1,24 +1,32 @@
+// lib/feature/adoption/presentation/pages/updated_create_adoption_page.dart
+
+// lib/feature/adoption/presentation/pages/create_adoption_page.dart
+// UPDATE: Conectar com Firebase e adicionar validações
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:petverse/core/model/mocks.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petverse/core/model/firebase_pet_model.dart';
+import 'package:petverse/core/providers/active_request_provider.dart';
+import 'package:petverse/core/providers/firebase_adoption_provider.dart';
+import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 
-class CreateAdoptionPage extends StatefulWidget {
+class CreateAdoptionPage extends ConsumerStatefulWidget {
   const CreateAdoptionPage({super.key});
 
   @override
-  State<CreateAdoptionPage> createState() => _CreateAdoptionPageState();
+  ConsumerState<CreateAdoptionPage> createState() => _CreateAdoptionPageState();
 }
 
-class _CreateAdoptionPageState extends State<CreateAdoptionPage>
+class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     with TickerProviderStateMixin {
-  List<MockPet> selectedPets = [];
   bool isLoading = true;
   bool isCreating = false;
 
   late AnimationController _pulseController;
-  late List<MockPet> availablePets;
 
   @override
   void initState() {
@@ -29,8 +37,7 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
     );
     _pulseController.repeat(reverse: true);
 
-    // Simular carregamento de pets aleatórios
-    _loadRandomPets();
+    _initializeData();
   }
 
   @override
@@ -39,120 +46,131 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
     super.dispose();
   }
 
-  void _loadRandomPets() {
-    // Simular delay de carregamento
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        availablePets = _generateRandomPets();
-        isLoading = false;
-      });
-    });
-  }
-
-  List<MockPet> _generateRandomPets() {
-    // Mock de pets aleatórios gerados pelo sistema
-    final random = [
-      MockPet(
-        name: 'Luna',
-        type: 'Gato',
-        age: '2 anos',
-        photo: '🐱',
-        traits: ['carinhoso', 'brincalhão', 'independente'],
-        description: 'Gatinha muito carinhosa que adora brincar',
-      ),
-      MockPet(
-        name: 'Max',
-        type: 'Cachorro',
-        age: '3 anos',
-        photo: '🐕',
-        traits: ['leal', 'energético', 'protetor'],
-        description: 'Cachorro muito leal e cheio de energia',
-      ),
-      MockPet(
-        name: 'Bella',
-        type: 'Coelho',
-        age: '1 ano',
-        photo: '🐰',
-        traits: ['fofo', 'tranquilo', 'tímido'],
-        description: 'Coelhinha muito fofa e tranquila',
-      ),
-      MockPet(
-        name: 'Charlie',
-        type: 'Cachorro',
-        age: '4 anos',
-        photo: '🐕',
-        traits: ['amigável', 'obediente', 'carinhoso'],
-        description: 'Cachorro muito amigável e obediente',
-      ),
-      MockPet(
-        name: 'Mimi',
-        type: 'Gato',
-        age: '1 ano',
-        photo: '🐱',
-        traits: ['curioso', 'ativo', 'brincalhão'],
-        description: 'Gatinho muito curioso e ativo',
-      ),
-      MockPet(
-        name: 'Rocky',
-        type: 'Cachorro',
-        age: '5 anos',
-        photo: '🐕',
-        traits: ['forte', 'protetor', 'leal'],
-        description: 'Cachorro grande e muito protetor',
-      ),
-      MockPet(
-        name: 'Snow',
-        type: 'Hamster',
-        age: '6 meses',
-        photo: '🐹',
-        traits: ['pequeno', 'ativo', 'fofo'],
-        description: 'Hamster branquinho muito fofo',
-      ),
-      MockPet(
-        name: 'Kiwi',
-        type: 'Pássaro',
-        age: '2 anos',
-        photo: '🦜',
-        traits: ['colorido', 'falante', 'inteligente'],
-        description: 'Papagaio muito colorido e falante',
-      ),
-      MockPet(
-        name: 'Shadow',
-        type: 'Gato',
-        age: '3 anos',
-        photo: '🐱',
-        traits: ['elegante', 'independente', 'misterioso'],
-        description: 'Gato preto muito elegante e misterioso',
-      ),
-      MockPet(
-        name: 'Buddy',
-        type: 'Cachorro',
-        age: '2 anos',
-        photo: '🐕',
-        traits: ['amigável', 'brincalhão', 'social'],
-        description: 'Cachorro muito sociável e brincalhão',
-      ),
-    ];
-
-    // Embaralhar e retornar apenas alguns
-    random.shuffle();
-    return random.take(8).toList();
-  }
-
-  void _togglePetSelection(MockPet pet) {
-    HapticFeedback.lightImpact();
-
-    setState(() {
-      if (selectedPets.contains(pet)) {
-        selectedPets.remove(pet);
-      } else if (selectedPets.length < 3) {
-        selectedPets.add(pet);
+  Future<void> _initializeData() async {
+    try {
+      // Verificar se usuário já tem solicitação ativa
+      final userRequest = await ref.read(userActiveRequestProvider.future);
+      if (userRequest != null && mounted) {
+        _showActiveRequestDialog(userRequest);
+        return;
       }
-    });
+    } catch (e) {
+      print('Erro ao verificar solicitação ativa: $e');
+    }
+  }
+
+  void _showActiveRequestDialog(CollaborativeAdoptionRequest activeRequest) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: const Color(0xFF3B82F6),
+              size: 48.sp,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Solicitação Ativa',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Você já possui uma solicitação de adoção ativa. '
+              'Aguarde ela expirar ou ser aceita para criar uma nova.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF64748B),
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Expira em: ${activeRequest.daysRemaining.toStringAsFixed(1)} dias',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF3B82F6),
+                    ),
+                  ),
+                  Text(
+                    'ID: ${activeRequest.id.substring(0, 8).toUpperCase()}',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: const Color(0xFF64748B),
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Fechar dialog
+              context.go('/list-adoption'); // Ir para lista
+            },
+            child: Text(
+              'Ver Lista',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Fechar dialog
+              Navigator.pop(context); // Voltar para home
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            child: Text(
+              'Entendi',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _togglePetSelection(FirebasePetModel pet) {
+    HapticFeedback.lightImpact();
+    ref.read(selectedCollaborativePetsProvider.notifier).togglePet(pet.id);
   }
 
   void _createAdoption() async {
-    if (selectedPets.length != 3) return;
+    final selectedPets = ref.read(selectedCollaborativePetsProvider);
+    final authState = ref.read(authenticationNotifierProvider);
+    final user = authState.userModel;
+
+    if (selectedPets.length != 3 || user == null) return;
 
     setState(() {
       isCreating = true;
@@ -160,18 +178,135 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
 
     HapticFeedback.mediumImpact();
 
-    // Simular criação da adoção
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Gerar dados do usuário anônimo
+      final codename = _generateCodename(user);
+      final colorTheme = _generateColorTheme(user);
+      final codedMessage = _generateCodedMessage(user);
+      final personalityTags = _generatePersonalityTags(user);
+      final region = _generateRegion(user);
 
-    setState(() {
-      isCreating = false;
-    });
+      final requestId = await ref
+          .read(firebaseAdoptionNotifierProvider.notifier)
+          .createCollaborativeAdoptionRequest(
+            requesterId: user.id,
+            requesterDisplayName: user.displayName ?? 'Usuário',
+            requesterCodename: codename,
+            requesterColorTheme: colorTheme,
+            requesterLevel: user.level,
+            selectedPetIds: selectedPets,
+            codedMessage: codedMessage,
+            personalityTags: personalityTags,
+            region: region,
+          );
 
-    // Mostrar sucesso e voltar
-    _showSuccessDialog();
+      if (mounted) {
+        setState(() {
+          isCreating = false;
+        });
+
+        // Limpar seleção
+        ref.read(selectedCollaborativePetsProvider.notifier).clear();
+
+        // Mostrar sucesso
+        _showSuccessDialog(requestId);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isCreating = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao criar adoção: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _showSuccessDialog() {
+  String _generateCodename(user) {
+    final prefixes = ['Guardian', 'Protetor', 'Anjo', 'Sombra', 'Mestre'];
+    final suffixes = ['Azul', 'Rosa', 'Verde', 'Dourado', 'Prata', 'Violeta'];
+
+    final prefix = prefixes[user.level % prefixes.length];
+    final suffix = suffixes[user.id.hashCode % suffixes.length];
+
+    return '$prefix $suffix';
+  }
+
+  int _generateColorTheme(user) {
+    final colors = [
+      0xFF3B82F6, // Azul
+      0xFFEC4899, // Rosa
+      0xFF10B981, // Verde
+      0xFFF59E0B, // Dourado
+      0xFF8B5CF6, // Violeta
+      0xFF06B6D4, // Ciano
+    ];
+
+    return colors[user.id.hashCode % colors.length];
+  }
+
+  String _generateCodedMessage(user) {
+    final messages = [
+      'Colaborador experiente busca parceiro dedicado para missão especial',
+      'Primeira missão em grupo, procuro mentor experiente',
+      'Veterano em missão urgente, preciso de parceiro confiável',
+      'Busco parceiro ativo para pets de alta energia - aventura garantida!',
+      'Mestre experiente oferece sabedoria em troca de companhia',
+    ];
+
+    return messages[user.level % messages.length];
+  }
+
+  List<String> _generatePersonalityTags(user) {
+    final allTags = [
+      'dedicado',
+      'organizado',
+      'carinhoso',
+      'iniciante',
+      'entusiasmado',
+      'responsável',
+      'experiente',
+      'paciente',
+      'líder',
+      'ativo',
+      'aventureiro',
+      'energético',
+      'sábio',
+      'mentor',
+      'compassivo',
+    ];
+
+    // Selecionar 3 tags baseadas no usuário
+    final selectedTags = <String>[];
+    final baseIndex = user.id.hashCode % allTags.length;
+
+    for (int i = 0; i < 3; i++) {
+      final index = (baseIndex + i * 2) % allTags.length;
+      selectedTags.add(allTags[index]);
+    }
+
+    return selectedTags;
+  }
+
+  String _generateRegion(user) {
+    final regions = [
+      'Zona Sul - SP',
+      'Centro - RJ',
+      'Zona Norte - SP',
+      'Zona Oeste - SP',
+      'Interior - SP',
+      'Centro - MG',
+    ];
+
+    return regions[user.id.hashCode % regions.length];
+  }
+
+  void _showSuccessDialog(String requestId) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -255,7 +390,7 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Fechar dialog
-              Navigator.pop(context); // Voltar para lista
+              context.go('/list-adoption'); // Ver lista
             },
             child: Text(
               'Ver na Lista',
@@ -263,6 +398,22 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF10B981),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Fechar dialog
+              Navigator.pop(context); // Voltar para home
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+            ),
+            child: Text(
+              'Voltar ao Início',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.white,
               ),
             ),
           ),
@@ -308,7 +459,9 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
       ),
       actions: [
         IconButton(
-          onPressed: _loadRandomPets,
+          onPressed: () {
+            ref.invalidate(availableCollaborativePetsProvider);
+          },
           icon: Icon(
             Icons.refresh,
             color: const Color(0xFF64748B),
@@ -357,7 +510,7 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Text(
-              'O sistema está gerando pets aleatórios para você',
+              'Conectando com o Firebase...',
               style: TextStyle(
                 fontSize: 14.sp,
                 color: const Color(0xFF64748B),
@@ -371,27 +524,118 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
   }
 
   Widget _buildContent() {
-    return Column(
-      children: [
-        // Preview dos pets selecionados fixo no topo
-        if (selectedPets.isNotEmpty) _buildSelectedPetsPreview(),
+    // Usar dados do Firebase
+    final petsAsync = ref.watch(availableCollaborativePetsProvider);
+    final selectedPets = ref.watch(selectedCollaborativePetsProvider);
 
-        // Conteúdo scrollável
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (selectedPets.isEmpty) _buildHeader(),
-                SizedBox(height: selectedPets.isEmpty ? 20.h : 0),
-                _buildPetsGrid(),
-                SizedBox(height: 20.h), // Espaço adicional no final
-              ],
+    return petsAsync.when(
+      data: (pets) {
+        if (pets.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return Column(
+          children: [
+            // Preview dos pets selecionados
+            if (selectedPets.isNotEmpty)
+              _buildSelectedPetsPreview(pets, selectedPets),
+
+            // Conteúdo scrollável
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (selectedPets.isEmpty) _buildHeader(),
+                    SizedBox(height: selectedPets.isEmpty ? 20.h : 0),
+                    _buildPetsGrid(pets),
+                    SizedBox(height: 20.h),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => _buildLoadingState(),
+      error: (error, stackTrace) => _buildErrorState(error.toString()),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.pets_outlined,
+            size: 80.sp,
+            color: const Color(0xFF64748B),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Nenhum Pet Disponível',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
             ),
           ),
-        ),
-      ],
+          SizedBox(height: 8.h),
+          Text(
+            'Não há pets disponíveis para adoção\ncolaborativa no momento.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 80.sp,
+            color: const Color(0xFFEF4444),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Erro ao Carregar',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Text(
+              error,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          ElevatedButton(
+            onPressed: () {
+              ref.invalidate(availableCollaborativePetsProvider);
+            },
+            child: const Text('Tentar Novamente'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -451,7 +695,9 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
     ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0);
   }
 
-  Widget _buildPetsGrid() {
+  Widget _buildPetsGrid(List<FirebasePetModel> pets) {
+    final selectedPets = ref.watch(selectedCollaborativePetsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -501,12 +747,12 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
             crossAxisCount: 2,
             crossAxisSpacing: 12.w,
             mainAxisSpacing: 12.h,
-            childAspectRatio: 0.9, // Ajustado para melhor proporção
+            childAspectRatio: 0.9,
           ),
-          itemCount: availablePets.length,
+          itemCount: pets.length,
           itemBuilder: (context, index) {
-            final pet = availablePets[index];
-            final isSelected = selectedPets.contains(pet);
+            final pet = pets[index];
+            final isSelected = selectedPets.contains(pet.id);
             final canSelect = selectedPets.length < 3 || isSelected;
 
             return _buildPetCard(pet, isSelected, canSelect, index);
@@ -517,7 +763,7 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
   }
 
   Widget _buildPetCard(
-      MockPet pet, bool isSelected, bool canSelect, int index) {
+      FirebasePetModel pet, bool isSelected, bool canSelect, int index) {
     return GestureDetector(
       onTap: canSelect ? () => _togglePetSelection(pet) : null,
       child: AnimatedContainer(
@@ -621,14 +867,14 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
 
             SizedBox(height: 6.h),
 
-            // Traits principais - limitado a 2 e com overflow protegido
-            if (pet.traits != null && pet.traits!.isNotEmpty)
+            // Traits principais
+            if (pet.traits.isNotEmpty)
               Flexible(
                 child: Wrap(
                   spacing: 4.w,
                   runSpacing: 2.h,
                   alignment: WrapAlignment.center,
-                  children: pet.traits!.take(2).map((trait) {
+                  children: pet.traits.take(2).map((trait) {
                     return Container(
                       padding:
                           EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
@@ -655,7 +901,6 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
                 ),
               ),
 
-            // Estado de seleção
             if (!canSelect && !isSelected)
               Padding(
                 padding: EdgeInsets.only(top: 4.h),
@@ -677,7 +922,11 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
         .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.0, 1.0));
   }
 
-  Widget _buildSelectedPetsPreview() {
+  Widget _buildSelectedPetsPreview(
+      List<FirebasePetModel> allPets, List<String> selectedPetIds) {
+    final selectedPets =
+        allPets.where((pet) => selectedPetIds.contains(pet.id)).toList();
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
       padding: EdgeInsets.all(16.w),
@@ -809,6 +1058,7 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
   }
 
   Widget _buildBottomBar() {
+    final selectedPets = ref.watch(selectedCollaborativePetsProvider);
     final canCreate = selectedPets.length == 3;
 
     return Container(
@@ -921,3 +1171,929 @@ class _CreateAdoptionPageState extends State<CreateAdoptionPage>
     );
   }
 }
+
+// class CreateAdoptionPage extends ConsumerStatefulWidget {
+//   const CreateAdoptionPage({super.key});
+
+//   @override
+//   ConsumerState<CreateAdoptionPage> createState() => _CreateAdoptionPageState();
+// }
+
+// class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
+//     with TickerProviderStateMixin {
+//   late AnimationController _pulseController;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _pulseController = AnimationController(
+//       duration: const Duration(milliseconds: 2000),
+//       vsync: this,
+//     );
+//     _pulseController.repeat(reverse: true);
+//   }
+
+//   @override
+//   void dispose() {
+//     _pulseController.dispose();
+//     super.dispose();
+//   }
+
+//   // Método para criar adoção
+//   Future<void> _createAdoption() async {
+//     HapticFeedback.mediumImpact();
+
+//     final notifier = ref.read(createAdoptionProvider.notifier);
+//     final requestId = await notifier.createAdoptionRequest();
+
+//     if (requestId != null) {
+//       _showSuccessDialog(requestId);
+//     } else {
+//       // Erro será mostrado via estado do provider
+//       _showErrorSnackBar();
+//     }
+//   }
+
+//   void _showSuccessDialog(String requestId) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (context) => _buildSuccessDialog(requestId),
+//     );
+//   }
+
+//   void _showErrorSnackBar() {
+//     final error = ref.read(adoptionCreationErrorProvider);
+//     if (error != null) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text(error),
+//           backgroundColor: Colors.red,
+//           duration: const Duration(seconds: 4),
+//         ),
+//       );
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // Observar estado de criação
+//     ref.listen<String?>(adoptionCreationErrorProvider, (previous, error) {
+//       if (error != null && previous != error) {
+//         _showErrorSnackBar();
+//       }
+//     });
+
+//     final state = ref.watch(createAdoptionProvider);
+
+//     return Scaffold(
+//       backgroundColor: const Color(0xFFF8FAFC),
+//       appBar: _buildAppBar(),
+//       body: state.isLoading ? _buildLoadingState() : _buildContent(),
+//       bottomNavigationBar: _buildBottomBar(),
+//     );
+//   }
+
+//   PreferredSizeWidget _buildAppBar() {
+//     return AppBar(
+//       backgroundColor: Colors.transparent,
+//       elevation: 0,
+//       leading: IconButton(
+//         onPressed: () => Navigator.pop(context),
+//         icon: Icon(
+//           Icons.arrow_back,
+//           color: const Color(0xFF0F172A),
+//           size: 24.sp,
+//         ),
+//       ),
+//       title: Text(
+//         'Criar Nova Adoção',
+//         style: TextStyle(
+//           fontSize: 20.sp,
+//           fontWeight: FontWeight.w700,
+//           color: const Color(0xFF0F172A),
+//         ),
+//       ),
+//       actions: [
+//         IconButton(
+//           onPressed: () {
+//             ref.read(createAdoptionProvider.notifier).refreshPets();
+//           },
+//           icon: Icon(
+//             Icons.refresh,
+//             color: const Color(0xFF64748B),
+//             size: 24.sp,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildLoadingState() {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Container(
+//             width: 80.w,
+//             height: 80.w,
+//             decoration: BoxDecoration(
+//               color: const Color(0xFF3B82F6).withOpacity(0.1),
+//               shape: BoxShape.circle,
+//             ),
+//             child: Icon(
+//               Icons.pets_rounded,
+//               color: const Color(0xFF3B82F6),
+//               size: 40.sp,
+//             ),
+//           )
+//               .animate(onPlay: (controller) => controller.repeat())
+//               .rotate(duration: 2000.ms)
+//               .scale(
+//                 begin: const Offset(0.8, 0.8),
+//                 end: const Offset(1.2, 1.2),
+//                 duration: 1000.ms,
+//               ),
+//           SizedBox(height: 24.h),
+//           Text(
+//             'Carregando Pets Disponíveis...',
+//             style: TextStyle(
+//               fontSize: 18.sp,
+//               fontWeight: FontWeight.w600,
+//               color: const Color(0xFF0F172A),
+//             ),
+//           ),
+//           SizedBox(height: 8.h),
+//           Padding(
+//             padding: EdgeInsets.symmetric(horizontal: 40.w),
+//             child: Text(
+//               'Conectando com Firebase para buscar pets',
+//               style: TextStyle(
+//                 fontSize: 14.sp,
+//                 color: const Color(0xFF64748B),
+//               ),
+//               textAlign: TextAlign.center,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildContent() {
+//     final state = ref.watch(createAdoptionProvider);
+
+//     return Column(
+//       children: [
+//         // Preview dos pets selecionados fixo no topo
+//         if (state.hasSelection) _buildSelectedPetsPreview(),
+
+//         // Conteúdo scrollável
+//         Expanded(
+//           child: SingleChildScrollView(
+//             padding: EdgeInsets.all(20.w),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 if (!state.hasSelection) _buildHeader(),
+//                 SizedBox(height: state.hasSelection ? 0 : 20.h),
+//                 _buildPetsGrid(),
+//                 SizedBox(height: 20.h),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildHeader() {
+//     return Container(
+//       padding: EdgeInsets.all(20.w),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             const Color(0xFF3B82F6).withOpacity(0.1),
+//             const Color(0xFF1E40AF).withOpacity(0.05),
+//           ],
+//         ),
+//         borderRadius: BorderRadius.circular(16.r),
+//         border: Border.all(
+//           color: const Color(0xFF3B82F6).withOpacity(0.2),
+//           width: 1.w,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Icon(
+//                 Icons.info_outline,
+//                 color: const Color(0xFF3B82F6),
+//                 size: 24.sp,
+//               ),
+//               SizedBox(width: 12.w),
+//               Expanded(
+//                 child: Text(
+//                   'Como funciona?',
+//                   style: TextStyle(
+//                     fontSize: 18.sp,
+//                     fontWeight: FontWeight.w700,
+//                     color: const Color(0xFF0F172A),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: 12.h),
+//           Text(
+//             '1. Escolha exatamente 3 pets que você gostaria de cuidar\n'
+//             '2. Sua adoção será publicada na lista por 5 dias\n'
+//             '3. Alguém verá sua adoção e escolherá 1 dos 3 pets\n'
+//             '4. Vocês começarão a cuidar do pet juntos!',
+//             style: TextStyle(
+//               fontSize: 14.sp,
+//               color: const Color(0xFF374151),
+//               height: 1.6,
+//             ),
+//           ),
+//         ],
+//       ),
+//     ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0);
+//   }
+
+//   Widget _buildPetsGrid() {
+//     final state = ref.watch(createAdoptionProvider);
+
+//     if (state.error != null) {
+//       return _buildErrorState(state.error!);
+//     }
+
+//     if (state.availablePets.isEmpty) {
+//       return _buildEmptyState();
+//     }
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Row(
+//           children: [
+//             Expanded(
+//               child: Text(
+//                 'Pets Disponíveis',
+//                 style: TextStyle(
+//                   fontSize: 20.sp,
+//                   fontWeight: FontWeight.w700,
+//                   color: const Color(0xFF0F172A),
+//                 ),
+//               ),
+//             ),
+//             SizedBox(width: 8.w),
+//             Container(
+//               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+//               decoration: BoxDecoration(
+//                 color: const Color(0xFF10B981),
+//                 borderRadius: BorderRadius.circular(12.r),
+//               ),
+//               child: Text(
+//                 '${state.selectedPetIds.length}/3',
+//                 style: TextStyle(
+//                   fontSize: 12.sp,
+//                   fontWeight: FontWeight.w700,
+//                   color: Colors.white,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//         SizedBox(height: 8.h),
+//         Text(
+//           'Selecione exatamente 3 pets para criar sua adoção',
+//           style: TextStyle(
+//             fontSize: 14.sp,
+//             color: const Color(0xFF64748B),
+//           ),
+//         ),
+//         SizedBox(height: 16.h),
+//         GridView.builder(
+//           shrinkWrap: true,
+//           physics: const NeverScrollableScrollPhysics(),
+//           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//             crossAxisCount: 2,
+//             crossAxisSpacing: 12.w,
+//             mainAxisSpacing: 12.h,
+//             childAspectRatio: 0.9,
+//           ),
+//           itemCount: state.availablePets.length,
+//           itemBuilder: (context, index) {
+//             final pet = state.availablePets[index];
+//             final isSelected = state.selectedPetIds.contains(pet.id);
+//             final canSelect = state.selectedPetIds.length < 3 || isSelected;
+
+//             return _buildPetCard(pet, isSelected, canSelect, index);
+//           },
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildPetCard(
+//       FirebasePetModel pet, bool isSelected, bool canSelect, int index) {
+//     return GestureDetector(
+//       onTap: canSelect ? () => _togglePetSelection(pet.id) : null,
+//       child: AnimatedContainer(
+//         duration: const Duration(milliseconds: 300),
+//         padding: EdgeInsets.all(12.w),
+//         decoration: BoxDecoration(
+//           color: isSelected
+//               ? const Color(0xFF10B981).withOpacity(0.1)
+//               : Colors.white,
+//           borderRadius: BorderRadius.circular(16.r),
+//           border: Border.all(
+//             color: isSelected
+//                 ? const Color(0xFF10B981)
+//                 : canSelect
+//                     ? const Color(0xFFE2E8F0)
+//                     : const Color(0xFFE2E8F0).withOpacity(0.5),
+//             width: isSelected ? 2.w : 1.w,
+//           ),
+//           boxShadow: [
+//             BoxShadow(
+//               color: isSelected
+//                   ? const Color(0xFF10B981).withOpacity(0.2)
+//                   : const Color(0xFF64748B).withOpacity(0.08),
+//               blurRadius: isSelected ? 12 : 8,
+//               offset: const Offset(0, 4),
+//             ),
+//           ],
+//         ),
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             // Pet photo com seleção
+//             Stack(
+//               children: [
+//                 Container(
+//                   width: 60.w,
+//                   height: 60.w,
+//                   decoration: BoxDecoration(
+//                     color: const Color(0xFF3B82F6).withOpacity(0.1),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Center(
+//                     child: Text(
+//                       pet.photo,
+//                       style: TextStyle(fontSize: 28.sp),
+//                     ),
+//                   ),
+//                 ),
+//                 if (isSelected)
+//                   Positioned(
+//                     top: -2.h,
+//                     right: -2.w,
+//                     child: Container(
+//                       width: 20.w,
+//                       height: 20.w,
+//                       decoration: BoxDecoration(
+//                         color: const Color(0xFF10B981),
+//                         shape: BoxShape.circle,
+//                         border: Border.all(color: Colors.white, width: 2.w),
+//                       ),
+//                       child: Icon(
+//                         Icons.check,
+//                         color: Colors.white,
+//                         size: 10.sp,
+//                       ),
+//                     )
+//                         .animate(
+//                             onPlay: (controller) =>
+//                                 controller.repeat(reverse: true))
+//                         .scale(
+//                           begin: const Offset(1.0, 1.0),
+//                           end: const Offset(1.2, 1.2),
+//                           duration: 1000.ms,
+//                         ),
+//                   ),
+//               ],
+//             ),
+
+//             SizedBox(height: 8.h),
+
+//             Text(
+//               pet.name,
+//               style: TextStyle(
+//                 fontSize: 14.sp,
+//                 fontWeight: FontWeight.w700,
+//                 color: const Color(0xFF0F172A),
+//               ),
+//               maxLines: 1,
+//               overflow: TextOverflow.ellipsis,
+//             ),
+
+//             Text(
+//               '${pet.type} • ${pet.age}',
+//               style: TextStyle(
+//                 fontSize: 11.sp,
+//                 color: const Color(0xFF64748B),
+//               ),
+//               maxLines: 1,
+//               overflow: TextOverflow.ellipsis,
+//             ),
+
+//             SizedBox(height: 6.h),
+
+//             // Traits principais
+//             if (pet.traits.isNotEmpty)
+//               Flexible(
+//                 child: Wrap(
+//                   spacing: 4.w,
+//                   runSpacing: 2.h,
+//                   alignment: WrapAlignment.center,
+//                   children: pet.traits.take(2).map((trait) {
+//                     return Container(
+//                       padding:
+//                           EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+//                       decoration: BoxDecoration(
+//                         color: isSelected
+//                             ? const Color(0xFF10B981).withOpacity(0.2)
+//                             : const Color(0xFF3B82F6).withOpacity(0.1),
+//                         borderRadius: BorderRadius.circular(8.r),
+//                       ),
+//                       child: Text(
+//                         trait,
+//                         style: TextStyle(
+//                           fontSize: 9.sp,
+//                           fontWeight: FontWeight.w500,
+//                           color: isSelected
+//                               ? const Color(0xFF10B981)
+//                               : const Color(0xFF3B82F6),
+//                         ),
+//                         maxLines: 1,
+//                         overflow: TextOverflow.ellipsis,
+//                       ),
+//                     );
+//                   }).toList(),
+//                 ),
+//               ),
+
+//             // Estado de seleção
+//             if (!canSelect && !isSelected)
+//               Padding(
+//                 padding: EdgeInsets.only(top: 4.h),
+//                 child: Text(
+//                   'Limite atingido',
+//                   style: TextStyle(
+//                     fontSize: 9.sp,
+//                     color: const Color(0xFF94A3B8),
+//                     fontStyle: FontStyle.italic,
+//                   ),
+//                 ),
+//               ),
+//           ],
+//         ),
+//       ),
+//     )
+//         .animate(delay: Duration(milliseconds: 100 * index))
+//         .fadeIn(duration: 600.ms)
+//         .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.0, 1.0));
+//   }
+
+//   void _togglePetSelection(String petId) {
+//     HapticFeedback.lightImpact();
+//     ref.read(createAdoptionProvider.notifier).togglePetSelection(petId);
+//   }
+
+//   Widget _buildSelectedPetsPreview() {
+//     final state = ref.watch(createAdoptionProvider);
+//     final selectedPets = state.selectedPets;
+
+//     return Container(
+//       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+//       padding: EdgeInsets.all(16.w),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(16.r),
+//         border: Border.all(
+//           color: const Color(0xFF10B981).withOpacity(0.2),
+//           width: 1.w,
+//         ),
+//         boxShadow: [
+//           BoxShadow(
+//             color: const Color(0xFF10B981).withOpacity(0.1),
+//             blurRadius: 12,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Icon(
+//                 Icons.preview,
+//                 color: const Color(0xFF10B981),
+//                 size: 18.sp,
+//               ),
+//               SizedBox(width: 8.w),
+//               Expanded(
+//                 child: Text(
+//                   'Pets Selecionados',
+//                   style: TextStyle(
+//                     fontSize: 16.sp,
+//                     fontWeight: FontWeight.w700,
+//                     color: const Color(0xFF0F172A),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: 12.h),
+//           Row(
+//             children: [
+//               ...selectedPets.map((pet) {
+//                 return Expanded(
+//                   child: Container(
+//                     margin: EdgeInsets.only(
+//                         right: selectedPets.last == pet ? 0 : 8.w),
+//                     padding: EdgeInsets.all(8.w),
+//                     decoration: BoxDecoration(
+//                       color: const Color(0xFF10B981).withOpacity(0.1),
+//                       borderRadius: BorderRadius.circular(12.r),
+//                     ),
+//                     child: Column(
+//                       children: [
+//                         Text(
+//                           pet.photo,
+//                           style: TextStyle(fontSize: 18.sp),
+//                         ),
+//                         SizedBox(height: 4.h),
+//                         Text(
+//                           pet.name,
+//                           style: TextStyle(
+//                             fontSize: 10.sp,
+//                             fontWeight: FontWeight.w600,
+//                             color: const Color(0xFF0F172A),
+//                           ),
+//                           maxLines: 1,
+//                           overflow: TextOverflow.ellipsis,
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 );
+//               }),
+//               // Slots vazios
+//               ...List.generate(3 - selectedPets.length, (index) {
+//                 return Expanded(
+//                   child: Container(
+//                     margin: EdgeInsets.only(left: 8.w),
+//                     padding: EdgeInsets.all(8.w),
+//                     decoration: BoxDecoration(
+//                       color: const Color(0xFFE2E8F0).withOpacity(0.3),
+//                       borderRadius: BorderRadius.circular(12.r),
+//                       border: Border.all(
+//                         color: const Color(0xFFE2E8F0),
+//                         style: BorderStyle.solid,
+//                         width: 1.w,
+//                       ),
+//                     ),
+//                     child: Column(
+//                       children: [
+//                         Icon(
+//                           Icons.add,
+//                           color: const Color(0xFF94A3B8),
+//                           size: 18.sp,
+//                         ),
+//                         SizedBox(height: 4.h),
+//                         Text(
+//                           'Vazio',
+//                           style: TextStyle(
+//                             fontSize: 10.sp,
+//                             color: const Color(0xFF94A3B8),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 );
+//               }),
+//             ],
+//           ),
+//           if (state.remainingSelections > 0)
+//             Padding(
+//               padding: EdgeInsets.only(top: 8.h),
+//               child: Text(
+//                 'Selecione mais ${state.remainingSelections} pet(s)',
+//                 style: TextStyle(
+//                   fontSize: 12.sp,
+//                   color: const Color(0xFF64748B),
+//                   fontStyle: FontStyle.italic,
+//                 ),
+//               ),
+//             ),
+//         ],
+//       ),
+//     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.3, end: 0);
+//   }
+
+//   Widget _buildBottomBar() {
+//     final state = ref.watch(createAdoptionProvider);
+
+//     return Container(
+//       padding: EdgeInsets.all(20.w),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         boxShadow: [
+//           BoxShadow(
+//             color: const Color(0xFF64748B).withOpacity(0.1),
+//             blurRadius: 12,
+//             offset: const Offset(0, -4),
+//           ),
+//         ],
+//       ),
+//       child: SafeArea(
+//         child: Row(
+//           children: [
+//             // Contador
+//             Expanded(
+//               child: Column(
+//                 mainAxisSize: MainAxisSize.min,
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     '${state.selectedPetIds.length} de 3 pets selecionados',
+//                     style: TextStyle(
+//                       fontSize: 14.sp,
+//                       fontWeight: FontWeight.w600,
+//                       color: state.canCreate
+//                           ? const Color(0xFF10B981)
+//                           : const Color(0xFF64748B),
+//                     ),
+//                   ),
+//                   if (!state.canCreate && !state.isCreating)
+//                     Text(
+//                       'Selecione ${state.remainingSelections} pet(s) restante(s)',
+//                       style: TextStyle(
+//                         fontSize: 12.sp,
+//                         color: const Color(0xFF94A3B8),
+//                       ),
+//                     ),
+//                 ],
+//               ),
+//             ),
+
+//             SizedBox(width: 16.w),
+
+//             // Botão criar
+//             GestureDetector(
+//               onTap: state.canCreate ? _createAdoption : null,
+//               child: AnimatedContainer(
+//                 duration: const Duration(milliseconds: 300),
+//                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+//                 decoration: BoxDecoration(
+//                   gradient: state.canCreate
+//                       ? const LinearGradient(
+//                           colors: [Color(0xFF10B981), Color(0xFF059669)],
+//                         )
+//                       : null,
+//                   color: state.canCreate ? null : const Color(0xFFE2E8F0),
+//                   borderRadius: BorderRadius.circular(16.r),
+//                   boxShadow: state.canCreate
+//                       ? [
+//                           BoxShadow(
+//                             color: const Color(0xFF10B981).withOpacity(0.3),
+//                             blurRadius: 12,
+//                             offset: const Offset(0, 6),
+//                           ),
+//                         ]
+//                       : null,
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     if (state.isCreating) ...[
+//                       SizedBox(
+//                         width: 16.w,
+//                         height: 16.w,
+//                         child: CircularProgressIndicator(
+//                           color: Colors.white,
+//                           strokeWidth: 2.w,
+//                         ),
+//                       ),
+//                       SizedBox(width: 8.w),
+//                     ] else ...[
+//                       Icon(
+//                         Icons.add_circle_outline,
+//                         color: state.canCreate
+//                             ? Colors.white
+//                             : const Color(0xFF94A3B8),
+//                         size: 20.sp,
+//                       ),
+//                       SizedBox(width: 8.w),
+//                     ],
+//                     Text(
+//                       state.isCreating ? 'Criando...' : 'Criar Adoção',
+//                       style: TextStyle(
+//                         fontSize: 16.sp,
+//                         fontWeight: FontWeight.w700,
+//                         color: state.canCreate
+//                             ? Colors.white
+//                             : const Color(0xFF94A3B8),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildErrorState(String error) {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Icon(
+//             Icons.error_outline,
+//             size: 64.sp,
+//             color: const Color(0xFFEF4444),
+//           ),
+//           SizedBox(height: 16.h),
+//           Text(
+//             'Erro ao carregar pets',
+//             style: TextStyle(
+//               fontSize: 18.sp,
+//               fontWeight: FontWeight.w600,
+//               color: const Color(0xFF0F172A),
+//             ),
+//           ),
+//           SizedBox(height: 8.h),
+//           Padding(
+//             padding: EdgeInsets.symmetric(horizontal: 40.w),
+//             child: Text(
+//               error,
+//               style: TextStyle(
+//                 fontSize: 14.sp,
+//                 color: const Color(0xFF64748B),
+//               ),
+//               textAlign: TextAlign.center,
+//             ),
+//           ),
+//           SizedBox(height: 16.h),
+//           ElevatedButton(
+//             onPressed: () {
+//               ref.read(createAdoptionProvider.notifier).refreshPets();
+//             },
+//             child: const Text('Tentar Novamente'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildEmptyState() {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Container(
+//             width: 100.w,
+//             height: 100.w,
+//             decoration: BoxDecoration(
+//               color: const Color(0xFF64748B).withOpacity(0.1),
+//               shape: BoxShape.circle,
+//             ),
+//             child: Icon(
+//               Icons.pets,
+//               color: const Color(0xFF64748B),
+//               size: 50.sp,
+//             ),
+//           ),
+//           SizedBox(height: 24.h),
+//           Text(
+//             'Nenhum pet disponível',
+//             style: TextStyle(
+//               fontSize: 18.sp,
+//               fontWeight: FontWeight.w600,
+//               color: const Color(0xFF0F172A),
+//             ),
+//           ),
+//           SizedBox(height: 8.h),
+//           Text(
+//             'Todos os pets estão em processo de adoção',
+//             style: TextStyle(
+//               fontSize: 14.sp,
+//               color: const Color(0xFF64748B),
+//             ),
+//             textAlign: TextAlign.center,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildSuccessDialog(String requestId) {
+//     return AlertDialog(
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.circular(16.r),
+//       ),
+//       content: Column(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Container(
+//             width: 80.w,
+//             height: 80.w,
+//             decoration: BoxDecoration(
+//               color: const Color(0xFF10B981).withOpacity(0.1),
+//               shape: BoxShape.circle,
+//             ),
+//             child: Icon(
+//               Icons.pets_rounded,
+//               color: const Color(0xFF10B981),
+//               size: 40.sp,
+//             ),
+//           )
+//               .animate(onPlay: (controller) => controller.repeat(reverse: true))
+//               .scale(
+//                 begin: const Offset(1.0, 1.0),
+//                 end: const Offset(1.1, 1.1),
+//                 duration: 1500.ms,
+//               ),
+//           SizedBox(height: 20.h),
+//           Text(
+//             'Adoção Criada!',
+//             style: TextStyle(
+//               fontSize: 22.sp,
+//               fontWeight: FontWeight.w700,
+//               color: const Color(0xFF0F172A),
+//             ),
+//           ),
+//           SizedBox(height: 8.h),
+//           Text(
+//             'Sua adoção foi publicada na lista.\nAguarde alguém escolher um dos pets!',
+//             textAlign: TextAlign.center,
+//             style: TextStyle(
+//               fontSize: 14.sp,
+//               color: const Color(0xFF64748B),
+//               height: 1.5,
+//             ),
+//           ),
+//           SizedBox(height: 20.h),
+//           Container(
+//             padding: EdgeInsets.all(12.w),
+//             decoration: BoxDecoration(
+//               color: const Color(0xFF3B82F6).withOpacity(0.1),
+//               borderRadius: BorderRadius.circular(12.r),
+//             ),
+//             child: Row(
+//               children: [
+//                 Icon(
+//                   Icons.access_time,
+//                   color: const Color(0xFF3B82F6),
+//                   size: 20.sp,
+//                 ),
+//                 SizedBox(width: 8.w),
+//                 Expanded(
+//                   child: Text(
+//                     'Expira em 5 dias se ninguém aceitar',
+//                     style: TextStyle(
+//                       fontSize: 12.sp,
+//                       color: const Color(0xFF3B82F6),
+//                       fontWeight: FontWeight.w500,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () {
+//             Navigator.pop(context); // Fechar dialog
+//             Navigator.pop(context); // Voltar para lista
+//           },
+//           child: Text(
+//             'Ver na Lista',
+//             style: TextStyle(
+//               fontSize: 14.sp,
+//               fontWeight: FontWeight.w600,
+//               color: const Color(0xFF10B981),
+//             ),
+//           ),
+//         ),
+//       ],
+//     ).animate().scale(
+//           begin: const Offset(0.8, 0.8),
+//           end: const Offset(1.0, 1.0),
+//           duration: 300.ms,
+//           curve: Curves.easeOutBack,
+//         );
+//   }
+// }
