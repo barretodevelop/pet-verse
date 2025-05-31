@@ -1,99 +1,107 @@
-// // lib/main.dart
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_database/firebase_database.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:petverse/core/services/notification_service.dart';
-// import 'package:petverse/pet_verse_app.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-
-//   // Configurações otimizadas do Firebase
-//   FirebaseFirestore.instance.settings = const Settings(
-//     persistenceEnabled: true,
-//     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-//   );
-//   FirebaseDatabase.instance.setPersistenceEnabled(true);
-
-//   // Inicializar notificações
-//   await NotificationService().initialize();
-
-//   runApp(
-//     const ProviderScope(
-//       child: PetVerseApp(),
-//     ),
-//   );
-// }
-
 import 'package:firebase_core/firebase_core.dart';
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/router/app_router.dart';
-
-import 'core/theme/app_theme.dart';
+import 'package:petverse/core/services/notification_service.dart';
+import 'package:petverse/core/theme/app_theme.dart';
+// import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
-
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
-
-  // Set preferred orientations
+  // ✅ CORRIGIDO: Configurar orientação
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
+  // ✅ CORRIGIDO: Inicializar Firebase
+  await Firebase.initializeApp(
+      // options: DefaultFirebaseOptions.currentPlatform,
+      );
+
+  // ✅ CORRIGIDO: Inicializar NotificationService
+  await NotificationService().initialize();
+
   runApp(
     const ProviderScope(
-      child: MyApp(),
+      child: PetVerseApp(),
     ),
   );
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+class DefaultFirebaseOptions {}
+
+class PetVerseApp extends ConsumerWidget {
+  const PetVerseApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(goRouterProvider);
+    // ✅ CORRIGIDO: Usar GoRouter do provider
+    final router = ref.watch(appRouterProvider);
 
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // iPhone 12 Pro design size
+      designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
-      useInheritedMediaQuery: true,
       builder: (context, child) {
         return MaterialApp.router(
-          title: 'Pet Adoption Game',
+          title: AppConstants.appName,
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+
+          // ✅ CORRIGIDO: Configuração do router
           routerConfig: router,
+
+          // Theme
+          theme: ThemeData(
+            useMaterial3: true,
+            // colorScheme: AppTheme.lightTheme(),
+            textTheme: GoogleFonts.interTextTheme(
+              Theme.of(context).textTheme,
+            ),
+            appBarTheme: AppBarTheme(
+              elevation: 0,
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+              foregroundColor: AppTheme.textPrimary,
+              titleTextStyle: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primarySoft,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+          // Builder para interceptar e customizar
           builder: (context, child) {
-            // Add error boundary and global error handling
             return MediaQuery(
               data: MediaQuery.of(context).copyWith(
                 textScaler:
-                    const TextScaler.linear(1.0), // Prevent font scaling issues
+                    const TextScaler.linear(1.0), // Evita zoom automático
               ),
-              child: child ?? const SizedBox.shrink(),
+              child: child ?? const SizedBox(),
             );
           },
         );
@@ -101,241 +109,3 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
-
-// lib/firebase_options.dart (placeholder - you'll need to generate this with FlutterFire CLI)
-class DefaultFirebaseOptions {
-  static FirebaseOptions get currentPlatform {
-    // This would normally be generated by FlutterFire CLI
-    // For now, this is a placeholder
-    throw UnsupportedError(
-      'DefaultFirebaseOptions have not been configured for this platform. '
-      'Run `flutterfire configure` to generate firebase_options.dart',
-    );
-  }
-}
-
-// pubspec.yaml dependencies
-/*
-name: pet_adoption_game
-description: A collaborative pet adoption game
-
-publish_to: 'none'
-
-version: 1.0.0+1
-
-environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.10.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
-  
-  # State Management
-  flutter_riverpod: ^2.4.9
-  
-  # Firebase
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
-  
-  # Navigation
-  go_router: ^12.1.3
-  
-  # UI & Styling
-  flutter_screenutil: ^5.9.0
-  google_fonts: ^6.1.0
-  
-  # Animations
-  flutter_animate: ^4.2.0+1
-  lottie: ^2.7.0
-  rive: ^0.12.4
-  
-  # Utilities
-  shared_preferences: ^2.2.2
-  share_plus: ^7.2.1
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.0
-
-flutter:
-  uses-material-design: true
-  
-  assets:
-    - assets/animations/
-    - assets/images/
-    - assets/icons/
-*/
-
-// README.md
-/*
-# Pet Adoption Game - Sistema de Entrada
-
-Este projeto implementa a lógica de entrada para um jogo de adoção colaborativa de pets usando Flutter/Dart.
-
-## 🚀 Características Implementadas
-
-### ✅ Funcionalidades Principais
-- **Home Page**: Verificação automática se usuário tem pet
-- **Need Adoption Page**: Explicação da adoção colaborativa com 3 opções de ação
-- **Create Request Page**: Seleção de até 3 pets e criação de pedido
-- **Public Adoptions Page**: Lista de pedidos públicos com filtros
-- **Adoption Details Page**: Detalhes do pedido e aceitação
-- **Pet Main Page**: Tela principal do pet (placeholder)
-
-### 🎨 Design System
-- **Cores suaves**: Paleta com tons pastéis e gradientes elegantes
-- **Animações**: Micro-interações com Flutter Animate e Lottie
-- **Typography**: Google Fonts com hierarquia clara
-- **Layout**: Responsivo com ScreenUtil
-
-### 🏗️ Arquitetura
-- **Clean Architecture**: Separação clara de responsabilidades
-- **Riverpod**: State management reativo
-- **Firebase**: Backend integrado (Firestore + Auth)
-- **GoRouter**: Navegação declarativa
-
-### 📱 UX Features
-- Loading states com shimmer effects
-- Error handling gracioso
-- Haptic feedback
-- Pull-to-refresh
-- Empty states ilustrados
-- Progress indicators
-- Success/error snackbars
-
-## 🛠️ Como usar
-
-### 1. Configurar Firebase
-```bash
-flutterfire configure
-```
-
-### 2. Instalar dependências
-```bash
-flutter pub get
-```
-
-### 3. Executar
-```bash
-flutter run
-```
-
-## 📁 Estrutura do Projeto
-
-```
-lib/
-├── core/
-│   ├── router/app_router.dart          # Configuração de rotas
-│   ├── theme/app_theme.dart            # Sistema de design
-│   ├── constants/app_constants.dart    # Constantes globais
-│   └── utils/app_utils.dart            # Utilitários
-├── features/
-│   ├── home/
-│   │   └── presentation/pages/home_page.dart
-│   ├── adoption/
-│   │   ├── presentation/pages/
-│   │   └── presentation/widgets/
-│   └── pet/
-│       └── presentation/pages/pet_main_page.dart
-├── shared/
-│   ├── models/                         # Modelos de dados
-│   ├── providers/                      # Providers Riverpod
-│   └── services/                       # Services Firebase
-└── main.dart
-```
-
-## 🎯 Fluxo Implementado
-
-1. **Login** → **Home Page** (verificação automática)
-2. Se tem pet → **Pet Main Page**
-3. Se não tem pet → **Need Adoption Page**
-4. Três opções:
-   - **Explorar** → Public Adoptions List
-   - **Criar Pedido** → Create Request Flow
-   - **Compartilhar** → Share functionality
-
-## 🔥 Firebase Schema
-
-### Users Collection
-```javascript
-{
-  email: string,
-  name: string,
-  avatarUrl?: string,
-  currentPetId?: string,
-  petIds: string[],
-  createdAt: timestamp,
-  updatedAt: timestamp
-}
-```
-
-### Pets Collection
-```javascript
-{
-  name: string,
-  type: string,
-  breed: string,
-  imageUrl: string,
-  description: string,
-  happiness: number,
-  health: number,
-  energy: number,
-  ownerIds: string[],
-  primaryOwnerId: string,
-  createdAt: timestamp,
-  isAvailable: boolean
-}
-```
-
-### Adoption Requests Collection
-```javascript
-{
-  requesterId: string,
-  requesterName: string,
-  selectedPetIds: string[],
-  acceptedPetId?: string,
-  coParentId?: string,
-  coParentName?: string,
-  status: 'pending' | 'accepted' | 'expired' | 'cancelled',
-  createdAt: timestamp,
-  expiresAt: timestamp,
-  shareLink?: string
-}
-```
-
-## 🎨 Animações Implementadas
-
-- **Entry animations**: Fade, slide, scale
-- **Loading states**: Lottie animations
-- **Micro-interactions**: Button press feedback
-- **List animations**: Staggered entrance
-- **Success states**: Celebration animations
-- **Shimmer effects**: Loading placeholders
-
-## 📦 Pacotes Utilizados
-
-- `flutter_riverpod`: State management
-- `go_router`: Navegação
-- `flutter_screenutil`: Responsividade
-- `google_fonts`: Typography
-- `flutter_animate`: Animações
-- `lottie`: Animações Lottie
-- `share_plus`: Compartilhamento
-- `shared_preferences`: Persistência local
-- `firebase_core/firestore/auth`: Backend
-
-## 🚧 Próximos Passos
-
-1. Implementar tela de detalhes de adoção completa
-2. Adicionar notificações push
-3. Implementar sistema de chat entre co-parents
-4. Adicionar sistema de avaliações
-5. Implementar gamificação completa do pet
-
----
-
-**Desenvolvido com 💜 usando Flutter + Firebase + Riverpod**
-*/

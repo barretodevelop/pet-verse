@@ -1,8 +1,7 @@
 // lib/shared/providers/pet_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/core/model/pet_model.dart';
-
-import '../../core/services/pet_service.dart';
+import 'package:petverse/core/services/pet_service.dart';
 
 // Provider para pets disponíveis
 final availablePetsProvider = FutureProvider<List<PetModel>>((ref) async {

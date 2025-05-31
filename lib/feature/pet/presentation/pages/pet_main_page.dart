@@ -130,10 +130,10 @@ class PetMainPage extends ConsumerWidget {
             style: AppTheme.bodyMedium,
           ),
           SizedBox(height: 32.h),
-          ElevatedButton(
-            onPressed: () => context.go('/need-adoption'),
-            child: const Text('Adotar um Pet'),
-          ),
+          // ElevatedButton(
+          //   onPressed: () => context.go('/need-adoption'),
+          //   child: const Text('Adotar um Pet'),
+          // ),
         ],
       ),
     );

@@ -133,7 +133,7 @@ class AuthenticationService {
       final userData = {
         'uid': user.uid,
         'email': user.email,
-        'displayName': displayName,
+        'displayName': user.displayName,
         'photoURL': user.photoURL,
         'createdAt': FieldValue.serverTimestamp(),
         'lastLogin': FieldValue.serverTimestamp(),

@@ -1,11 +1,12 @@
-// lib/feature/splash/presentation/splash_screen.dart
+// lib/feature/splash/presentation/splash_screen.dart - CORRIGIDO
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/feature/auth/providers/authentication_provider.dart';
+import 'package:petverse/feature/auth/state/authentication_state.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -25,7 +26,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
     _setupAnimations();
-    // _initializeApp();
+    _initializeApp(); // ✅ CORRIGIDO: Chamando inicialização
   }
 
   void _setupAnimations() {
@@ -64,23 +65,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  // Future<void> _initializeApp() async {
-  //   try {
-  //      final authState = ref.watch(authenticationNotifierProvider);
-  //      final isAuthenticated = authState.isAuthenticated;
+  // ✅ CORRIGIDO: Lógica de inicialização
+  Future<void> _initializeApp() async {
+    try {
+      print('🚀 Iniciando app...');
 
-  //     // Simulate initialization time (minimum splash duration)
-  //     await Future.delayed(const Duration(milliseconds: 2000));
+      // Esperar um mínimo para mostrar a splash
+      await Future.delayed(const Duration(milliseconds: 2500));
 
-  //     if (mounted) {
-  //       context.go('/');
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       _showErrorDialog(e.toString());
-  //     }
-  //   }
-  // }
+      if (!mounted) return;
+
+      // Verificar estado de autenticação
+      final authState = ref.read(authenticationNotifierProvider);
+
+      print(
+          '🔍 Estado de auth: isAuthenticated=${authState.isAuthenticated}, isLoading=${authState.isLoading}');
+
+      if (authState.isAuthenticated) {
+        print('✅ Usuário logado, indo para home');
+        context.go('/home');
+      } else {
+        print('❌ Usuário não logado, indo para login');
+        context.go('/login');
+      }
+    } catch (e) {
+      print('❌ Erro na inicialização: $e');
+      if (mounted) {
+        _showErrorDialog(e.toString());
+      }
+    }
+  }
 
   void _showErrorDialog(String error) {
     showDialog(
@@ -99,7 +113,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // _initializeApp(); // Retry
+              _initializeApp(); // Retry
             },
             child: const Text('Tentar Novamente'),
           ),
@@ -117,6 +131,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // ✅ CORRIGIDO: Listener para mudanças de auth
+    ref.listen<AuthenticationState>(
+      authenticationNotifierProvider,
+      (previous, current) {
+        print('🎯 Auth state mudou: ${current.isAuthenticated}');
+
+        // Se mudou de não autenticado para autenticado
+        if (previous?.isAuthenticated == false && current.isAuthenticated) {
+          print('✅ Login detectado, navegando para home');
+          context.go('/home');
+        }
+
+        // Se mudou de autenticado para não autenticado
+        if (previous?.isAuthenticated == true && !current.isAuthenticated) {
+          print('❌ Logout detectado, navegando para login');
+          context.go('/login');
+        }
+      },
+    );
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -216,7 +250,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-// Custom Loading Animation
+// Loading Animation (mantém a mesma implementação)
 class PulsingDots extends StatefulWidget {
   const PulsingDots({super.key});
 
@@ -286,99 +320,6 @@ class _PulsingDotsState extends State<PulsingDots>
           },
         );
       }),
-    );
-  }
-}
-
-// Alternative Splash with Lottie Animation (if using Lottie)
-class AnimatedSplashScreen extends ConsumerStatefulWidget {
-  const AnimatedSplashScreen({super.key});
-
-  @override
-  ConsumerState<AnimatedSplashScreen> createState() =>
-      _AnimatedSplashScreenState();
-}
-
-class _AnimatedSplashScreenState extends ConsumerState<AnimatedSplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _navigateToNextScreen();
-  }
-
-  Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
-
-    if (mounted) {
-      context.go('/');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Lottie Animation (uncomment if using)
-              // Lottie.asset(
-              //   'assets/lottie/pet_animation.json',
-              //   width: 200,
-              //   height: 200,
-              //   fit: BoxFit.contain,
-              // ),
-
-              // Fallback Icon Animation
-              const Icon(
-                Icons.pets,
-                size: 100,
-                color: AppTheme.primaryColor,
-              )
-                  .animate()
-                  .scale(
-                    duration: 1000.ms,
-                    curve: Curves.elasticOut,
-                  )
-                  .then()
-                  .shimmer(
-                    duration: 2000.ms,
-                    color: AppTheme.secondaryColor,
-                  ),
-
-              const SizedBox(height: 32),
-
-              Text(
-                AppConstants.appName,
-                style: GoogleFonts.nunito(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primaryColor,
-                ),
-              )
-                  .animate()
-                  .fadeIn(delay: 500.ms, duration: 800.ms)
-                  .slideY(begin: 0.5, end: 0),
-
-              const SizedBox(height: 16),
-
-              Text(
-                AppConstants.appTagline,
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                ),
-                textAlign: TextAlign.center,
-              ).animate().fadeIn(delay: 800.ms, duration: 600.ms),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
