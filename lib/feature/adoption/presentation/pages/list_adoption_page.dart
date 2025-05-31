@@ -7,7 +7,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart'; // NEW: Import Firebase models
-import 'package:petverse/core/providers/firebase_adoption_provider.dart'; // NEW: Import Firebase provider
+import 'package:petverse/core/providers/firebase_adoption_provider.dart';
+import 'package:petverse/feature/auth/providers/authentication_provider.dart'; // NEW: Import Firebase provider
 
 class AdoptionListPage extends ConsumerStatefulWidget {
   // UPDATE: ConsumerStatefulWidget
@@ -700,7 +701,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: () => _adoptPet(pet, adoption),
+                    onPressed: () => _adoptPet(
+                      adoption,
+                      pet.id,
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -1160,7 +1164,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: () => _adoptPet(pet, adoption),
+                    onPressed: () => _adoptPet(adoption, pet.id),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -1198,32 +1202,90 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  void _adoptPet(
-      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) async {
-    HapticFeedback.mediumImpact();
-    Navigator.pop(context); // Fechar modal
+  Widget _buildActionButtons(
+    CollaborativeAdoptionRequest request,
+    List<FirebasePetModel> pets,
+    String? currentUserId,
+  ) {
+    // ⭐ VERIFICAR se é própria solicitação
+    final isOwnRequest = request.requesterId == currentUserId;
 
-    // NEW: Implementar adoção via Firebase
-    try {
-      // TODO: Pegar dados do usuário atual
-      await ref
-          .read(firebaseAdoptionNotifierProvider.notifier)
-          .acceptAdoptionRequest(
-            requestId: adoption.id,
-            petId: pet.id,
-            coParentId: 'current_user_id', // TODO: pegar do auth
-            coParentDisplayName: 'Usuário Atual', // TODO: pegar do auth
-            coParentCodename: 'Guardian Misterioso', // TODO: gerar
-          );
-
-      _showAdoptionSuccessDialog(pet, adoption);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao processar adoção: $e'),
-          backgroundColor: Colors.red,
+    if (isOwnRequest) {
+      // Mostrar que é própria solicitação
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue[200]!),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info, color: Colors.blue[600]),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Esta é sua solicitação',
+                style: TextStyle(color: Colors.blue[700]),
+              ),
+            ),
+          ],
         ),
       );
+    }
+
+    // Botões normais para outras solicitações
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            // onPressed: () => _showInterest(request.id),
+            onPressed: () {},
+            child: const Text('Interessado'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: ElevatedButton(
+            // onPressed: () => _showAdoptionDialog(request, pets),
+            onPressed: () {},
+            child: const Text('Adotar Pet'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _adoptPet(
+      CollaborativeAdoptionRequest request, String petId) async {
+    try {
+      final currentUser = ref.read(authenticationNotifierProvider);
+      if (currentUser.user?.uid == null || currentUser.userModel == null) {
+        throw Exception('Usuário não autenticado');
+      }
+
+      final adoptionNotifier =
+          ref.read(firebaseAdoptionNotifierProvider.notifier);
+
+      // ⭐ USAR novo método com navegação
+      await adoptionNotifier.acceptAdoptionRequestWithNavigation(
+        context: context,
+        requestId: request.id,
+        petId: petId,
+        coParentId: currentUser.user!.uid,
+        coParentDisplayName: currentUser.userModel!.displayName ?? 'Usuário',
+        coParentCodename: 'Guardião Colaborativo',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -2265,3 +2327,18 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 }
+//AdoptionRequestStatus.pending
+
+
+
+// abre app -- > navega para  
+//    HOME (faz validacao do que vai exibi )
+//   se tem solicitacao -- > _buildActiveRequestCard
+//    se tem pet -->_buildPetStatusCard 
+//    sem nao tem nada --> AdoptionOptionsWidget 
+//       --> opção escolher na lista ao aceitar um solicitacao 
+//           --> informar da aceitação 
+//             --navegar para a pasta Home novamente nesse momento ja deve exitir o PET e caira na regra de exibir   _buildPetStatusCard
+
+// fazer a analise no codigo para esse fluxo e ajustar da melhor forma 
+// essa foi a logica que pensei se tiver uma forma mais limpa de fazer isso fazer seguir com as alterações 

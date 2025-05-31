@@ -1,26 +1,50 @@
 // lib/core/providers/firebase_adoption_provider.dart
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/services/firebase_adoption_service.dart';
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
+
+final publicAdoptionRequestsFirebaseProvider =
+    FutureProvider<List<CollaborativeAdoptionRequest>>((ref) async {
+  final authState = ref.watch(authenticationNotifierProvider);
+  final currentUserId = authState.user?.uid;
+
+  final allRequests = await FirebaseAdoptionService.getPublicAdoptionRequests();
+
+  // ⭐ FILTRAR próprias solicitações
+  if (currentUserId != null) {
+    return allRequests
+        .where((request) => request.requesterId != currentUserId)
+        .toList();
+  }
+
+  return allRequests;
+});
+
+final watchPublicAdoptionRequestsFirebaseProvider =
+    StreamProvider<List<CollaborativeAdoptionRequest>>((ref) {
+  final authState = ref.watch(authenticationNotifierProvider);
+  final currentUserId = authState.user?.uid;
+
+  return FirebaseAdoptionService.watchPublicAdoptionRequests()
+      .map((allRequests) {
+    // ⭐ FILTRAR próprias solicitações
+    if (currentUserId != null) {
+      return allRequests
+          .where((request) => request.requesterId != currentUserId)
+          .toList();
+    }
+    return allRequests;
+  });
+});
 
 // NEW: Provider para pets colaborativos disponíveis
 final availableCollaborativePetsProvider =
     FutureProvider<List<FirebasePetModel>>((ref) async {
   return await FirebaseAdoptionService.getAvailablePetsForCollaboration();
-});
-
-// NEW: Provider para pedidos públicos de adoção (Firebase)
-final publicAdoptionRequestsFirebaseProvider =
-    FutureProvider<List<CollaborativeAdoptionRequest>>((ref) async {
-  return await FirebaseAdoptionService.getPublicAdoptionRequests();
-});
-
-// NEW: Stream provider para pedidos em tempo real
-final watchPublicAdoptionRequestsFirebaseProvider =
-    StreamProvider<List<CollaborativeAdoptionRequest>>((ref) {
-  return FirebaseAdoptionService.watchPublicAdoptionRequests();
 });
 
 // UPDATE: State para pets selecionados na criação de adoção
@@ -156,6 +180,54 @@ final filteredAdoptionRequestsProvider =
 // NEW: Notifier para ações de adoção Firebase
 class FirebaseAdoptionNotifier extends StateNotifier<AsyncValue<void>> {
   FirebaseAdoptionNotifier() : super(const AsyncValue.data(null));
+
+  Future<void> acceptAdoptionRequestWithNavigation({
+    required BuildContext context,
+    required String requestId,
+    required String petId,
+    required String coParentId,
+    required String coParentDisplayName,
+    required String coParentCodename,
+  }) async {
+    try {
+      state = const AsyncValue.loading();
+
+      // 1. Aceitar no Firebase
+      await FirebaseAdoptionService.acceptAdoptionRequest(
+        requestId: requestId,
+        petId: petId,
+        coParentId: coParentId,
+        coParentDisplayName: coParentDisplayName,
+        coParentCodename: coParentCodename,
+      );
+
+      state = const AsyncValue.data(null);
+
+      // 2. Mostrar sucesso
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Adoção realizada com sucesso! 🎉'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        // 3. Navegar para home
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (context.mounted) {
+          context.go('/home');
+        }
+      }
+
+      // 4. Atualizar providers
+      // ref.invalidate(authenticationNotifierProvider);
+      // ref.invalidate(publicAdoptionRequestsFirebaseProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
 
   Future<String> createCollaborativeAdoptionRequest({
     required String requesterId,
