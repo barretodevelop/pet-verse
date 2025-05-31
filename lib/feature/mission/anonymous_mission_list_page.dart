@@ -7,7 +7,7 @@ import 'package:flutter/services.dart'; // Para HapticFeedback
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
-import 'package:petverse/feature/adoption/presentation/pages/MissionDetailsPage.dart';
+import 'package:petverse/feature/mission/MissionDetailsPage.dart';
 
 class AnonymousAdoptionsListPage extends StatefulWidget {
   const AnonymousAdoptionsListPage({super.key});
