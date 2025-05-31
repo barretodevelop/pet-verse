@@ -1,17 +1,16 @@
 // lib/feature/adoption/presentation/pages/create_adoption_page.dart
-// UPDATE: Conectar com Firebase e adicionar validações
+// ATUALIZADO: Usa UnifiedUserStateProvider e AdoptionFlowService para fluxo robusto
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
-import 'package:petverse/core/providers/active_request_provider.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
+import 'package:petverse/core/providers/unified_user_state_provider.dart';
+import 'package:petverse/core/services/adoption_flow_service.dart';
 import 'package:petverse/core/utils/app_utils.dart';
-import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 
 class CreateAdoptionPage extends ConsumerStatefulWidget {
   const CreateAdoptionPage({super.key});
@@ -23,7 +22,6 @@ class CreateAdoptionPage extends ConsumerStatefulWidget {
 class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
-  bool _isCreating = false;
 
   @override
   void initState() {
@@ -48,124 +46,10 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
 
   Future<void> _initializeFirebaseData() async {
     try {
-      // Aguardar inicialização dos dados mock se necessário
       await ref.read(initializeMockDataProvider.future);
     } catch (e) {
       print('Erro ao inicializar dados: $e');
-      // Mesmo com erro, continuar - pode ser que os dados já existam
     }
-  }
-
-  Future<void> _checkActiveRequest() async {
-    try {
-      final userRequest = await ref.read(userActiveRequestProvider.future);
-      if (userRequest != null && mounted) {
-        _showActiveRequestDialog(userRequest);
-      }
-    } catch (e) {
-      print('Erro ao verificar solicitação ativa: $e');
-    }
-  }
-
-  void _showActiveRequestDialog(CollaborativeAdoptionRequest activeRequest) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: const Color(0xFF3B82F6),
-              size: 48.sp,
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Solicitação Ativa',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Você já possui uma solicitação de adoção ativa. '
-              'Aguarde ela expirar ou ser aceita para criar uma nova.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
-                height: 1.5,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Expira em: ${activeRequest.daysRemaining.toStringAsFixed(1)} dias',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF3B82F6),
-                    ),
-                  ),
-                  Text(
-                    'ID: ${activeRequest.id.substring(0, 8).toUpperCase()}',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: const Color(0xFF64748B),
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.go('/list-adoption');
-            },
-            child: Text(
-              'Ver Lista',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            child: Text(
-              'Entendi',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _togglePetSelection(FirebasePetModel pet) {
@@ -174,66 +58,38 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
   }
 
   Future<void> _createAdoption() async {
+    // NOVO: Verificar se pode criar usando provider unificado
+    final canCreate = ref.read(canCreateRequestProvider);
+    if (!canCreate) {
+      AppUtils.showErrorSnackbar(
+          context, 'Não é possível criar solicitação no momento');
+      return;
+    }
+
     final selectedPets = ref.read(selectedCollaborativePetsProvider);
-    final authState = ref.read(authenticationNotifierProvider);
-    final user = authState.userModel;
+    final unifiedState = ref.read(unifiedUserStateProvider);
+    final user = unifiedState.user;
 
     if (selectedPets.length != 3 || user == null) {
       AppUtils.showErrorSnackbar(context, 'Selecione exatamente 3 pets');
       return;
     }
 
-    setState(() {
-      _isCreating = true;
-    });
+    // NOVO: Usar AdoptionFlowService para execução robusta
+    final requestId = await AdoptionFlowService.executeCreateRequestFlow(
+      context: context,
+      ref: ref,
+      selectedPetIds: selectedPets,
+      codename: _generateCodename(user),
+      colorTheme: _generateColorTheme(user),
+      codedMessage: _generateCodedMessage(user),
+      personalityTags: _generatePersonalityTags(user),
+      region: _generateRegion(user),
+    );
 
-    HapticFeedback.mediumImpact();
-
-    try {
-      // Gerar dados do usuário anônimo
-      final codename = _generateCodename(user);
-      final colorTheme = _generateColorTheme(user);
-      final codedMessage = _generateCodedMessage(user);
-      final personalityTags = _generatePersonalityTags(user);
-      final region = _generateRegion(user);
-
-      final requestId = await ref
-          .read(firebaseAdoptionNotifierProvider.notifier)
-          .createCollaborativeAdoptionRequest(
-            requesterId: user.uid,
-            requesterDisplayName: user.displayName ?? 'Usuário',
-            requesterCodename: codename,
-            requesterColorTheme: colorTheme,
-            requesterLevel: user.level,
-            selectedPetIds: selectedPets,
-            codedMessage: codedMessage,
-            personalityTags: personalityTags,
-            region: region,
-          );
-
-      if (mounted) {
-        setState(() {
-          _isCreating = false;
-        });
-
-        // Limpar seleção
-        ref.read(selectedCollaborativePetsProvider.notifier).clear();
-
-        // Invalidar providers para atualizar listas
-        ref.invalidate(userActiveRequestProvider);
-        ref.invalidate(publicAdoptionRequestsFirebaseProvider);
-
-        // Mostrar sucesso
-        _showSuccessDialog(requestId);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isCreating = false;
-        });
-
-        AppUtils.showErrorSnackbar(context, 'Erro ao criar adoção: $e');
-      }
+    if (requestId != null && mounted) {
+      // Limpar seleção apenas se sucesso
+      ref.read(selectedCollaborativePetsProvider.notifier).clear();
     }
   }
 
@@ -291,7 +147,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       'compassivo',
     ];
 
-    // Selecionar 3 tags baseadas no usuário
     final selectedTags = <String>[];
     final baseIndex = user.id.hashCode % allTags.length;
 
@@ -316,127 +171,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     return regions[user.id.hashCode % regions.length];
   }
 
-  void _showSuccessDialog(String requestId) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80.w,
-              height: 80.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.pets_rounded,
-                color: const Color(0xFF10B981),
-                size: 40.sp,
-              ),
-            )
-                .animate(
-                    onPlay: (controller) => controller.repeat(reverse: true))
-                .scale(
-                  begin: const Offset(1.0, 1.0),
-                  end: const Offset(1.1, 1.1),
-                  duration: 1500.ms,
-                ),
-            SizedBox(height: 20.h),
-            Text(
-              'Adoção Criada!',
-              style: TextStyle(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Sua adoção foi publicada na lista.\nAguarde alguém escolher um dos pets!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
-                height: 1.5,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    color: const Color(0xFF3B82F6),
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Expira em 5 dias se ninguém aceitar',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.go('/list-adoption');
-            },
-            child: Text(
-              'Ver na Lista',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF10B981),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-            ),
-            child: Text(
-              'Voltar ao Início',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ).animate().scale(
-            begin: const Offset(0.8, 0.8),
-            end: const Offset(1.0, 1.0),
-            duration: 300.ms,
-            curve: Curves.easeOutBack,
-          ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -448,10 +182,10 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFF0F8FF), // Alice blue
-              Color(0xFFFFFFFF), // Branco puro
-              Color(0xFFF0F8FF), // Alice blue
-              Color(0xFFFAF8FF), // Lavanda muito suave
+              Color(0xFFF0F8FF),
+              Color(0xFFFFFFFF),
+              Color(0xFFF0F8FF),
+              Color(0xFFFAF8FF),
             ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
@@ -499,7 +233,14 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
   }
 
   Widget _buildContent() {
-    // CORRIGIDO: Verificar inicialização primeiro
+    // NOVO: Verificar pré-condições usando provider unificado
+    final canCreate = ref.watch(canCreateRequestProvider);
+    final isInTransition = ref.watch(isInTransitionProvider);
+
+    if (!canCreate && !isInTransition) {
+      return _buildCannotCreateState();
+    }
+
     final initializationAsync = ref.watch(initializeMockDataProvider);
 
     return initializationAsync.when(
@@ -507,28 +248,72 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         if (!isInitialized) {
           return _buildInitializationError();
         }
-
-        // Depois verificar solicitação ativa
-        final activeRequestAsync = ref.watch(userActiveRequestProvider);
-
-        return activeRequestAsync.when(
-          data: (activeRequest) {
-            if (activeRequest != null) {
-              // Mostrar que já tem solicitação ativa, mas não bloquear a tela
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _showActiveRequestDialog(activeRequest);
-              });
-            }
-
-            // Mostrar a interface normal
-            return _buildMainContent();
-          },
-          loading: () => _buildLoadingState(),
-          error: (_, __) => _buildMainContent(), // Continuar mesmo com erro
-        );
+        return _buildMainContent();
       },
       loading: () => _buildLoadingState(),
       error: (error, __) => _buildInitializationError(),
+    );
+  }
+
+  Widget _buildCannotCreateState() {
+    final unifiedState = ref.watch(unifiedUserStateProvider);
+    String message;
+    String action;
+
+    if (!unifiedState.isAuthenticated) {
+      message = 'Você precisa estar logado para criar uma solicitação';
+      action = 'Fazer Login';
+    } else if (unifiedState.hasActiveRequest) {
+      message = 'Você já possui uma solicitação ativa';
+      action = 'Ver Solicitação';
+    } else if (unifiedState.hasPet) {
+      message = 'Você já possui um pet';
+      action = 'Ver Pet';
+    } else {
+      message = 'Não é possível criar solicitação no momento';
+      action = 'Voltar';
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.block,
+            size: 80.sp,
+            color: const Color(0xFFEF4444),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Ação Bloqueada',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: Text(action),
+          ),
+        ],
+      ),
     );
   }
 
@@ -544,11 +329,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
 
         return Column(
           children: [
-            // Preview dos pets selecionados
             if (selectedPets.isNotEmpty)
               _buildSelectedPetsPreview(pets, selectedPets),
-
-            // Conteúdo scrollável
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(20.w),
@@ -906,7 +688,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Pet photo com seleção
             Stack(
               children: [
                 Container(
@@ -952,9 +733,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   ),
               ],
             ),
-
             SizedBox(height: 8.h),
-
             Text(
               pet.name,
               style: TextStyle(
@@ -965,7 +744,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
             Text(
               '${pet.type} • ${pet.age}',
               style: TextStyle(
@@ -975,10 +753,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
             SizedBox(height: 6.h),
-
-            // Traits principais
             if (pet.traits.isNotEmpty)
               Flexible(
                 child: Wrap(
@@ -1011,7 +786,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   }).toList(),
                 ),
               ),
-
             if (!canSelect && !isSelected)
               Padding(
                 padding: EdgeInsets.only(top: 4.h),
@@ -1114,7 +888,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   ),
                 );
               }),
-              // Slots vazios
               ...List.generate(3 - selectedPets.length, (index) {
                 return Expanded(
                   child: Container(
@@ -1171,6 +944,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
   Widget _buildBottomBar() {
     final selectedPets = ref.watch(selectedCollaborativePetsProvider);
     final canCreate = selectedPets.length == 3;
+    final isInTransition = ref.watch(isInTransitionProvider);
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -1187,7 +961,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: SafeArea(
         child: Row(
           children: [
-            // Contador
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1214,24 +987,23 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                 ],
               ),
             ),
-
             SizedBox(width: 16.w),
-
-            // Botão criar
             GestureDetector(
-              onTap: canCreate && !_isCreating ? _createAdoption : null,
+              onTap: canCreate && !isInTransition ? _createAdoption : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                 decoration: BoxDecoration(
-                  gradient: canCreate
+                  gradient: canCreate && !isInTransition
                       ? const LinearGradient(
                           colors: [Color(0xFF10B981), Color(0xFF059669)],
                         )
                       : null,
-                  color: canCreate ? null : const Color(0xFFE2E8F0),
+                  color: canCreate && !isInTransition
+                      ? null
+                      : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: canCreate
+                  boxShadow: canCreate && !isInTransition
                       ? [
                           BoxShadow(
                             color: const Color(0xFF10B981).withOpacity(0.3),
@@ -1244,7 +1016,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_isCreating) ...[
+                    if (isInTransition) ...[
                       SizedBox(
                         width: 16.w,
                         height: 16.w,
@@ -1264,12 +1036,13 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                       SizedBox(width: 8.w),
                     ],
                     Text(
-                      _isCreating ? 'Criando...' : 'Criar Adoção',
+                      isInTransition ? 'Criando...' : 'Criar Adoção',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
-                        color:
-                            canCreate ? Colors.white : const Color(0xFF94A3B8),
+                        color: canCreate && !isInTransition
+                            ? Colors.white
+                            : const Color(0xFF94A3B8),
                       ),
                     ),
                   ],

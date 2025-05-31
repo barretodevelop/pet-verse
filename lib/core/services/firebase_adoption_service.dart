@@ -662,3 +662,13 @@ class FirebaseAdoptionService {
     });
   }
 }
+
+
+
+// erro ao solicitar adocao e cancelar e tentar novamente nao permite dizedo que ja tenho , porem nao existe mais solicitacao pendindg so cancelameda parece erro de atualizacao de stado
+// a tela esta refheshando de tempo em tempo evoltando pra tela de adote um pet apos ter ido para a pagina de criacao ou a tela de aguardando sempre refesh 
+// snack bar de aviso demora muito pra sair da tela
+
+// esta gravando o id do usuario e deveria ser  o uid
+
+// deveria ter chamado o provider pra criar o pet 

@@ -1,27 +1,25 @@
-// lib/feature/adoption/presentation/pages/adoption_list_page.dart
-// UPDATE: Conectar com FirebaseAdoptionService
+// lib/feature/adoption/presentation/pages/list_adoption_page.dart
+// ATUALIZADO: Usa UnifiedUserStateProvider e AdoptionFlowService para fluxo robusto
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:petverse/core/model/firebase_pet_model.dart'; // NEW: Import Firebase models
+import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
-import 'package:petverse/feature/auth/providers/authentication_provider.dart'; // NEW: Import Firebase provider
+import 'package:petverse/core/providers/unified_user_state_provider.dart';
+import 'package:petverse/core/services/adoption_flow_service.dart';
 
 class AdoptionListPage extends ConsumerStatefulWidget {
-  // UPDATE: ConsumerStatefulWidget
   const AdoptionListPage({super.key});
 
   @override
-  ConsumerState<AdoptionListPage> createState() =>
-      _AdoptionListPageState(); // UPDATE: ConsumerState
+  ConsumerState<AdoptionListPage> createState() => _AdoptionListPageState();
 }
 
 class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     with TickerProviderStateMixin {
-  // UPDATE: Remover variáveis locais que agora vêm do Firebase
   bool isLoading = true;
   String selectedFilter = 'Todas';
 
@@ -46,7 +44,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
     _pulseController.repeat(reverse: true);
 
-    // NEW: Inicializar dados mock no Firebase
     _initializeFirebaseData();
   }
 
@@ -56,7 +53,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     super.dispose();
   }
 
-  // NEW: Inicializar dados do Firebase
   Future<void> _initializeFirebaseData() async {
     await ref.read(initializeMockDataProvider.future);
     setState(() {
@@ -64,7 +60,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     });
   }
 
-  // UPDATE: Filtrar adoptions usando dados do Firebase
   List<CollaborativeAdoptionRequest> _getFilteredAdoptions(
       List<CollaborativeAdoptionRequest> adoptions) {
     switch (selectedFilter) {
@@ -85,17 +80,13 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     }
   }
 
-  // NEW: Helper para verificar traits nos pets
   bool _hasTraitInPets(CollaborativeAdoptionRequest adoption, String trait) {
-    // TODO: Implementar verificação de traits quando tiver acesso aos pets
-    // Por enquanto, retornar baseado em alguma lógica
     return adoption.requesterLevel > 10; // Placeholder
   }
 
   void _onAdoptionTap(CollaborativeAdoptionRequest adoption) {
     HapticFeedback.lightImpact();
 
-    // NEW: Incrementar views no Firebase
     ref
         .read(firebaseAdoptionNotifierProvider.notifier)
         .incrementViews(adoption.id);
@@ -125,7 +116,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildPetDetailsModal(
       String petId, CollaborativeAdoptionRequest adoption) {
-    // UPDATE: Usar FutureBuilder para carregar dados do pet do Firebase
     return FutureBuilder<List<FirebasePetModel>>(
       future: ref.read(petsFromRequestProvider(adoption.id).future),
       builder: (context, snapshot) {
@@ -168,12 +158,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  // Widget otimizado e compacto para detalhes do pet
   Widget _buildPetDetailsContent(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
-      height: MediaQuery.of(context).size.height *
-          0.75, // Reduzido de 0.85 para 0.75
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -185,7 +173,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         children: [
           // Handle bar
           Container(
-            margin: EdgeInsets.only(top: 8.h), // Reduzido de 12.h
+            margin: EdgeInsets.only(top: 8.h),
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
@@ -196,15 +184,14 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
           // Header compacto
           Padding(
-            padding:
-                EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 8.h), // Reduzido padding
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 8.h),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     'Detalhes do Pet',
                     style: TextStyle(
-                      fontSize: 18.sp, // Reduzido de 20.sp
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F172A),
                     ),
@@ -215,7 +202,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   icon: Icon(
                     Icons.close,
                     color: const Color(0xFF64748B),
-                    size: 22.sp, // Reduzido de 24.sp
+                    size: 22.sp,
                   ),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(
@@ -227,39 +214,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ),
           ),
 
-          // Content sem scroll - layout fixo
+          // Content
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Pet info compacto (foto + informações lado a lado)
                   _buildCompactPetHeader(pet, adoption),
-
-                  SizedBox(height: 16.h), // Reduzido de 24.h
-
-                  // Stats e traits em uma linha
+                  SizedBox(height: 16.h),
                   _buildStatsAndTraits(pet, adoption),
-
                   SizedBox(height: 16.h),
-
-                  // Descrição condensada
-                  // if (pet.description != null && pet.description!.isNotEmpty)
-                  //   _buildCompactDescription(pet),
-
-                  SizedBox(height: 16.h),
-
-                  // Info do guardião
                   _buildCompactAdopterInfo(adoption),
-
-                  const Spacer(), // Preenche espaço restante
+                  const Spacer(),
                 ],
               ),
             ),
           ),
 
-          // Bottom action compacto
+          // Bottom action
           _buildCompactBottomAction(pet, adoption),
         ],
       ),
@@ -268,14 +241,12 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         .slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutCubic);
   }
 
-// Header compacto com foto e info lado a lado
   Widget _buildCompactPetHeader(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Row(
       children: [
-        // Foto menor
         Container(
-          width: 80.w, // Reduzido de 200.w
+          width: 80.w,
           height: 80.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -295,26 +266,22 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           child: Center(
             child: Text(
               pet.photo,
-              style: TextStyle(fontSize: 36.sp), // Reduzido de 60.sp
+              style: TextStyle(fontSize: 36.sp),
             ),
           ),
         ),
-
         SizedBox(width: 16.w),
-
-        // Informações do pet
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nome e tipo
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       pet.name,
                       style: TextStyle(
-                        fontSize: 22.sp, // Reduzido de 28.sp
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
                       ),
@@ -339,10 +306,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   ),
                 ],
               ),
-
               SizedBox(height: 4.h),
-
-              // Raça e idade
               Text(
                 '${pet.breed} • ${pet.age}',
                 style: TextStyle(
@@ -350,10 +314,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   color: const Color(0xFF64748B),
                 ),
               ),
-
               SizedBox(height: 8.h),
-
-              // Status do pet
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -376,7 +337,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// Stats e traits em layout compacto
   Widget _buildStatsAndTraits(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
@@ -392,7 +352,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Stats em grid 2x2
           Row(
             children: [
               Expanded(child: _buildCompactStat('❤️', 'Saúde', pet.health)),
@@ -409,8 +368,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               Expanded(child: _buildCompactStat('✨', 'Higiene', pet.hygiene)),
             ],
           ),
-
-          // Traits se existirem
           if (pet.traits.isNotEmpty) ...[
             SizedBox(height: 12.h),
             Text(
@@ -426,7 +383,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               spacing: 6.w,
               runSpacing: 4.h,
               children: pet.traits.take(4).map((trait) {
-                // Limitar a 4 traits
                 return Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
@@ -450,7 +406,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// Stat compacto
   Widget _buildCompactStat(String emoji, String label, int value) {
     return Row(
       children: [
@@ -505,46 +460,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// Descrição mais compacta
-  Widget _buildCompactDescription(FirebasePetModel pet) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          width: 1.w,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sobre o Pet',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            pet.description!,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: const Color(0xFF374151),
-              height: 1.4,
-            ),
-            maxLines: 3, // Limitar a 3 linhas
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-// Info do guardião compacta
   Widget _buildCompactAdopterInfo(CollaborativeAdoptionRequest adoption) {
     return Container(
       padding: EdgeInsets.all(12.w),
@@ -564,7 +479,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       child: Row(
         children: [
           Container(
-            width: 36.w, // Reduzido de 50.w
+            width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
               color: Color(adoption.requesterColorTheme).withOpacity(0.2),
@@ -621,11 +536,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// Bottom action mais compacto
   Widget _buildCompactBottomAction(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h), // Padding reduzido
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -640,7 +554,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Info compacta
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
@@ -668,10 +581,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 ],
               ),
             ),
-
             SizedBox(height: 12.h),
-
-            // Botões
             Row(
               children: [
                 Expanded(
@@ -700,38 +610,54 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 SizedBox(width: 12.w),
                 Expanded(
                   flex: 2,
-                  child: ElevatedButton(
-                    onPressed: () => _adoptPet(
-                      adoption,
-                      pet.id,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite,
-                          color: Colors.white,
-                          size: 16.sp,
-                        ),
-                        SizedBox(width: 6.w),
-                        Text(
-                          'Adotar ${pet.name}',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      // NOVO: Verificar se pode adotar usando provider unificado
+                      final canAdopt = ref.watch(canAdoptPetProvider);
+                      final isInTransition = ref.watch(isInTransitionProvider);
+
+                      return ElevatedButton(
+                        onPressed: canAdopt && !isInTransition
+                            ? () => _adoptPet(adoption, pet.id)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
+                          elevation: 0,
                         ),
-                      ],
-                    ),
+                        child: isInTransition
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.w,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.w,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.favorite,
+                                    color: Colors.white,
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    'Adotar ${pet.name}',
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -742,7 +668,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// Funções utilitárias
   Color _getPetMoodColor(FirebasePetModel pet) {
     final avgMood = (pet.happiness + pet.health + pet.energy) / 3;
     if (avgMood >= 80) return const Color(0xFF10B981);
@@ -763,631 +688,22 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     return const Color(0xFFEF4444);
   }
 
-  // UPDATE: Adaptar para FirebasePetModel
-  Widget _buildPetPhoto(
-      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
-    return Center(
-      child: Stack(
-        children: [
-          Container(
-            width: 200.w,
-            height: 200.w,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(adoption.requesterColorTheme).withOpacity(0.1),
-                  Color(adoption.requesterColorTheme).withOpacity(0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Color(adoption.requesterColorTheme).withOpacity(0.3),
-                width: 3.w,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                pet.photo,
-                style: TextStyle(fontSize: 80.sp),
-              ),
-            ),
-          )
-              .animate(onPlay: (controller) => controller.repeat(reverse: true))
-              .scale(
-                begin: const Offset(1.0, 1.0),
-                end: const Offset(1.05, 1.05),
-                duration: 2000.ms,
-              ),
-
-          // Badge de status
-          Positioned(
-            top: 10.h,
-            right: 10.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: pet.isAvailable
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: (pet.isAvailable
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444))
-                        .withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                pet.isAvailable ? 'DISPONÍVEL' : 'RESERVADO',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // UPDATE: Adaptar para FirebasePetModel
-  Widget _buildPetInfo(FirebasePetModel pet) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          width: 1.w,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  pet.name,
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  pet.type,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF3B82F6),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          Row(
-            children: [
-              Icon(
-                Icons.cake,
-                color: const Color(0xFF64748B),
-                size: 18.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                pet.age,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // UPDATE: Adaptar para FirebasePetModel
-  Widget _buildPetTraits(
-      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
-    if (pet.traits.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Características',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Wrap(
-          spacing: 8.w,
-          runSpacing: 8.h,
-          children: pet.traits.map((trait) {
-            return Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: Color(adoption.requesterColorTheme).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(
-                  color: Color(adoption.requesterColorTheme).withOpacity(0.3),
-                  width: 1.w,
-                ),
-              ),
-              child: Text(
-                trait,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Color(adoption.requesterColorTheme),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  // UPDATE: Adaptar para FirebasePetModel
-  Widget _buildPetDescription(FirebasePetModel pet) {
-    if (pet.description == null || pet.description!.isEmpty) {
-      return const SizedBox();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Sobre o Pet',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFFE2E8F0),
-              width: 1.w,
-            ),
-          ),
-          child: Text(
-            pet.description!,
-            style: TextStyle(
-              fontSize: 15.sp,
-              color: const Color(0xFF374151),
-              height: 1.6,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // UPDATE: Adaptar para CollaborativeAdoptionRequest
-  Widget _buildAdopterInfo(CollaborativeAdoptionRequest adoption) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Guardião Responsável',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(adoption.requesterColorTheme).withOpacity(0.1),
-                Color(adoption.requesterColorTheme).withOpacity(0.05),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-              width: 1.w,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                  color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Color(adoption.requesterColorTheme),
-                    width: 2.w,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    adoption.requesterCodename
-                        .split(' ')
-                        .map((word) => word[0])
-                        .join(),
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Color(adoption.requesterColorTheme),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      adoption.requesterCodename,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
-                      ),
-                    ),
-                    Text(
-                      'Lv.${adoption.requesterLevel} • ${adoption.region}',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModalBottomAction(
-      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF64748B).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Informação importante
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: const Color(0xFF3B82F6),
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Ao adotar, você se tornará co-guardião junto com ${adoption.requesterCodename}',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 16.h),
-
-            // Botões de ação
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: BorderSide(
-                          color: const Color(0xFFE2E8F0),
-                          width: 1.w,
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: () => _adoptPet(adoption, pet.id),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite,
-                          color: Colors.white,
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Adotar ${pet.name}',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(
-    CollaborativeAdoptionRequest request,
-    List<FirebasePetModel> pets,
-    String? currentUserId,
-  ) {
-    // ⭐ VERIFICAR se é própria solicitação
-    final isOwnRequest = request.requesterId == currentUserId;
-
-    if (isOwnRequest) {
-      // Mostrar que é própria solicitação
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.blue[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue[200]!),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.info, color: Colors.blue[600]),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Esta é sua solicitação',
-                style: TextStyle(color: Colors.blue[700]),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Botões normais para outras solicitações
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            // onPressed: () => _showInterest(request.id),
-            onPressed: () {},
-            child: const Text('Interessado'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 2,
-          child: ElevatedButton(
-            // onPressed: () => _showAdoptionDialog(request, pets),
-            onPressed: () {},
-            child: const Text('Adotar Pet'),
-          ),
-        ),
-      ],
-    );
-  }
-
+  // NOVO: Método de adoção usando AdoptionFlowService
   Future<void> _adoptPet(
       CollaborativeAdoptionRequest request, String petId) async {
-    try {
-      final currentUser = ref.read(authenticationNotifierProvider);
-      if (currentUser.user?.uid == null || currentUser.userModel == null) {
-        throw Exception('Usuário não autenticado');
-      }
-
-      final adoptionNotifier =
-          ref.read(firebaseAdoptionNotifierProvider.notifier);
-
-      // ⭐ USAR novo método com navegação
-      await adoptionNotifier.acceptAdoptionRequestWithNavigation(
-        context: context,
-        requestId: request.id,
-        petId: petId,
-        coParentId: currentUser.user!.uid,
-        coParentDisplayName: currentUser.userModel!.displayName ?? 'Usuário',
-        coParentCodename: 'Guardião Colaborativo',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _showAdoptionSuccessDialog(
-      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
-    showDialog(
+    final success = await AdoptionFlowService.executeAdoptionFlow(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80.w,
-              height: 80.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  pet.photo,
-                  style: TextStyle(fontSize: 40.sp),
-                ),
-              ),
-            )
-                .animate(
-                    onPlay: (controller) => controller.repeat(reverse: true))
-                .scale(
-                  begin: const Offset(1.0, 1.0),
-                  end: const Offset(1.1, 1.1),
-                  duration: 1500.ms,
-                ),
-            SizedBox(height: 20.h),
-            Text(
-              'Adoção Confirmada!',
-              style: TextStyle(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Parabéns! Você e ${adoption.requesterCodename} agora são co-guardiões de ${pet.name}!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              Navigator.pop(context); // Voltar para lista
-            },
-            child: Text(
-              'Ver Lista',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              Navigator.pop(context); // Voltar para lista
-              // TODO: Navegar para a página do pet
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'Começar a Cuidar',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ).animate().scale(
-            begin: const Offset(0.8, 0.8),
-            end: const Offset(1.0, 1.0),
-            duration: 300.ms,
-            curve: Curves.easeOutBack,
-          ),
+      ref: ref,
+      requestId: request.id,
+      petId: petId,
+      coParentDisplayName: 'Co-guardião',
+      coParentCodename: 'Guardião Colaborativo',
     );
+
+    // Fechar modal se sucesso
+    if (success && mounted) {
+      Navigator.pop(context); // Fechar modal de detalhes
+    }
   }
 
   @override
@@ -1422,7 +738,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       actions: [
         IconButton(
           onPressed: () {
-            // NEW: Refresh dos dados do Firebase
             ref.invalidate(publicAdoptionRequestsFirebaseProvider);
           },
           icon: Icon(
@@ -1487,7 +802,13 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
   }
 
   Widget _buildContent() {
-    // NEW: Usar dados do Firebase através dos providers
+    // NOVO: Verificar se pode ver adoções usando provider unificado
+    final unifiedState = ref.watch(unifiedUserStateProvider);
+
+    if (!unifiedState.isAuthenticated) {
+      return _buildUnauthenticatedState();
+    }
+
     final adoptionRequestsAsync =
         ref.watch(publicAdoptionRequestsFirebaseProvider);
 
@@ -1509,6 +830,44 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       },
       loading: () => _buildLoadingState(),
       error: (error, stackTrace) => _buildErrorState(error.toString()),
+    );
+  }
+
+  Widget _buildUnauthenticatedState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.login,
+            size: 80.sp,
+            color: const Color(0xFF64748B),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Login Necessário',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Você precisa estar logado para ver as adoções disponíveis',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Voltar'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1566,7 +925,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  // UPDATE: Stats usando dados reais do Firebase
   Widget _buildStats(List<CollaborativeAdoptionRequest> allAdoptions,
       List<CollaborativeAdoptionRequest> filteredAdoptions) {
     final totalAdoptions = allAdoptions.length;
@@ -1761,7 +1119,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  // UPDATE: Adaptar card para CollaborativeAdoptionRequest
   Widget _buildAdoptionCard(
       CollaborativeAdoptionRequest adoption, int index, WidgetRef ref) {
     final isUrgent = adoption.isUrgent;
@@ -1796,10 +1153,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           children: [
             _buildCardHeader(adoption),
             SizedBox(height: 12.h),
-
-            // CORRIGIDO: Usar o novo método que mostra os pets reais
             _buildCardPetsPreview(adoption, ref),
-
             SizedBox(height: 12.h),
             _buildCardMessage(adoption),
             SizedBox(height: 12.h),
@@ -1813,14 +1167,12 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         .slideX(begin: 0.3, end: 0);
   }
 
-  // UPDATE: Header do card usando dados do Firebase
   Widget _buildCardHeader(CollaborativeAdoptionRequest adoption) {
     final isUrgent = adoption.isUrgent;
     final isHot = adoption.isHot;
 
     return Row(
       children: [
-        // Avatar do usuário anônimo
         Container(
           width: 50.w,
           height: 50.w,
@@ -1846,10 +1198,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ),
           ),
         ),
-
         SizedBox(width: 12.w),
-
-        // Informações do usuário
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1908,8 +1257,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ],
           ),
         ),
-
-        // Status e tempo
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -1962,21 +1309,11 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  _buildCardPetsPreview(CollaborativeAdoptionRequest adoption, WidgetRef ref) {
+  Widget _buildCardPetsPreview(
+      CollaborativeAdoptionRequest adoption, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Text(
-        //   'Pets da Missão (${adoption.selectedPetIds.length})',
-        //   style: TextStyle(
-        //     fontSize: 14.sp,
-        //     fontWeight: FontWeight.w600,
-        //     color: const Color(0xFF0F172A),
-        //   ),
-        // ),
-        // SizedBox(height: 8.h),
-
-        // CORRIGIDO: Usar provider para buscar pets reais
         Consumer(
           builder: (context, ref, child) {
             final petsAsync = ref.watch(petsFromRequestProvider(adoption.id));
@@ -1992,7 +1329,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// NOVO: Widget para exibir os pets em grid
   Widget _buildPetsGrid(
       List<FirebasePetModel> pets, CollaborativeAdoptionRequest adoption) {
     if (pets.isEmpty) {
@@ -2011,7 +1347,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       ),
       child: Column(
         children: [
-          // Cabeçalho dos pets
           Row(
             children: [
               Icon(
@@ -2031,8 +1366,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ],
           ),
           SizedBox(height: 8.h),
-
-          // Grid dos pets
           Row(
             children: pets.asMap().entries.map((entry) {
               final index = entry.key;
@@ -2052,7 +1385,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// NOVO: Card individual do pet no preview
   Widget _buildPetPreviewCard(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return GestureDetector(
@@ -2080,7 +1412,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Foto do pet
             Container(
               width: 32.w,
               height: 32.w,
@@ -2096,8 +1427,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               ),
             ),
             SizedBox(height: 4.h),
-
-            // Nome do pet
             Text(
               pet.name,
               style: TextStyle(
@@ -2109,8 +1438,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-
-            // Tipo do pet
             Text(
               pet.type,
               style: TextStyle(
@@ -2121,8 +1448,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-
-            // Indicador de saúde
             SizedBox(height: 2.h),
             Container(
               width: double.infinity,
@@ -2148,14 +1473,12 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// UTILITÁRIO: Função para cor da saúde
   Color _getHealthColor(int health) {
-    if (health >= 80) return const Color(0xFF10B981); // Verde
-    if (health >= 50) return const Color(0xFFF59E0B); // Amarelo
-    return const Color(0xFFEF4444); // Vermelho
+    if (health >= 80) return const Color(0xFF10B981);
+    if (health >= 50) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
   }
 
-// NOVO: Widget de loading para os pets
   Widget _buildPetsLoading(CollaborativeAdoptionRequest adoption) {
     return Container(
       padding: EdgeInsets.all(12.w),
@@ -2191,7 +1514,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-// NOVO: Widget de erro para os pets
   Widget _buildPetsError(CollaborativeAdoptionRequest adoption) {
     return Container(
       padding: EdgeInsets.all(12.w),
@@ -2264,7 +1586,6 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
   Widget _buildCardFooter(CollaborativeAdoptionRequest adoption) {
     return Row(
       children: [
-        // Tags de personalidade
         if (adoption.personalityTags.isNotEmpty)
           Expanded(
             child: Wrap(
@@ -2288,10 +1609,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               }).toList(),
             ),
           ),
-
         SizedBox(width: 12.w),
-
-        // Stats da adoção
         Row(
           children: [
             Icon(
@@ -2327,18 +1645,3 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 }
-//AdoptionRequestStatus.pending
-
-
-
-// abre app -- > navega para  
-//    HOME (faz validacao do que vai exibi )
-//   se tem solicitacao -- > _buildActiveRequestCard
-//    se tem pet -->_buildPetStatusCard 
-//    sem nao tem nada --> AdoptionOptionsWidget 
-//       --> opção escolher na lista ao aceitar um solicitacao 
-//           --> informar da aceitação 
-//             --navegar para a pasta Home novamente nesse momento ja deve exitir o PET e caira na regra de exibir   _buildPetStatusCard
-
-// fazer a analise no codigo para esse fluxo e ajustar da melhor forma 
-// essa foi a logica que pensei se tiver uma forma mais limpa de fazer isso fazer seguir com as alterações 

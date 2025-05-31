@@ -41,3 +41,22 @@ enum TransactionType { purchase, reward, daily, achievement, refund }
 
 // NOVO: Enum para identificar qual moeda foi usada
 enum CurrencyType { coins, gems, both, free }
+
+// Estados possíveis da aplicação
+enum AppFlow {
+  loading,
+  unauthenticated,
+  needsAdoption,
+  hasActiveRequest,
+  hasPet,
+  error,
+}
+
+// Estados transitórios para melhor UX
+enum TransitionState {
+  none,
+  adoptingPet,
+  creatingRequest,
+  cancelingRequest,
+  refreshingData,
+}
