@@ -176,6 +176,17 @@ class FirebasePetModel {
       'description': description,
     };
   }
+
+  bool get isHealthy => health >= 70 && happiness >= 60;
+
+  // Getter para nível de prioridade de cuidado
+  String get careLevel {
+    final average = (happiness + health + energy) / 3;
+    if (average >= 80) return 'Excelente';
+    if (average >= 60) return 'Bom';
+    if (average >= 40) return 'Atenção';
+    return 'Urgente';
+  }
 }
 
 // NEW: Modelo para pedidos de adoção colaborativa expandido

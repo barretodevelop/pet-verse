@@ -167,10 +167,12 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
+  // Widget otimizado e compacto para detalhes do pet
   Widget _buildPetDetailsContent(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height *
+          0.75, // Reduzido de 0.85 para 0.75
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -182,7 +184,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         children: [
           // Handle bar
           Container(
-            margin: EdgeInsets.only(top: 12.h),
+            margin: EdgeInsets.only(top: 8.h), // Reduzido de 12.h
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
@@ -191,16 +193,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ),
           ),
 
-          // Header
+          // Header compacto
           Padding(
-            padding: EdgeInsets.all(20.w),
+            padding:
+                EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 8.h), // Reduzido padding
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     'Detalhes do Pet',
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 18.sp, // Reduzido de 20.sp
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F172A),
                     ),
@@ -211,42 +214,549 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   icon: Icon(
                     Icons.close,
                     color: const Color(0xFF64748B),
-                    size: 24.sp,
+                    size: 22.sp, // Reduzido de 24.sp
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(
+                    minWidth: 32.w,
+                    minHeight: 32.w,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Content
+          // Content sem scroll - layout fixo
           Expanded(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildPetPhoto(pet, adoption),
-                  SizedBox(height: 24.h),
-                  _buildPetInfo(pet),
-                  SizedBox(height: 24.h),
-                  _buildPetTraits(pet, adoption),
-                  SizedBox(height: 24.h),
-                  _buildPetDescription(pet),
-                  SizedBox(height: 24.h),
-                  _buildAdopterInfo(adoption),
-                  SizedBox(height: 120.h), // Espaço para o botão fixo
+                  // Pet info compacto (foto + informações lado a lado)
+                  _buildCompactPetHeader(pet, adoption),
+
+                  SizedBox(height: 16.h), // Reduzido de 24.h
+
+                  // Stats e traits em uma linha
+                  _buildStatsAndTraits(pet, adoption),
+
+                  SizedBox(height: 16.h),
+
+                  // Descrição condensada
+                  // if (pet.description != null && pet.description!.isNotEmpty)
+                  //   _buildCompactDescription(pet),
+
+                  SizedBox(height: 16.h),
+
+                  // Info do guardião
+                  _buildCompactAdopterInfo(adoption),
+
+                  const Spacer(), // Preenche espaço restante
                 ],
               ),
             ),
           ),
 
-          // Bottom action
-          _buildModalBottomAction(pet, adoption),
+          // Bottom action compacto
+          _buildCompactBottomAction(pet, adoption),
         ],
       ),
     )
         .animate()
         .slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutCubic);
+  }
+
+// Header compacto com foto e info lado a lado
+  Widget _buildCompactPetHeader(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
+    return Row(
+      children: [
+        // Foto menor
+        Container(
+          width: 80.w, // Reduzido de 200.w
+          height: 80.w,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(adoption.requesterColorTheme).withOpacity(0.2),
+                Color(adoption.requesterColorTheme).withOpacity(0.1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Color(adoption.requesterColorTheme).withOpacity(0.3),
+              width: 2.w,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              pet.photo,
+              style: TextStyle(fontSize: 36.sp), // Reduzido de 60.sp
+            ),
+          ),
+        ),
+
+        SizedBox(width: 16.w),
+
+        // Informações do pet
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Nome e tipo
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      pet.name,
+                      style: TextStyle(
+                        fontSize: 22.sp, // Reduzido de 28.sp
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color:
+                          Color(adoption.requesterColorTheme).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      pet.type,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Color(adoption.requesterColorTheme),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 4.h),
+
+              // Raça e idade
+              Text(
+                '${pet.breed} • ${pet.age}',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+
+              SizedBox(height: 8.h),
+
+              // Status do pet
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: _getPetMoodColor(pet).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  _getPetMoodText(pet),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _getPetMoodColor(pet),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// Stats e traits em layout compacto
+  Widget _buildStatsAndTraits(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1.w,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Stats em grid 2x2
+          Row(
+            children: [
+              Expanded(child: _buildCompactStat('❤️', 'Saúde', pet.health)),
+              SizedBox(width: 12.w),
+              Expanded(
+                  child: _buildCompactStat('😊', 'Felicidade', pet.happiness)),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Expanded(child: _buildCompactStat('⚡', 'Energia', pet.energy)),
+              SizedBox(width: 12.w),
+              Expanded(child: _buildCompactStat('✨', 'Higiene', pet.hygiene)),
+            ],
+          ),
+
+          // Traits se existirem
+          if (pet.traits.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            Text(
+              'Características',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Wrap(
+              spacing: 6.w,
+              runSpacing: 4.h,
+              children: pet.traits.take(4).map((trait) {
+                // Limitar a 4 traits
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Color(adoption.requesterColorTheme).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    trait,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Color(adoption.requesterColorTheme),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+// Stat compacto
+  Widget _buildCompactStat(String emoji, String label, int value) {
+    return Row(
+      children: [
+        Text(emoji, style: TextStyle(fontSize: 14.sp)),
+        SizedBox(width: 6.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Stack(
+                children: [
+                  Container(
+                    height: 6.h,
+                    decoration: BoxDecoration(
+                      color: _getStatColor(value).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(3.r),
+                    ),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: value / 100,
+                    child: Container(
+                      height: 6.h,
+                      decoration: BoxDecoration(
+                        color: _getStatColor(value),
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                '$value%',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: _getStatColor(value),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// Descrição mais compacta
+  Widget _buildCompactDescription(FirebasePetModel pet) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1.w,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Sobre o Pet',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            pet.description!,
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: const Color(0xFF374151),
+              height: 1.4,
+            ),
+            maxLines: 3, // Limitar a 3 linhas
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+// Info do guardião compacta
+  Widget _buildCompactAdopterInfo(CollaborativeAdoptionRequest adoption) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(adoption.requesterColorTheme).withOpacity(0.1),
+            Color(adoption.requesterColorTheme).withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Color(adoption.requesterColorTheme).withOpacity(0.2),
+          width: 1.w,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36.w, // Reduzido de 50.w
+            height: 36.w,
+            decoration: BoxDecoration(
+              color: Color(adoption.requesterColorTheme).withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Color(adoption.requesterColorTheme),
+                width: 1.w,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                adoption.requesterCodename
+                    .split(' ')
+                    .map((word) => word[0])
+                    .join(),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Color(adoption.requesterColorTheme),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  adoption.requesterCodename,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  'Lv.${adoption.requesterLevel} • ${adoption.region}',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.people,
+            color: Color(adoption.requesterColorTheme),
+            size: 18.sp,
+          ),
+        ],
+      ),
+    );
+  }
+
+// Bottom action mais compacto
+  Widget _buildCompactBottomAction(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h), // Padding reduzido
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64748B).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Info compacta
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: const Color(0xFF3B82F6),
+                    size: 16.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Ao adotar, você se tornará co-guardião junto com ${adoption.requesterCodename}',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 12.h),
+
+            // Botões
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        side: BorderSide(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1.w,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () => _adoptPet(pet, adoption),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          color: Colors.white,
+                          size: 16.sp,
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Adotar ${pet.name}',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Funções utilitárias
+  Color _getPetMoodColor(FirebasePetModel pet) {
+    final avgMood = (pet.happiness + pet.health + pet.energy) / 3;
+    if (avgMood >= 80) return const Color(0xFF10B981);
+    if (avgMood >= 60) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
+  }
+
+  String _getPetMoodText(FirebasePetModel pet) {
+    final avgMood = (pet.happiness + pet.health + pet.energy) / 3;
+    if (avgMood >= 80) return 'Muito Feliz 😊';
+    if (avgMood >= 60) return 'Feliz 😐';
+    return 'Precisa de Cuidados 😔';
+  }
+
+  Color _getStatColor(int value) {
+    if (value >= 80) return const Color(0xFF10B981);
+    if (value >= 60) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
   }
 
   // UPDATE: Adaptar para FirebasePetModel
@@ -1184,13 +1694,14 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       itemCount: adoptions.length,
       itemBuilder: (context, index) {
         final adoption = adoptions[index];
-        return _buildAdoptionCard(adoption, index);
+        return _buildAdoptionCard(adoption, index, ref);
       },
     );
   }
 
   // UPDATE: Adaptar card para CollaborativeAdoptionRequest
-  Widget _buildAdoptionCard(CollaborativeAdoptionRequest adoption, int index) {
+  Widget _buildAdoptionCard(
+      CollaborativeAdoptionRequest adoption, int index, WidgetRef ref) {
     final isUrgent = adoption.isUrgent;
     final isHot = adoption.isHot;
 
@@ -1223,7 +1734,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           children: [
             _buildCardHeader(adoption),
             SizedBox(height: 12.h),
-            _buildCardPetsPreview(adoption),
+
+            // CORRIGIDO: Usar o novo método que mostra os pets reais
+            _buildCardPetsPreview(adoption, ref),
+
             SizedBox(height: 12.h),
             _buildCardMessage(adoption),
             SizedBox(height: 12.h),
@@ -1386,36 +1900,266 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     );
   }
 
-  // NEW: Preview dos pets (placeholder até implementar busca de pets)
-  Widget _buildCardPetsPreview(CollaborativeAdoptionRequest adoption) {
+  _buildCardPetsPreview(CollaborativeAdoptionRequest adoption, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Pets da Missão (${adoption.selectedPetIds.length})',
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
-          ),
+        // Text(
+        //   'Pets da Missão (${adoption.selectedPetIds.length})',
+        //   style: TextStyle(
+        //     fontSize: 14.sp,
+        //     fontWeight: FontWeight.w600,
+        //     color: const Color(0xFF0F172A),
+        //   ),
+        // ),
+        // SizedBox(height: 8.h),
+
+        // CORRIGIDO: Usar provider para buscar pets reais
+        Consumer(
+          builder: (context, ref, child) {
+            final petsAsync = ref.watch(petsFromRequestProvider(adoption.id));
+
+            return petsAsync.when(
+              data: (pets) => _buildPetsGrid(pets, adoption),
+              loading: () => _buildPetsLoading(adoption),
+              error: (error, _) => _buildPetsError(adoption),
+            );
+          },
         ),
-        SizedBox(height: 8.h),
-        // TODO: Implementar preview real dos pets
-        Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Color(adoption.requesterColorTheme).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12.r),
+      ],
+    );
+  }
+
+// NOVO: Widget para exibir os pets em grid
+  Widget _buildPetsGrid(
+      List<FirebasePetModel> pets, CollaborativeAdoptionRequest adoption) {
+    if (pets.isEmpty) {
+      return _buildPetsError(adoption);
+    }
+
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Color(adoption.requesterColorTheme).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Color(adoption.requesterColorTheme).withOpacity(0.2),
+          width: 1.w,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Cabeçalho dos pets
+          Row(
+            children: [
+              Icon(
+                Icons.pets,
+                color: Color(adoption.requesterColorTheme),
+                size: 16.sp,
+              ),
+              SizedBox(width: 6.w),
+              Text(
+                'Escolha um dos pets:',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Color(adoption.requesterColorTheme),
+                ),
+              ),
+            ],
           ),
-          child: Text(
-            '${adoption.selectedPetIds.length} pets selecionados para adoção',
-            style: TextStyle(
-              fontSize: 12.sp,
+          SizedBox(height: 8.h),
+
+          // Grid dos pets
+          Row(
+            children: pets.asMap().entries.map((entry) {
+              final index = entry.key;
+              final pet = entry.value;
+              final isLast = index == pets.length - 1;
+
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: isLast ? 0 : 8.w),
+                  child: _buildPetPreviewCard(pet, adoption),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+// NOVO: Card individual do pet no preview
+  Widget _buildPetPreviewCard(
+      FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _showPetDetailsModal(pet.id, adoption);
+      },
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+            color: Color(adoption.requesterColorTheme).withOpacity(0.3),
+            width: 1.w,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(adoption.requesterColorTheme).withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Foto do pet
+            Container(
+              width: 32.w,
+              height: 32.w,
+              decoration: BoxDecoration(
+                color: Color(adoption.requesterColorTheme).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  pet.photo,
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ),
+            ),
+            SizedBox(height: 4.h),
+
+            // Nome do pet
+            Text(
+              pet.name,
+              style: TextStyle(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0F172A),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+
+            // Tipo do pet
+            Text(
+              pet.type,
+              style: TextStyle(
+                fontSize: 8.sp,
+                color: const Color(0xFF64748B),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+
+            // Indicador de saúde
+            SizedBox(height: 2.h),
+            Container(
+              width: double.infinity,
+              height: 2.h,
+              decoration: BoxDecoration(
+                color: _getHealthColor(pet.health).withOpacity(0.3),
+                borderRadius: BorderRadius.circular(1.r),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: pet.health / 100,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _getHealthColor(pet.health),
+                    borderRadius: BorderRadius.circular(1.r),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// UTILITÁRIO: Função para cor da saúde
+  Color _getHealthColor(int health) {
+    if (health >= 80) return const Color(0xFF10B981); // Verde
+    if (health >= 50) return const Color(0xFFF59E0B); // Amarelo
+    return const Color(0xFFEF4444); // Vermelho
+  }
+
+// NOVO: Widget de loading para os pets
+  Widget _buildPetsLoading(CollaborativeAdoptionRequest adoption) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Color(adoption.requesterColorTheme).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Color(adoption.requesterColorTheme).withOpacity(0.2),
+          width: 1.w,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 16.w,
+            height: 16.w,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.w,
               color: Color(adoption.requesterColorTheme),
             ),
           ),
+          SizedBox(width: 8.w),
+          Text(
+            'Carregando pets...',
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Color(adoption.requesterColorTheme),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// NOVO: Widget de erro para os pets
+  Widget _buildPetsError(CollaborativeAdoptionRequest adoption) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withOpacity(0.2),
+          width: 1.w,
         ),
-      ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: const Color(0xFFEF4444),
+            size: 16.sp,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              'Erro ao carregar pets desta adoção',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFFEF4444),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

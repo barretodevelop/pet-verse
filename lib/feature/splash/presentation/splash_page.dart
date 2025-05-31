@@ -8,14 +8,14 @@ import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 import 'package:petverse/feature/auth/state/authentication_state.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+class SplashPage extends ConsumerStatefulWidget {
+  const SplashPage({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen>
+class _SplashPageState extends ConsumerState<SplashPage>
     with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;

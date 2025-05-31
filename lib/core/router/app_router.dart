@@ -13,7 +13,7 @@ import 'package:petverse/feature/pet/presentation/pages/pet_main_page.dart';
 import 'package:petverse/feature/profile/presentation/profile_page.dart';
 import 'package:petverse/feature/settings/presentation/settings_page.dart';
 import 'package:petverse/feature/shop/presetation/shop.dart';
-import 'package:petverse/feature/splash/presentation/splash_screen.dart';
+import 'package:petverse/feature/splash/presentation/splash_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final uiState = ref.watch(uiStateProvider);
@@ -82,7 +82,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) => const SplashPage(),
       ),
 
       // Auth Routes
