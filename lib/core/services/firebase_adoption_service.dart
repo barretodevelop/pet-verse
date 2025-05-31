@@ -1,5 +1,5 @@
 // lib/core/services/firebase_adoption_service.dart
-// UPDATE: Service expandido para conectar Firebase com adoção colaborativa
+// VERSÃO CORRIGIDA - Service expandido para conectar Firebase com adoção colaborativa
 
 import 'dart:math';
 
@@ -8,13 +8,13 @@ import 'package:petverse/core/enums/enums.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 
 class FirebaseAdoptionService {
-  // UPDATE: Coleções do Firebase para adoção colaborativa
+  // Coleções do Firebase para adoção colaborativa
   static const String collaborativePetsCollection = 'collaborative_pets';
   static const String collaborativeRequestsCollection =
       'collaborative_requests';
   static const String petInteractionsCollection = 'pet_interactions';
 
-  // NEW: Referências das coleções
+  // Referências das coleções
   static CollectionReference get collaborativePets =>
       FirebaseFirestore.instance.collection(collaborativePetsCollection);
 
@@ -24,23 +24,45 @@ class FirebaseAdoptionService {
   static CollectionReference get petInteractions =>
       FirebaseFirestore.instance.collection(petInteractionsCollection);
 
-  // NEW: =====================================================
+  // =====================================================
   // DADOS MOCK PARA INICIALIZAÇÃO DO FIREBASE
   // =====================================================
 
-  /// NEW: Inicializa dados mock no Firebase (executar uma vez apenas)
+  /// CORRIGIDO: Inicializa dados mock no Firebase (com retry e verificação melhorada)
   static Future<void> initializeMockDataInFirebase() async {
     try {
       print('🔄 Inicializando dados mock no Firebase...');
 
-      // Verificar se já existem dados
-      final existingPets = await collaborativePets.limit(1).get();
-      if (existingPets.docs.isNotEmpty) {
-        print('✅ Dados já existem no Firebase. Pulando inicialização.');
-        return;
+      // CORRIGIDO: Verificar se já existem dados com retry
+      bool hasData = false;
+      int retries = 0;
+      const maxRetries = 3;
+
+      while (!hasData && retries < maxRetries) {
+        try {
+          final existingPets = await collaborativePets.limit(1).get();
+          hasData = existingPets.docs.isNotEmpty;
+
+          if (hasData) {
+            print(
+                '✅ Dados já existem no Firebase. Total: ${existingPets.docs.length}');
+            return;
+          }
+        } catch (e) {
+          retries++;
+          print('⚠️ Tentativa $retries falhou: $e');
+          if (retries < maxRetries) {
+            await Future.delayed(Duration(seconds: retries * 2));
+          }
+        }
       }
 
-      // NEW: Pets mock para inserir no Firebase
+      if (retries >= maxRetries) {
+        throw Exception(
+            'Falha ao conectar com Firebase após $maxRetries tentativas');
+      }
+
+      // CORRIGIDO: Pets mock com dados mais robustos
       final mockPets = [
         {
           'name': 'Luna',
@@ -49,12 +71,15 @@ class FirebaseAdoptionService {
           'age': '2 anos',
           'photo': '🐱',
           'traits': ['carinhoso', 'brincalhão', 'calmo'],
-          'description': 'Luna é uma gatinha muito dócil e carinhosa',
+          'description':
+              'Luna é uma gatinha muito dócil e carinhosa. Adora brincar e é muito tranquila.',
           'happiness': 85,
           'health': 92,
           'energy': 78,
           'hygiene': 90,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Max',
@@ -63,12 +88,15 @@ class FirebaseAdoptionService {
           'age': '3 anos',
           'photo': '🐕',
           'traits': ['leal', 'energético', 'protetor'],
-          'description': 'Max é um cachorro muito leal e protetor',
+          'description':
+              'Max é um cachorro muito leal e protetor. Adora correr e brincar no parque.',
           'happiness': 72,
           'health': 88,
           'energy': 95,
           'hygiene': 70,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Bella',
@@ -77,54 +105,66 @@ class FirebaseAdoptionService {
           'age': '1 ano',
           'photo': '🐰',
           'traits': ['tímido', 'fofo', 'tranquilo'],
-          'description': 'Bella é uma coelhinha muito fofa e tranquila',
+          'description':
+              'Bella é uma coelhinha muito fofa e tranquila. É um pouco tímida mas muito carinhosa.',
           'happiness': 90,
           'health': 95,
           'energy': 60,
           'hygiene': 85,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Charlie',
           'type': 'dog',
           'breed': 'Beagle',
           'age': '4 anos',
-          'photo': '🐕',
+          'photo': '🐕‍🦺',
           'traits': ['amigável', 'obediente', 'carinhoso'],
-          'description': 'Charlie é muito amigável e obediente',
+          'description':
+              'Charlie é muito amigável e obediente. Adora fazer novos amigos.',
           'happiness': 88,
           'health': 85,
           'energy': 80,
           'hygiene': 75,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Mimi',
           'type': 'cat',
           'breed': 'Siamês',
           'age': '1 ano',
-          'photo': '🐱',
+          'photo': '🐈',
           'traits': ['curioso', 'ativo', 'brincalhão'],
-          'description': 'Mimi é uma gatinha muito curiosa e ativa',
+          'description':
+              'Mimi é uma gatinha muito curiosa e ativa. Adora explorar novos lugares.',
           'happiness': 80,
           'health': 90,
           'energy': 85,
           'hygiene': 88,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Rocky',
           'type': 'dog',
           'breed': 'Bulldog',
           'age': '5 anos',
-          'photo': '🐕',
+          'photo': '🐶',
           'traits': ['forte', 'protetor', 'leal'],
-          'description': 'Rocky é um cachorro grande e muito protetor',
+          'description':
+              'Rocky é um cachorro grande e muito protetor. É muito leal à sua família.',
           'happiness': 75,
           'health': 80,
           'energy': 70,
           'hygiene': 65,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Snow',
@@ -133,12 +173,15 @@ class FirebaseAdoptionService {
           'age': '6 meses',
           'photo': '🐹',
           'traits': ['pequeno', 'ativo', 'fofo'],
-          'description': 'Snow é um hamster branquinho muito fofo',
+          'description':
+              'Snow é um hamster branquinho muito fofo. É pequeno mas muito ativo.',
           'happiness': 95,
           'health': 100,
           'energy': 90,
           'hygiene': 95,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
         {
           'name': 'Kiwi',
@@ -147,55 +190,78 @@ class FirebaseAdoptionService {
           'age': '2 anos',
           'photo': '🦜',
           'traits': ['colorido', 'falante', 'inteligente'],
-          'description': 'Kiwi é uma calopsita muito colorida e falante',
+          'description':
+              'Kiwi é uma calopsita muito colorida e falante. É muito inteligente.',
           'happiness': 85,
           'health': 88,
           'energy': 92,
           'hygiene': 90,
           'isAvailable': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         },
       ];
 
-      // NEW: Inserir pets no Firebase
-      final batch = FirebaseFirestore.instance.batch();
+      // CORRIGIDO: Inserir pets no Firebase com tratamento de erro individual
+      print('🔄 Inserindo ${mockPets.length} pets no Firebase...');
 
-      for (final petData in mockPets) {
-        final petRef = collaborativePets.doc();
-        final pet = FirebasePetModel.fromMockPet({
-          'id': petRef.id,
-          ...petData,
-        });
-        batch.set(petRef, pet.toFirestore());
+      for (int i = 0; i < mockPets.length; i++) {
+        try {
+          final petData = mockPets[i];
+          final petRef = collaborativePets.doc();
+
+          final pet = FirebasePetModel.fromMockPet({
+            'id': petRef.id,
+            ...petData,
+          });
+
+          await petRef.set(pet.toFirestore());
+          print('✅ Pet ${i + 1}/${mockPets.length} criado: ${pet.name}');
+        } catch (e) {
+          print('❌ Erro ao criar pet ${i + 1}: $e');
+          // Continuar mesmo se um pet falhar
+        }
       }
 
-      await batch.commit();
-      print('✅ ${mockPets.length} pets inseridos no Firebase!');
+      print('✅ Inserção de pets concluída!');
 
-      // NEW: Criar alguns pedidos de adoção mock
+      // Aguardar um pouco antes de criar os pedidos
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Criar alguns pedidos de adoção mock
       await _createMockAdoptionRequests();
+
+      print('✅ Inicialização completa!');
     } catch (e) {
       print('❌ Erro ao inicializar dados mock: $e');
       rethrow;
     }
   }
 
-  // NEW: Criar pedidos de adoção mock
+  /// CORRIGIDO: Criar pedidos de adoção mock com verificação robusta
   static Future<void> _createMockAdoptionRequests() async {
     try {
-      // Buscar alguns pets para os pedidos
-      final petsSnapshot = await collaborativePets.limit(6).get();
+      print('🔄 Criando pedidos de adoção mock...');
+
+      // Buscar pets para os pedidos
+      final petsSnapshot = await collaborativePets.limit(10).get();
       final pets = petsSnapshot.docs
           .map((doc) => FirebasePetModel.fromFirestore(doc))
           .toList();
 
-      if (pets.length < 6) return;
+      if (pets.length < 6) {
+        print(
+            '⚠️ Poucos pets disponíveis (${pets.length}). Criando pelo menos alguns pedidos...');
+      }
 
       final mockRequests = [
         {
           'requesterCodename': 'Guardian Azul',
           'requesterColorTheme': 0xFF3B82F6,
           'requesterLevel': 12,
-          'selectedPetIds': [pets[0].id, pets[1].id, pets[2].id],
+          'selectedPetIds': pets.length >= 3
+              ? [pets[0].id, pets[1].id, pets[2].id]
+              : [pets.first.id], // Fallback se poucos pets
           'codedMessage':
               'Colaborador experiente busca parceiro dedicado para missão especial',
           'personalityTags': ['dedicado', 'organizado', 'carinhoso'],
@@ -203,69 +269,98 @@ class FirebaseAdoptionService {
           'views': 47,
           'interested': 12,
         },
-        {
-          'requesterCodename': 'Protetor Rosa',
-          'requesterColorTheme': 0xFFEC4899,
-          'requesterLevel': 8,
-          'selectedPetIds': [pets[3].id, pets[4].id, pets[5].id],
-          'codedMessage': 'Primeira missão em grupo, procuro mentor experiente',
-          'personalityTags': ['iniciante', 'entusiasmado', 'responsável'],
-          'region': 'Centro - RJ',
-          'views': 23,
-          'interested': 8,
-        },
+        if (pets.length >= 6)
+          {
+            'requesterCodename': 'Protetor Rosa',
+            'requesterColorTheme': 0xFFEC4899,
+            'requesterLevel': 8,
+            'selectedPetIds': [pets[3].id, pets[4].id, pets[5].id],
+            'codedMessage':
+                'Primeira missão em grupo, procuro mentor experiente',
+            'personalityTags': ['iniciante', 'entusiasmado', 'responsável'],
+            'region': 'Centro - RJ',
+            'views': 23,
+            'interested': 8,
+          },
       ];
 
       for (final requestData in mockRequests) {
-        final request = CollaborativeAdoptionRequest(
-          id: '',
-          requesterId: 'mock_user_${Random().nextInt(1000)}',
-          requesterDisplayName: 'Usuário Mock',
-          requesterCodename: requestData['requesterCodename'] as String,
-          requesterColorTheme: requestData['requesterColorTheme'] as int,
-          requesterLevel: requestData['requesterLevel'] as int,
-          selectedPetIds: [pets[0].id, pets[1].id, pets[2].id],
-          createdAt: DateTime.now(),
-          expiresAt: DateTime.now().add(const Duration(days: 5)),
-          codedMessage: requestData['codedMessage'] as String,
-          personalityTags: ['iniciante', 'entusiasmado', 'responsável'],
-          region: requestData['region'] as String,
-          views: requestData['views'] as int,
-          interested: requestData['interested'] as int,
-        );
+        try {
+          final request = CollaborativeAdoptionRequest(
+            id: '',
+            requesterId: 'mock_user_${Random().nextInt(1000)}',
+            requesterDisplayName: 'Usuário Mock',
+            requesterCodename: requestData['requesterCodename'] as String,
+            requesterColorTheme: requestData['requesterColorTheme'] as int,
+            requesterLevel: requestData['requesterLevel'] as int,
+            selectedPetIds: requestData['selectedPetIds'] as List<String>,
+            createdAt: DateTime.now(),
+            expiresAt: DateTime.now().add(const Duration(days: 5)),
+            codedMessage: requestData['codedMessage'] as String,
+            personalityTags: requestData['personalityTags'] as List<String>,
+            region: requestData['region'] as String,
+            views: requestData['views'] as int,
+            interested: requestData['interested'] as int,
+          );
 
-        await collaborativeRequests.add(request.toFirestore());
+          await collaborativeRequests.add(request.toFirestore());
+          print('✅ Pedido criado: ${request.requesterCodename}');
+        } catch (e) {
+          print('❌ Erro ao criar pedido: $e');
+          // Continuar mesmo se um pedido falhar
+        }
       }
 
       print('✅ Pedidos de adoção mock criados!');
     } catch (e) {
       print('❌ Erro ao criar pedidos mock: $e');
+      // Não relançar erro - isso é opcional
     }
   }
 
-  // UPDATE: =====================================================
+  // =====================================================
   // MÉTODOS PRINCIPAIS DO SERVICE
   // =====================================================
 
-  /// UPDATE: Buscar pets disponíveis para adoção colaborativa
+  /// CORRIGIDO: Buscar pets disponíveis com retry e fallback
   static Future<List<FirebasePetModel>>
       getAvailablePetsForCollaboration() async {
     try {
+      print('🔄 Buscando pets disponíveis...');
+
       final query = await collaborativePets
           .where('isAvailable', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .limit(50)
           .get();
 
-      return query.docs
-          .map((doc) => FirebasePetModel.fromFirestore(doc))
-          .toList();
+      final pets =
+          query.docs.map((doc) => FirebasePetModel.fromFirestore(doc)).toList();
+
+      print('✅ ${pets.length} pets encontrados');
+      return pets;
     } catch (e) {
       print('❌ Erro ao buscar pets disponíveis: $e');
-      return [];
+
+      // FALLBACK: Se falhar, tentar buscar sem filtros
+      try {
+        print('🔄 Tentando buscar todos os pets como fallback...');
+        final fallbackQuery = await collaborativePets.limit(20).get();
+
+        final fallbackPets = fallbackQuery.docs
+            .map((doc) => FirebasePetModel.fromFirestore(doc))
+            .toList();
+
+        print('✅ Fallback: ${fallbackPets.length} pets encontrados');
+        return fallbackPets;
+      } catch (fallbackError) {
+        print('❌ Fallback também falhou: $fallbackError');
+        return [];
+      }
     }
   }
 
+  /// CORRIGIDO: Criar pedido de adoção com validação robusta
   static Future<String> createCollaborativeAdoptionRequest({
     required String requesterId,
     required String requesterDisplayName,
@@ -278,7 +373,18 @@ class FirebaseAdoptionService {
     required String region,
   }) async {
     try {
-      // SOLUÇÃO 1: Verificar ANTES da transação
+      // CORRIGIDO: Validações antes da transação
+      if (selectedPetIds.length != 3) {
+        throw Exception('Deve selecionar exatamente 3 pets');
+      }
+
+      if (requesterId.isEmpty ||
+          requesterDisplayName.isEmpty ||
+          requesterCodename.isEmpty) {
+        throw Exception('Dados do usuário inválidos');
+      }
+
+      // Verificar se usuário já tem solicitação ativa ANTES da transação
       final existingQuery = await collaborativeRequests
           .where('requesterId', isEqualTo: requesterId)
           .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
@@ -290,7 +396,23 @@ class FirebaseAdoptionService {
         throw Exception('Você já possui uma solicitação ativa');
       }
 
-      // Agora executar a transação sem queries complexas
+      final petDocs = await Future.wait(
+          selectedPetIds.map((petId) => collaborativePets.doc(petId).get()));
+
+      for (int i = 0; i < petDocs.length; i++) {
+        final doc = petDocs[i];
+        if (!doc.exists) {
+          throw Exception('Pet ${selectedPetIds[i]} não encontrado');
+        }
+
+        final petData = doc.data() as Map<String, dynamic>?;
+        if (petData?['isAvailable'] != true) {
+          final pet = FirebasePetModel.fromFirestore(doc);
+          throw Exception('Pet ${pet.name} não está mais disponível');
+        }
+      }
+
+      // Executar transação
       final String requestId = await FirebaseFirestore.instance
           .runTransaction<String>((transaction) async {
         // Criar o pedido de adoção
@@ -336,7 +458,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// UPDATE: Buscar pedidos de adoção públicos
+  /// CORRIGIDO: Buscar pedidos de adoção públicos com fallback
   static Future<List<CollaborativeAdoptionRequest>>
       getPublicAdoptionRequests() async {
     try {
@@ -348,16 +470,38 @@ class FirebaseAdoptionService {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return query.docs
+      final requests = query.docs
           .map((doc) => CollaborativeAdoptionRequest.fromFirestore(doc))
           .toList();
+
+      print('✅ ${requests.length} pedidos públicos encontrados');
+      return requests;
     } catch (e) {
       print('❌ Erro ao buscar pedidos públicos: $e');
-      return [];
+
+      // FALLBACK: buscar sem ordenação complexa
+      try {
+        final fallbackQuery = await collaborativeRequests
+            .where('status',
+                isEqualTo: AdoptionRequestStatus.pending.toString())
+            .limit(20)
+            .get();
+
+        final fallbackRequests = fallbackQuery.docs
+            .map((doc) => CollaborativeAdoptionRequest.fromFirestore(doc))
+            .where((req) => !req.isExpired) // Filtrar expirados manualmente
+            .toList();
+
+        print('✅ Fallback: ${fallbackRequests.length} pedidos encontrados');
+        return fallbackRequests;
+      } catch (fallbackError) {
+        print('❌ Fallback também falhou: $fallbackError');
+        return [];
+      }
     }
   }
 
-  /// NEW: Stream para pedidos em tempo real
+  /// Stream para pedidos em tempo real
   static Stream<List<CollaborativeAdoptionRequest>>
       watchPublicAdoptionRequests() {
     final now = Timestamp.now();
@@ -372,7 +516,7 @@ class FirebaseAdoptionService {
             .toList());
   }
 
-  /// NEW: Buscar pets de um pedido específico
+  /// Buscar pets de um pedido específico
   static Future<List<FirebasePetModel>> getPetsFromRequest(
       String requestId) async {
     try {
@@ -394,6 +538,7 @@ class FirebaseAdoptionService {
     }
   }
 
+  /// Aceitar pedido de adoção
   static Future<void> acceptAdoptionRequest({
     required String requestId,
     required String petId,
@@ -414,7 +559,7 @@ class FirebaseAdoptionService {
 
         final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
 
-        // VERIFICAR se não é o próprio dono tentando aceitar
+        // Verificar se não é o próprio dono tentando aceitar
         if (request.requesterId == coParentId) {
           throw Exception(
               'Você não pode aceitar sua própria solicitação de adoção');
@@ -425,7 +570,7 @@ class FirebaseAdoptionService {
           throw Exception('Pedido de adoção não está mais disponível');
         }
 
-        // VERIFICAR se o pet está na lista de pets selecionados
+        // Verificar se o pet está na lista de pets selecionados
         if (!request.selectedPetIds.contains(petId)) {
           throw Exception('Este pet não faz parte desta solicitação');
         }
@@ -464,9 +609,6 @@ class FirebaseAdoptionService {
             );
           }
         }
-
-        // TODO: Adicionar pets aos perfis dos usuários
-        // Isso será implementado quando tivermos o UserService
       });
 
       print('✅ Adoção aceita com sucesso!');
@@ -476,7 +618,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Incrementar visualizações de um pedido
+  /// Incrementar visualizações de um pedido
   static Future<void> incrementViews(String requestId) async {
     try {
       await collaborativeRequests.doc(requestId).update({
@@ -487,7 +629,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Incrementar interesse em um pedido
+  /// Incrementar interesse em um pedido
   static Future<void> incrementInterest(String requestId) async {
     try {
       await collaborativeRequests.doc(requestId).update({
@@ -498,7 +640,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Buscar pedidos por filtros
+  /// Buscar pedidos por filtros
   static Future<List<CollaborativeAdoptionRequest>> getFilteredRequests({
     List<String>? petTypes,
     int? maxDaysRemaining,
@@ -536,7 +678,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Gerar link de compartilhamento
+  /// Gerar link de compartilhamento
   static Future<String> generateShareLink(String requestId) async {
     try {
       final shareLink = 'https://petverse.app/adopt/$requestId';
@@ -552,7 +694,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Buscar pets do usuário
+  /// Buscar pets do usuário
   static Future<List<FirebasePetModel>> getUserPets(String userId) async {
     try {
       final query = await collaborativePets
@@ -568,7 +710,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Cancelar pedido de adoção
+  /// Cancelar pedido de adoção
   static Future<void> cancelAdoptionRequest(String requestId) async {
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -605,7 +747,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Verificar se usuário já tem solicitação ativa
+  /// Verificar se usuário já tem solicitação ativa
   static Future<CollaborativeAdoptionRequest?> getUserActiveRequest(
       String userId) async {
     try {
@@ -625,7 +767,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NEW: Stream para monitorar solicitação ativa do usuário
+  /// Stream para monitorar solicitação ativa do usuário
   static Stream<CollaborativeAdoptionRequest?> watchUserActiveRequest(
       String userId) {
     return collaborativeRequests
@@ -640,15 +782,3 @@ class FirebaseAdoptionService {
     });
   }
 }
-
-
-
-
-
-
-// lib/core/services/firebase_adoption_service.dart - MÉTODOS ADICIONAIS
-
-// Adicionar estes métodos à classe FirebaseAdoptionService existente:
- 
-
-/// UPDATE: Aceitar pedido com verificação de proprietário

@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/active_request_provider.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
+import 'package:petverse/core/utils/app_utils.dart';
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 
 class CreateAdoptionPage extends ConsumerStatefulWidget {
@@ -23,10 +24,8 @@ class CreateAdoptionPage extends ConsumerStatefulWidget {
 
 class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     with TickerProviderStateMixin {
-  bool isLoading = true;
-  bool isCreating = false;
-
   late AnimationController _pulseController;
+  bool _isCreating = false;
 
   @override
   void initState() {
@@ -37,7 +36,10 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     );
     _pulseController.repeat(reverse: true);
 
-    _initializeData();
+    // Inicializar dados do Firebase na primeira execução
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeFirebaseData();
+    });
   }
 
   @override
@@ -46,13 +48,21 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     super.dispose();
   }
 
-  Future<void> _initializeData() async {
+  Future<void> _initializeFirebaseData() async {
     try {
-      // Verificar se usuário já tem solicitação ativa
+      // Aguardar inicialização dos dados mock se necessário
+      await ref.read(initializeMockDataProvider.future);
+    } catch (e) {
+      print('Erro ao inicializar dados: $e');
+      // Mesmo com erro, continuar - pode ser que os dados já existam
+    }
+  }
+
+  Future<void> _checkActiveRequest() async {
+    try {
       final userRequest = await ref.read(userActiveRequestProvider.future);
       if (userRequest != null && mounted) {
         _showActiveRequestDialog(userRequest);
-        return;
       }
     } catch (e) {
       print('Erro ao verificar solicitação ativa: $e');
@@ -128,8 +138,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              context.go('/list-adoption'); // Ir para lista
+              Navigator.pop(context);
+              context.go('/list-adoption');
             },
             child: Text(
               'Ver Lista',
@@ -141,8 +151,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              Navigator.pop(context); // Voltar para home
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
@@ -165,15 +175,18 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     ref.read(selectedCollaborativePetsProvider.notifier).togglePet(pet.id);
   }
 
-  void _createAdoption() async {
+  Future<void> _createAdoption() async {
     final selectedPets = ref.read(selectedCollaborativePetsProvider);
     final authState = ref.read(authenticationNotifierProvider);
     final user = authState.userModel;
 
-    if (selectedPets.length != 3 || user == null) return;
+    if (selectedPets.length != 3 || user == null) {
+      AppUtils.showErrorSnackbar(context, 'Selecione exatamente 3 pets');
+      return;
+    }
 
     setState(() {
-      isCreating = true;
+      _isCreating = true;
     });
 
     HapticFeedback.mediumImpact();
@@ -189,7 +202,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       final requestId = await ref
           .read(firebaseAdoptionNotifierProvider.notifier)
           .createCollaborativeAdoptionRequest(
-            requesterId: user.id,
+            requesterId: user.uid,
             requesterDisplayName: user.displayName ?? 'Usuário',
             requesterCodename: codename,
             requesterColorTheme: colorTheme,
@@ -202,11 +215,15 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
 
       if (mounted) {
         setState(() {
-          isCreating = false;
+          _isCreating = false;
         });
 
         // Limpar seleção
         ref.read(selectedCollaborativePetsProvider.notifier).clear();
+
+        // Invalidar providers para atualizar listas
+        ref.invalidate(userActiveRequestProvider);
+        ref.invalidate(publicAdoptionRequestsFirebaseProvider);
 
         // Mostrar sucesso
         _showSuccessDialog(requestId);
@@ -214,15 +231,10 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     } catch (e) {
       if (mounted) {
         setState(() {
-          isCreating = false;
+          _isCreating = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao criar adoção: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppUtils.showErrorSnackbar(context, 'Erro ao criar adoção: $e');
       }
     }
   }
@@ -389,8 +401,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              context.go('/list-adoption'); // Ver lista
+              Navigator.pop(context);
+              context.go('/list-adoption');
             },
             child: Text(
               'Ver na Lista',
@@ -403,8 +415,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // Fechar dialog
-              Navigator.pop(context); // Voltar para home
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
@@ -432,7 +444,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
-      body: isLoading ? _buildLoadingState() : _buildContent(),
+      body: _buildContent(),
       bottomNavigationBar: _buildBottomBar(),
     );
   }
@@ -461,6 +473,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         IconButton(
           onPressed: () {
             ref.invalidate(availableCollaborativePetsProvider);
+            ref.invalidate(initializeMockDataProvider);
           },
           icon: Icon(
             Icons.refresh,
@@ -469,6 +482,124 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildContent() {
+    // CORRIGIDO: Verificar inicialização primeiro
+    final initializationAsync = ref.watch(initializeMockDataProvider);
+
+    return initializationAsync.when(
+      data: (isInitialized) {
+        if (!isInitialized) {
+          return _buildInitializationError();
+        }
+
+        // Depois verificar solicitação ativa
+        final activeRequestAsync = ref.watch(userActiveRequestProvider);
+
+        return activeRequestAsync.when(
+          data: (activeRequest) {
+            if (activeRequest != null) {
+              // Mostrar que já tem solicitação ativa, mas não bloquear a tela
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showActiveRequestDialog(activeRequest);
+              });
+            }
+
+            // Mostrar a interface normal
+            return _buildMainContent();
+          },
+          loading: () => _buildLoadingState(),
+          error: (_, __) => _buildMainContent(), // Continuar mesmo com erro
+        );
+      },
+      loading: () => _buildLoadingState(),
+      error: (error, __) => _buildInitializationError(),
+    );
+  }
+
+  Widget _buildMainContent() {
+    final petsAsync = ref.watch(availableCollaborativePetsProvider);
+    final selectedPets = ref.watch(selectedCollaborativePetsProvider);
+
+    return petsAsync.when(
+      data: (pets) {
+        if (pets.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return Column(
+          children: [
+            // Preview dos pets selecionados
+            if (selectedPets.isNotEmpty)
+              _buildSelectedPetsPreview(pets, selectedPets),
+
+            // Conteúdo scrollável
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (selectedPets.isEmpty) _buildHeader(),
+                    SizedBox(height: selectedPets.isEmpty ? 20.h : 0),
+                    _buildPetsGrid(pets),
+                    SizedBox(height: 20.h),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => _buildLoadingState(),
+      error: (error, stackTrace) => _buildErrorState(error.toString()),
+    );
+  }
+
+  Widget _buildInitializationError() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.warning_outlined,
+            size: 64.sp,
+            color: const Color(0xFFF59E0B),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Erro na Inicialização',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Text(
+              'Não foi possível inicializar os dados do Firebase. '
+              'Verifique sua conexão e tente novamente.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          ElevatedButton(
+            onPressed: () {
+              ref.invalidate(initializeMockDataProvider);
+              ref.invalidate(availableCollaborativePetsProvider);
+            },
+            child: const Text('Tentar Novamente'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -523,46 +654,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     );
   }
 
-  Widget _buildContent() {
-    // Usar dados do Firebase
-    final petsAsync = ref.watch(availableCollaborativePetsProvider);
-    final selectedPets = ref.watch(selectedCollaborativePetsProvider);
-
-    return petsAsync.when(
-      data: (pets) {
-        if (pets.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return Column(
-          children: [
-            // Preview dos pets selecionados
-            if (selectedPets.isNotEmpty)
-              _buildSelectedPetsPreview(pets, selectedPets),
-
-            // Conteúdo scrollável
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (selectedPets.isEmpty) _buildHeader(),
-                    SizedBox(height: selectedPets.isEmpty ? 20.h : 0),
-                    _buildPetsGrid(pets),
-                    SizedBox(height: 20.h),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-      loading: () => _buildLoadingState(),
-      error: (error, stackTrace) => _buildErrorState(error.toString()),
-    );
-  }
-
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -590,6 +681,13 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
               fontSize: 14.sp,
               color: const Color(0xFF64748B),
             ),
+          ),
+          SizedBox(height: 20.h),
+          ElevatedButton(
+            onPressed: () {
+              ref.invalidate(availableCollaborativePetsProvider);
+            },
+            child: const Text('Atualizar'),
           ),
         ],
       ),
@@ -1108,7 +1206,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
 
             // Botão criar
             GestureDetector(
-              onTap: canCreate && !isCreating ? _createAdoption : null,
+              onTap: canCreate && !_isCreating ? _createAdoption : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
@@ -1133,7 +1231,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (isCreating) ...[
+                    if (_isCreating) ...[
                       SizedBox(
                         width: 16.w,
                         height: 16.w,
@@ -1153,7 +1251,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                       SizedBox(width: 8.w),
                     ],
                     Text(
-                      isCreating ? 'Criando...' : 'Criar Adoção',
+                      _isCreating ? 'Criando...' : 'Criar Adoção',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -1171,7 +1269,6 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     );
   }
 }
-
 // class CreateAdoptionPage extends ConsumerStatefulWidget {
 //   const CreateAdoptionPage({super.key});
 
