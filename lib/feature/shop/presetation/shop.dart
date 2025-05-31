@@ -8,10 +8,6 @@ import 'package:petverse/core/model/economy/game_item.dart';
 import 'package:petverse/core/model/mocks.dart';
 import 'package:petverse/core/providers/shop_provider.dart';
 
-// Import dos módulos criados
-// import 'shop_models.dart';
-// import 'shop_providers.dart';
-
 class ShopPage extends ConsumerWidget {
   const ShopPage({super.key});
 
@@ -30,7 +26,7 @@ class ShopPage extends ConsumerWidget {
           Column(
             children: [
               _buildCategoryTabs(context, ref, selectedCategory),
-              _buildSearchBar(context, ref),
+              // _buildSearchBar(context, ref),
               Expanded(
                 child: filteredItemsAsync.when(
                   loading: () => _buildLoadingState(),
@@ -137,7 +133,7 @@ class ShopPage extends ConsumerWidget {
     final categoriesWithCount = ref.watch(categoriesWithCountProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -152,8 +148,8 @@ class ShopPage extends ConsumerWidget {
                 ref.read(selectedCategoryProvider.notifier).state = category;
               },
               child: Container(
-                margin: EdgeInsets.only(right: 12.w),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                margin: EdgeInsets.only(right: 8.w),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
                   borderRadius: BorderRadius.circular(20.r),
@@ -355,7 +351,7 @@ class ShopPage extends ConsumerWidget {
     }
 
     return GridView.builder(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(10.w),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16.w,
@@ -425,19 +421,19 @@ class ShopPage extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _showItemDetails(context, ref, item, wallet),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(10.w), // Reduzido para melhor adaptação
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: rarityColor.withOpacity(0.3),
-            width: 2.w,
+            width: 1.5.w,
           ),
           boxShadow: [
             BoxShadow(
               color: rarityColor.withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -451,10 +447,11 @@ class ShopPage extends ConsumerWidget {
           children: [
             // Item Icon with quantity badge
             Stack(
+              alignment: Alignment.center,
               children: [
                 Container(
-                  width: 64.w,
-                  height: 64.w,
+                  width: 56.w,
+                  height: 56.w,
                   decoration: BoxDecoration(
                     color: rarityColor.withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -466,7 +463,7 @@ class ShopPage extends ConsumerWidget {
                   child: Center(
                     child: Text(
                       item.emoji,
-                      style: TextStyle(fontSize: 32.sp),
+                      style: TextStyle(fontSize: 28.sp),
                     ),
                   ),
                 ),
@@ -475,7 +472,7 @@ class ShopPage extends ConsumerWidget {
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: EdgeInsets.all(4.w),
+                      padding: EdgeInsets.all(3.w),
                       decoration: const BoxDecoration(
                         color: Color(0xFF10B981),
                         shape: BoxShape.circle,
@@ -483,7 +480,7 @@ class ShopPage extends ConsumerWidget {
                       child: Text(
                         '$itemQuantity',
                         style: TextStyle(
-                          fontSize: 10.sp,
+                          fontSize: 8.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -493,34 +490,34 @@ class ShopPage extends ConsumerWidget {
               ],
             ),
 
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
 
             // Item Name
             Text(
               item.name,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF0F172A),
               ),
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
 
-            SizedBox(height: 6.h),
+            SizedBox(height: 4.h),
 
             // Rarity Badge
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
                 color: rarityColor,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Text(
                 item.rarity.displayName,
                 style: TextStyle(
-                  fontSize: 10.sp,
+                  fontSize: 8.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -532,21 +529,21 @@ class ShopPage extends ConsumerWidget {
             // Effects Preview
             if (item.effects.isNotEmpty) ...[
               Wrap(
-                spacing: 4.w,
-                runSpacing: 4.h,
+                spacing: 3.w,
+                runSpacing: 2.h,
                 children: item.effects.entries.take(2).map((effect) {
                   final effectData = MockDataService.getEffectData(effect.key);
                   return Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Text(
                       '+${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'} ${effectData['emoji']}',
                       style: TextStyle(
-                        fontSize: 9.sp,
+                        fontSize: 7.sp,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF10B981),
                       ),
@@ -554,7 +551,7 @@ class ShopPage extends ConsumerWidget {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
             ],
 
             // Price Button
@@ -568,9 +565,9 @@ class ShopPage extends ConsumerWidget {
                   backgroundColor: canAfford
                       ? const Color(0xFF10B981)
                       : const Color(0xFF94A3B8),
-                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  padding: EdgeInsets.symmetric(vertical: 6.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   elevation: 0,
                 ),
@@ -579,31 +576,31 @@ class ShopPage extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (item.coins != null) ...[
-                      Text('🪙', style: TextStyle(fontSize: 12.sp)),
+                      Text('🪙', style: TextStyle(fontSize: 10.sp)),
                       SizedBox(width: 2.w),
                       Text(
                         '${item.coins}',
                         style: TextStyle(
-                          fontSize: 11.sp,
+                          fontSize: 9.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
                     ],
                     if (item.coins != null && item.gems != null) ...[
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 3.w),
                       Text('+',
                           style:
-                              TextStyle(fontSize: 9.sp, color: Colors.white)),
-                      SizedBox(width: 4.w),
+                              TextStyle(fontSize: 7.sp, color: Colors.white)),
+                      SizedBox(width: 3.w),
                     ],
                     if (item.gems != null) ...[
-                      Text('💎', style: TextStyle(fontSize: 12.sp)),
+                      Text('💎', style: TextStyle(fontSize: 10.sp)),
                       SizedBox(width: 2.w),
                       Text(
                         '${item.gems}',
                         style: TextStyle(
-                          fontSize: 11.sp,
+                          fontSize: 9.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -611,12 +608,12 @@ class ShopPage extends ConsumerWidget {
                     ],
                     if (item.isFree) ...[
                       Icon(Icons.card_giftcard,
-                          size: 14.sp, color: Colors.white),
-                      SizedBox(width: 4.w),
+                          size: 12.sp, color: Colors.white),
+                      SizedBox(width: 3.w),
                       Text(
                         'Grátis',
                         style: TextStyle(
-                          fontSize: 11.sp,
+                          fontSize: 9.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),

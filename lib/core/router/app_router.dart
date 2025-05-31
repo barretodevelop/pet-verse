@@ -12,6 +12,7 @@ import 'package:petverse/feature/home/presentation/pages/home_page.dart';
 import 'package:petverse/feature/pet/presentation/pages/pet_main_page.dart';
 import 'package:petverse/feature/profile/presentation/profile_page.dart';
 import 'package:petverse/feature/settings/presentation/settings_page.dart';
+import 'package:petverse/feature/shop/presetation/shop.dart';
 import 'package:petverse/feature/splash/presentation/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -135,6 +136,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/pet-main',
         name: 'pet-main',
         builder: (context, state) => const PetMainPage(),
+      ),
+
+      // shop
+      GoRoute(
+        path: '/shop',
+        name: 'shop',
+        builder: (context, state) => const ShopPage(),
       ),
     ],
 

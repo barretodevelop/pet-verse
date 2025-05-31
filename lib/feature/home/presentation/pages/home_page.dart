@@ -10,11 +10,12 @@ import 'package:petverse/core/providers/pet_provider.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/core/utils/app_utils.dart';
 import 'package:petverse/core/widgets/custom_bottom_navigation_bar.dart';
+import 'package:petverse/core/widgets/resource_chip.dart' hide AppTheme;
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 import 'package:petverse/feature/dashoard/dashboard_page.dart';
 import 'package:petverse/feature/home/presentation/widgets/adoption_options_widget.dart';
 import 'package:petverse/feature/minigames/mini_games_bottom_sheet.dart';
-import 'package:petverse/feature/shop/presetation/shop.dart';
+import 'package:petverse/feature/mission/anonymous_mission_list_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -103,7 +104,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 children: [
                   _buildPetsTabPage(),
                   const DashboardPage(),
-                  const ShopPage(),
+                  const AnonymousAdoptionsListPage(),
                   _buildMoreTabPage(),
                 ],
               ),
@@ -116,7 +117,7 @@ class _HomePageState extends ConsumerState<HomePage>
         items: [
           BottomNavItem(icon: Icons.pets, label: 'Pet'),
           BottomNavItem(icon: Icons.dashboard, label: 'Dashboard'),
-          BottomNavItem(icon: Icons.store, label: 'Loja'),
+          BottomNavItem(icon: Icons.model_training_sharp, label: 'Missoes'),
           BottomNavItem(icon: Icons.more, label: 'Mais'),
         ],
         onItemTapped: _onItemTapped,
@@ -334,13 +335,13 @@ class _HomePageState extends ConsumerState<HomePage>
               ],
             ),
 
-            SizedBox(height: 10.h),
+            SizedBox(height: 8.h),
 
             // Segunda linha - Recursos do usuário
             Row(
               children: [
                 // Level
-                _buildResourceChip(
+                ResourceChip(
                   icon: '⭐',
                   label: 'LEVEL',
                   value: '${user?.level ?? 1}',
@@ -348,7 +349,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 SizedBox(width: 6.w),
                 // Coins
-                _buildResourceChip(
+                ResourceChip(
                   icon: '🪙',
                   label: 'COINS',
                   value: '${user?.coins ?? 0}',
@@ -356,11 +357,21 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 SizedBox(width: 6.w),
                 // Gems
-                _buildResourceChip(
+                ResourceChip(
                   icon: '💎',
                   label: 'GEMS',
                   value: '${user?.gems ?? 0}',
                   color: const Color(0xFF06B6D4),
+                ),
+                SizedBox(width: 6.w),
+                ResourceChip(
+                  icon: '🏪',
+                  label: 'Loja',
+                  value: '',
+                  color: const Color.fromARGB(255, 6, 120, 52),
+                  onTap: () {
+                    context.push('/shop');
+                  },
                 ),
               ],
             ),
@@ -370,67 +381,67 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildResourceChip({
-    required String icon,
-    required String value,
-    required Color color,
-    String? label,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-            color: color.withOpacity(0.2),
-            width: 1.w,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.08),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              icon,
-              style: TextStyle(fontSize: 12.sp),
-            ),
-            SizedBox(width: 4.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (label != null)
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 8.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildResourceChip({
+  //   required String icon,
+  //   required String value,
+  //   required Color color,
+  //   String? label,
+  // }) {
+  //   return Expanded(
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(10.r),
+  //         border: Border.all(
+  //           color: color.withOpacity(0.2),
+  //           width: 1.w,
+  //         ),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: color.withOpacity(0.08),
+  //             blurRadius: 4,
+  //             offset: const Offset(0, 1),
+  //           ),
+  //         ],
+  //       ),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Text(
+  //             icon,
+  //             style: TextStyle(fontSize: 12.sp),
+  //           ),
+  //           SizedBox(width: 4.w),
+  //           Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               if (label != null)
+  //                 Text(
+  //                   label,
+  //                   style: TextStyle(
+  //                     color: color,
+  //                     fontSize: 8.sp,
+  //                     fontWeight: FontWeight.w600,
+  //                     letterSpacing: 0.3,
+  //                   ),
+  //                 ),
+  //               Text(
+  //                 value,
+  //                 style: TextStyle(
+  //                   color: AppTheme.textPrimary,
+  //                   fontSize: 11.sp,
+  //                   fontWeight: FontWeight.w700,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildHeaderActionButton(
       IconData icon, Color color, VoidCallback onTap) {
