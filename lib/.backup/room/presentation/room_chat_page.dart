@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/core/constants/quick_messages.dart';
 import 'package:petverse/core/providers/firebase_providers.dart';
 import 'package:petverse/core/widgets/MessageBubble.dart';
-import 'package:petverse/backup/room/provider/room_provider.dart';
+import 'package:petverse/.backup/room/provider/room_provider.dart';
 
 class RoomChatPage extends ConsumerStatefulWidget {
   final String roomId;

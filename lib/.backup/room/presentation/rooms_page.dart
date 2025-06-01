@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:petverse/backup/room/model/room.dart';
-import 'package:petverse/backup/room/provider/room_provider.dart';
+import 'package:petverse/.backup/room/model/room.dart';
+import 'package:petverse/.backup/room/provider/room_provider.dart';
 
 class RoomsPage extends ConsumerWidget {
   const RoomsPage({super.key});

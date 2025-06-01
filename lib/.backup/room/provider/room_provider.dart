@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petverse/backup/room/model/message.dart';
-import 'package:petverse/backup/room/model/room.dart';
-import 'package:petverse/backup/room/services/room_service.dart';
+import 'package:petverse/.backup/room/model/message.dart';
+import 'package:petverse/.backup/room/model/room.dart';
+import 'package:petverse/.backup/room/services/room_service.dart';
 
 // Provider do serviço
 final roomServiceProvider = Provider<RoomService>((ref) {

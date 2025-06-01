@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:petverse/backup/room/model/room.dart';
+import 'package:petverse/.backup/room/model/room.dart';
 
 class AnimatedRoomCard extends StatelessWidget {
   final Room room;

@@ -59,7 +59,7 @@ class PetVerseApp extends ConsumerWidget {
           // Theme
           theme: ThemeData(
             useMaterial3: true,
-            // colorScheme: AppTheme.lightTheme(),
+            //  colorScheme: AppTheme.lightTheme,
             textTheme: GoogleFonts.interTextTheme(
               Theme.of(context).textTheme,
             ),
@@ -76,7 +76,7 @@ class PetVerseApp extends ConsumerWidget {
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primarySoft,
+                backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
