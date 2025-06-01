@@ -1,5 +1,5 @@
 // lib/core/services/firebase_adoption_service.dart
-// CORRIGIDO: Adicionando validações para impedir auto-adoção e melhorar fluxo
+// CORRIGIDO: UID vs ID, melhorada criação de pets e validações
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petverse/core/enums/enums.dart';
@@ -28,18 +28,23 @@ class FirebaseAdoptionService {
       FirebaseFirestore.instance.collection(notificationsCollection);
 
   // =====================================================
-  // MÉTODOS CORRIGIDOS
+  // MÉTODOS CORRIGIDOS E MELHORADOS
   // =====================================================
 
-  /// CORRIGIDO: Aceitar pedido de adoção com validações melhoradas
+  /// CORRIGIDO: Aceitar pedido de adoção com validações melhoradas e correção de UID
   static Future<void> acceptAdoptionRequest({
     required String requestId,
     required String petId,
-    required String coParentId,
+    required String coParentId, // Este é o UID do Firebase Auth
     required String coParentDisplayName,
     required String coParentCodename,
   }) async {
     try {
+      print('🔄 Iniciando aceitação de adoção...');
+      print('Request ID: $requestId');
+      print('Pet ID: $petId');
+      print('Co-Parent UID: $coParentId'); // CORRIGIDO: Agora é UID
+
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         // Buscar o pedido
         final requestDoc = await transaction.get(
@@ -80,7 +85,7 @@ class FirebaseAdoptionService {
           collaborativeRequests.doc(requestId),
           {
             'acceptedPetId': petId,
-            'coParentId': coParentId,
+            'coParentId': coParentId, // UID do co-parent
             'coParentDisplayName': coParentDisplayName,
             'coParentCodename': coParentCodename,
             'status': AdoptionRequestStatus.accepted.toString(),
@@ -88,13 +93,14 @@ class FirebaseAdoptionService {
           },
         );
 
-        // Atualizar pet escolhido
+        // Atualizar pet escolhido com UIDs corretos
         transaction.update(
           collaborativePets.doc(petId),
           {
-            'ownerIds': [request.requesterId, coParentId],
-            'primaryOwnerId': request.requesterId,
-            'coOwnerId': coParentId,
+            'ownerIds': [request.requesterId, coParentId], // Ambos UIDs
+            'primaryOwnerId':
+                request.requesterId, // UID do solicitante original
+            'coOwnerId': coParentId, // UID do co-parent
             'isAvailable': false,
             'adoptedAt': FieldValue.serverTimestamp(),
             'adoptionRequestId': requestId,
@@ -118,7 +124,7 @@ class FirebaseAdoptionService {
         final notificationRef = notifications.doc();
         transaction.set(notificationRef, {
           'id': notificationRef.id,
-          'userId': request.requesterId,
+          'userId': request.requesterId, // UID do solicitante
           'type': 'adoption_accepted',
           'title': 'Adoção Aceita! 🎉',
           'message':
@@ -137,7 +143,7 @@ class FirebaseAdoptionService {
         final coParentNotificationRef = notifications.doc();
         transaction.set(coParentNotificationRef, {
           'id': coParentNotificationRef.id,
-          'userId': coParentId,
+          'userId': coParentId, // UID do co-parent
           'type': 'adoption_confirmed',
           'title': 'Adoção Confirmada! 🐾',
           'message': 'Você agora é co-guardião de ${pet.name}!',
@@ -150,6 +156,8 @@ class FirebaseAdoptionService {
           'isRead': false,
           'createdAt': FieldValue.serverTimestamp(),
         });
+
+        print('✅ Transação de adoção concluída com sucesso');
       });
 
       // CORREÇÃO 4: Enviar notificações push após a transação
@@ -162,105 +170,7 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// NOVO: Enviar notificações push para ambos os usuários
-  static Future<void> _sendAdoptionNotifications(
-    String requestId,
-    String petId,
-    String coParentCodename,
-  ) async {
-    try {
-      // Buscar dados do pedido e pet para as notificações
-      final requestDoc = await collaborativeRequests.doc(requestId).get();
-      final petDoc = await collaborativePets.doc(petId).get();
-
-      if (requestDoc.exists && petDoc.exists) {
-        final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
-        final pet = FirebasePetModel.fromFirestore(petDoc);
-
-        // Notificação para o solicitante original
-        await NotificationService().showCoParentCareNotification(
-          coParentCodename,
-          'aceitou cuidar de ${pet.name} com você!',
-        );
-
-        print('📱 Notificações push enviadas com sucesso');
-      }
-    } catch (e) {
-      print('❌ Erro ao enviar notificações push: $e');
-      // Não relança o erro para não afetar o fluxo principal
-    }
-  }
-
-  /// NOVO: Buscar pet específico pelo ID
-  static Future<FirebasePetModel?> getPetById(String petId) async {
-    try {
-      final petDoc = await collaborativePets.doc(petId).get();
-      if (petDoc.exists) {
-        return FirebasePetModel.fromFirestore(petDoc);
-      }
-      return null;
-    } catch (e) {
-      print('❌ Erro ao buscar pet por ID: $e');
-      return null;
-    }
-  }
-
-  /// NOVO: Buscar notificações não lidas do usuário
-  static Future<List<Map<String, dynamic>>> getUserNotifications(
-      String userId) async {
-    try {
-      final query = await notifications
-          .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .limit(20)
-          .get();
-
-      return query.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      print('❌ Erro ao buscar notificações: $e');
-      return [];
-    }
-  }
-
-  /// NOVO: Marcar notificação como lida
-  static Future<void> markNotificationAsRead(String notificationId) async {
-    try {
-      await notifications.doc(notificationId).update({
-        'isRead': true,
-        'readAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('❌ Erro ao marcar notificação como lida: $e');
-    }
-  }
-
-  /// NOVO: Verificar se usuário pode aceitar solicitação
-  static Future<bool> canAcceptRequest(String requestId, String userId) async {
-    try {
-      final requestDoc = await collaborativeRequests.doc(requestId).get();
-      if (!requestDoc.exists) return false;
-
-      final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
-
-      // Não pode aceitar própria solicitação
-      if (request.requesterId == userId) return false;
-
-      // Verificar se ainda está pendente e não expirou
-      return request.status == AdoptionRequestStatus.pending &&
-          !request.isExpired;
-    } catch (e) {
-      print('❌ Erro ao verificar permissão de aceitação: $e');
-      return false;
-    }
-  }
-
-  // =====================================================
-  // MÉTODOS EXISTENTES (mantidos sem alteração)
-  // =====================================================
-
-  /// Inicializa dados mock no Firebase
+  /// MELHORADO: Inicializa dados mock no Firebase com melhor estrutura
   static Future<void> initializeMockDataInFirebase() async {
     try {
       print('🔄 Inicializando dados mock no Firebase...');
@@ -272,8 +182,8 @@ class FirebaseAdoptionService {
         return;
       }
 
-      // Pets mock com dados robustos
-      final mockPets = [
+      // MELHORADO: Pets mock com dados mais robustos e estrutura correta
+      final mockPetsData = [
         {
           'name': 'Luna',
           'type': 'cat',
@@ -287,7 +197,13 @@ class FirebaseAdoptionService {
           'health': 92,
           'energy': 78,
           'hygiene': 90,
+          'careLevel': 'Fácil',
           'isAvailable': true,
+          'ownerIds': <String>[], // Lista vazia de UIDs
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         },
@@ -304,60 +220,140 @@ class FirebaseAdoptionService {
           'health': 88,
           'energy': 95,
           'hygiene': 70,
+          'careLevel': 'Médio',
           'isAvailable': true,
+          'ownerIds': <String>[],
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         },
-        // ... outros pets
+        {
+          'name': 'Bella',
+          'type': 'rabbit',
+          'breed': 'Mini Lop',
+          'age': '1 ano',
+          'photo': '🐰',
+          'traits': ['fofo', 'tranquilo', 'tímido'],
+          'description':
+              'Bella é uma coelhinha muito fofa e tranquila, adora cenouras.',
+          'happiness': 95,
+          'health': 98,
+          'energy': 60,
+          'hygiene': 85,
+          'careLevel': 'Fácil',
+          'isAvailable': true,
+          'ownerIds': <String>[],
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        {
+          'name': 'Charlie',
+          'type': 'dog',
+          'breed': 'Beagle',
+          'age': '4 anos',
+          'photo': '🐕',
+          'traits': ['amigável', 'obediente', 'calmo'],
+          'description':
+              'Charlie é um cachorro muito amigável e obediente, perfeito para famílias.',
+          'happiness': 88,
+          'health': 85,
+          'energy': 80,
+          'hygiene': 75,
+          'careLevel': 'Fácil',
+          'isAvailable': true,
+          'ownerIds': <String>[],
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        {
+          'name': 'Mimi',
+          'type': 'cat',
+          'breed': 'Siamês',
+          'age': '6 meses',
+          'photo': '🐱',
+          'traits': ['filhote', 'curioso', 'brincalhão'],
+          'description':
+              'Mimi é uma gatinha filhote muito curiosa e brincalhona.',
+          'happiness': 68,
+          'health': 95,
+          'energy': 90,
+          'hygiene': 80,
+          'careLevel': 'Médio',
+          'isAvailable': true,
+          'ownerIds': <String>[],
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        {
+          'name': 'Rocky',
+          'type': 'dog',
+          'breed': 'Husky Siberiano',
+          'age': '5 anos',
+          'photo': '🐕‍🦺',
+          'traits': ['aventureiro', 'energético', 'inteligente'],
+          'description':
+              'Rocky é um husky muito ativo e aventureiro, ideal para pessoas ativas.',
+          'happiness': 75,
+          'health': 90,
+          'energy': 98,
+          'hygiene': 65,
+          'careLevel': 'Difícil',
+          'isAvailable': true,
+          'ownerIds': <String>[],
+          'primaryOwnerId': null,
+          'coOwnerId': null,
+          'adoptionRequestId': null,
+          'adoptedAt': null,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
       ];
 
-      // Inserir pets no Firebase
-      for (int i = 0; i < mockPets.length; i++) {
+      // MELHORADO: Inserir pets com estrutura correta no Firebase
+      for (int i = 0; i < mockPetsData.length; i++) {
         try {
-          final petData = mockPets[i];
+          final petData = mockPetsData[i];
           final petRef = collaborativePets.doc();
 
-          final pet = FirebasePetModel.fromMockPet({
+          // Criar o pet com ID correto
+          final petWithId = {
             'id': petRef.id,
             ...petData,
-          });
+          };
 
-          await petRef.set(pet.toFirestore());
-          print('✅ Pet ${i + 1}/${mockPets.length} criado: ${pet.name}');
+          await petRef.set(petWithId);
+          print(
+              '✅ Pet ${i + 1}/${mockPetsData.length} criado: ${petData['name']}');
         } catch (e) {
           print('❌ Erro ao criar pet ${i + 1}: $e');
         }
       }
 
-      print('✅ Inicialização completa!');
+      print('✅ Inicialização de pets completa!');
     } catch (e) {
       print('❌ Erro ao inicializar dados mock: $e');
       rethrow;
     }
   }
 
-  /// Buscar pets disponíveis para colaboração
-  static Future<List<FirebasePetModel>>
-      getAvailablePetsForCollaboration() async {
-    try {
-      final query = await collaborativePets
-          .where('isAvailable', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
-          .limit(50)
-          .get();
-
-      return query.docs
-          .map((doc) => FirebasePetModel.fromFirestore(doc))
-          .toList();
-    } catch (e) {
-      print('❌ Erro ao buscar pets disponíveis: $e');
-      return [];
-    }
-  }
-
-  /// Criar pedido de adoção colaborativa
+  /// CORRIGIDO: Criar pedido de adoção colaborativa com UID correto
   static Future<String> createCollaborativeAdoptionRequest({
-    required String requesterId,
+    required String requesterId, // Este é o UID do Firebase Auth
     required String requesterDisplayName,
     required String requesterCodename,
     required int requesterColorTheme,
@@ -368,13 +364,16 @@ class FirebaseAdoptionService {
     required String region,
   }) async {
     try {
+      print('🔄 Criando pedido de adoção colaborativa...');
+      print('Requester UID: $requesterId'); // CORRIGIDO: Agora é UID
+
       if (selectedPetIds.length != 3) {
         throw Exception('Deve selecionar exatamente 3 pets');
       }
 
-      // Verificar se usuário já tem solicitação ativa
+      // MELHORADO: Verificar se usuário já tem solicitação ativa usando UID
       final existingQuery = await collaborativeRequests
-          .where('requesterId', isEqualTo: requesterId)
+          .where('requesterId', isEqualTo: requesterId) // UID
           .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
           .where('expiresAt', isGreaterThan: Timestamp.now())
           .limit(1)
@@ -406,7 +405,7 @@ class FirebaseAdoptionService {
           .runTransaction<String>((transaction) async {
         final request = CollaborativeAdoptionRequest(
           id: '',
-          requesterId: requesterId,
+          requesterId: requesterId, // UID correto
           requesterDisplayName: requesterDisplayName,
           requesterCodename: requesterCodename,
           requesterColorTheme: requesterColorTheme,
@@ -422,7 +421,7 @@ class FirebaseAdoptionService {
         final docRef = collaborativeRequests.doc();
         transaction.set(docRef, request.copyWith(id: docRef.id).toFirestore());
 
-        // Marcar pets como não disponíveis
+        // Marcar pets como não disponíveis temporariamente
         for (final petId in selectedPetIds) {
           final petRef = collaborativePets.doc(petId);
           transaction.update(petRef, {
@@ -432,6 +431,7 @@ class FirebaseAdoptionService {
           });
         }
 
+        print('✅ Pedido criado com ID: ${docRef.id}');
         return docRef.id;
       });
 
@@ -440,6 +440,92 @@ class FirebaseAdoptionService {
     } catch (e) {
       print('❌ Erro ao criar pedido de adoção: $e');
       rethrow;
+    }
+  }
+
+  /// CORRIGIDO: Buscar pets do usuário usando UID
+  static Future<List<FirebasePetModel>> getUserPets(String userUid) async {
+    try {
+      print('🔍 Buscando pets do usuário: $userUid');
+
+      final query = await collaborativePets
+          .where('ownerIds', arrayContains: userUid) // UID correto
+          .get();
+
+      final pets =
+          query.docs.map((doc) => FirebasePetModel.fromFirestore(doc)).toList();
+
+      print('✅ Encontrados ${pets.length} pets para o usuário');
+      return pets;
+    } catch (e) {
+      print('❌ Erro ao buscar pets do usuário: $e');
+      return [];
+    }
+  }
+
+  /// CORRIGIDO: Verificar se usuário já tem solicitação ativa usando UID
+  static Future<CollaborativeAdoptionRequest?> getUserActiveRequest(
+      String userUid) async {
+    try {
+      print('🔍 Buscando solicitação ativa do usuário: $userUid');
+
+      final query = await collaborativeRequests
+          .where('requesterId', isEqualTo: userUid) // UID correto
+          .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
+          .where('expiresAt', isGreaterThan: Timestamp.now())
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        print('✅ Nenhuma solicitação ativa encontrada');
+        return null;
+      }
+
+      final request =
+          CollaborativeAdoptionRequest.fromFirestore(query.docs.first);
+      print('✅ Solicitação ativa encontrada: ${request.id}');
+      return request;
+    } catch (e) {
+      print('❌ Erro ao buscar solicitação ativa: $e');
+      return null;
+    }
+  }
+
+  /// CORRIGIDO: Stream para monitorar solicitação ativa do usuário usando UID
+  static Stream<CollaborativeAdoptionRequest?> watchUserActiveRequest(
+      String userUid) {
+    return collaborativeRequests
+        .where('requesterId', isEqualTo: userUid) // UID correto
+        .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
+        .where('expiresAt', isGreaterThan: Timestamp.now())
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return null;
+      return CollaborativeAdoptionRequest.fromFirestore(snapshot.docs.first);
+    });
+  }
+
+  // =====================================================
+  // MÉTODOS EXISTENTES MANTIDOS (sem alteração de UID)
+  // =====================================================
+
+  /// Buscar pets disponíveis para colaboração
+  static Future<List<FirebasePetModel>>
+      getAvailablePetsForCollaboration() async {
+    try {
+      final query = await collaborativePets
+          .where('isAvailable', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      return query.docs
+          .map((doc) => FirebasePetModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      print('❌ Erro ao buscar pets disponíveis: $e');
+      return [];
     }
   }
 
@@ -576,22 +662,6 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// Buscar pets do usuário
-  static Future<List<FirebasePetModel>> getUserPets(String userId) async {
-    try {
-      final query = await collaborativePets
-          .where('ownerIds', arrayContains: userId)
-          .get();
-
-      return query.docs
-          .map((doc) => FirebasePetModel.fromFirestore(doc))
-          .toList();
-    } catch (e) {
-      print('❌ Erro ao buscar pets do usuário: $e');
-      return [];
-    }
-  }
-
   /// Cancelar pedido de adoção
   static Future<void> cancelAdoptionRequest(String requestId) async {
     try {
@@ -609,6 +679,7 @@ class FirebaseAdoptionService {
           {'status': AdoptionRequestStatus.cancelled.toString()},
         );
 
+        // Liberar pets para disponibilidade
         for (final petId in request.selectedPetIds) {
           transaction.update(
             collaborativePets.doc(petId),
@@ -627,48 +698,101 @@ class FirebaseAdoptionService {
     }
   }
 
-  /// Verificar se usuário já tem solicitação ativa
-  static Future<CollaborativeAdoptionRequest?> getUserActiveRequest(
-      String userId) async {
+  // =====================================================
+  // MÉTODOS AUXILIARES
+  // =====================================================
+
+  /// Buscar pet específico pelo ID
+  static Future<FirebasePetModel?> getPetById(String petId) async {
     try {
-      final query = await collaborativeRequests
-          .where('requesterId', isEqualTo: userId)
-          .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
-          .where('expiresAt', isGreaterThan: Timestamp.now())
-          .limit(1)
-          .get();
-
-      if (query.docs.isEmpty) return null;
-
-      return CollaborativeAdoptionRequest.fromFirestore(query.docs.first);
+      final petDoc = await collaborativePets.doc(petId).get();
+      if (petDoc.exists) {
+        return FirebasePetModel.fromFirestore(petDoc);
+      }
+      return null;
     } catch (e) {
-      print('❌ Erro ao buscar solicitação ativa: $e');
+      print('❌ Erro ao buscar pet por ID: $e');
       return null;
     }
   }
 
-  /// Stream para monitorar solicitação ativa do usuário
-  static Stream<CollaborativeAdoptionRequest?> watchUserActiveRequest(
-      String userId) {
-    return collaborativeRequests
-        .where('requesterId', isEqualTo: userId)
-        .where('status', isEqualTo: AdoptionRequestStatus.pending.toString())
-        .where('expiresAt', isGreaterThan: Timestamp.now())
-        .limit(1)
-        .snapshots()
-        .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      return CollaborativeAdoptionRequest.fromFirestore(snapshot.docs.first);
-    });
+  /// Buscar notificações não lidas do usuário (usando UID)
+  static Future<List<Map<String, dynamic>>> getUserNotifications(
+      String userUid) async {
+    try {
+      final query = await notifications
+          .where('userId', isEqualTo: userUid) // UID correto
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+
+      return query.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('❌ Erro ao buscar notificações: $e');
+      return [];
+    }
+  }
+
+  /// Marcar notificação como lida
+  static Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await notifications.doc(notificationId).update({
+        'isRead': true,
+        'readAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('❌ Erro ao marcar notificação como lida: $e');
+    }
+  }
+
+  /// Verificar se usuário pode aceitar solicitação (usando UID)
+  static Future<bool> canAcceptRequest(String requestId, String userUid) async {
+    try {
+      final requestDoc = await collaborativeRequests.doc(requestId).get();
+      if (!requestDoc.exists) return false;
+
+      final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
+
+      // Não pode aceitar própria solicitação (comparando UIDs)
+      if (request.requesterId == userUid) return false;
+
+      // Verificar se ainda está pendente e não expirou
+      return request.status == AdoptionRequestStatus.pending &&
+          !request.isExpired;
+    } catch (e) {
+      print('❌ Erro ao verificar permissão de aceitação: $e');
+      return false;
+    }
+  }
+
+  /// Enviar notificações push para ambos os usuários
+  static Future<void> _sendAdoptionNotifications(
+    String requestId,
+    String petId,
+    String coParentCodename,
+  ) async {
+    try {
+      // Buscar dados do pedido e pet para as notificações
+      final requestDoc = await collaborativeRequests.doc(requestId).get();
+      final petDoc = await collaborativePets.doc(petId).get();
+
+      if (requestDoc.exists && petDoc.exists) {
+        final request = CollaborativeAdoptionRequest.fromFirestore(requestDoc);
+        final pet = FirebasePetModel.fromFirestore(petDoc);
+
+        // Notificação para o solicitante original
+        await NotificationService().showCoParentCareNotification(
+          coParentCodename,
+          'aceitou cuidar de ${pet.name} com você!',
+        );
+
+        print('📱 Notificações push enviadas com sucesso');
+      }
+    } catch (e) {
+      print('❌ Erro ao enviar notificações push: $e');
+      // Não relança o erro para não afetar o fluxo principal
+    }
   }
 }
-
-
-
-// erro ao solicitar adocao e cancelar e tentar novamente nao permite dizedo que ja tenho , porem nao existe mais solicitacao pendindg so cancelameda parece erro de atualizacao de stado
-// a tela esta refheshando de tempo em tempo evoltando pra tela de adote um pet apos ter ido para a pagina de criacao ou a tela de aguardando sempre refesh 
-// snack bar de aviso demora muito pra sair da tela
-
-// esta gravando o id do usuario e deveria ser  o uid
-
-// deveria ter chamado o provider pra criar o pet 

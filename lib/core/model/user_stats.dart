@@ -1,6 +1,4 @@
-// lib/feature/auth/model/user_stats.dart
-import 'dart:convert';
-
+// Classe para estatísticas do usuário
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserStats {
@@ -11,59 +9,30 @@ class UserStats {
   final int totalAchievementsUnlocked;
   final int totalTimeSpent;
   final int loginStreak;
-  final DateTime lastLoginDate;
-  final Map<String, int> activityCounts;
+  final DateTime? lastLoginDate;
 
   const UserStats({
-    required this.totalPetsCared,
-    required this.totalCoinsEarned,
-    required this.totalXPEarned,
-    required this.totalMissionsCompleted,
-    required this.totalAchievementsUnlocked,
-    required this.totalTimeSpent,
-    required this.loginStreak,
-    required this.lastLoginDate,
-    required this.activityCounts,
+    this.totalPetsCared = 0,
+    this.totalCoinsEarned = 0,
+    this.totalXPEarned = 0,
+    this.totalMissionsCompleted = 0,
+    this.totalAchievementsUnlocked = 0,
+    this.totalTimeSpent = 0,
+    this.loginStreak = 0,
+    this.lastLoginDate,
   });
 
-  factory UserStats.initial() {
+  factory UserStats.fromMap(Map<String, dynamic> data) {
     return UserStats(
-      totalPetsCared: 0,
-      totalCoinsEarned: 0,
-      totalXPEarned: 0,
-      totalMissionsCompleted: 0,
-      totalAchievementsUnlocked: 0,
-      totalTimeSpent: 0,
-      loginStreak: 1,
-      lastLoginDate: DateTime.now(),
-      activityCounts: {
-        'totalFed': 0,
-        'totalPlayed': 0,
-        'totalCleaned': 0,
-        'totalShopped': 0,
-        'totalCollaborated': 0,
-      },
-    );
-  }
-
-  factory UserStats.fromMap(Map<String, dynamic>? map) {
-    map = map ?? {};
-    return UserStats(
-      totalPetsCared: map['totalPetsCared'] ?? 0,
-      totalCoinsEarned: map['totalCoinsEarned'] ?? 0,
-      totalXPEarned: map['totalXPEarned'] ?? 0,
-      totalMissionsCompleted: map['totalMissionsCompleted'] ?? 0,
-      totalAchievementsUnlocked: map['totalAchievementsUnlocked'] ?? 0,
-      totalTimeSpent: map['totalTimeSpent'] ?? 0,
-      loginStreak: map['loginStreak'] ?? 1,
-      lastLoginDate:
-          (map['lastLoginDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      activityCounts: Map<String, int>.from(map['activityCounts'] ?? {}),
-    );
-  }
-
-  factory UserStats.fromJson(String jsonString) {
-    return UserStats.fromMap(jsonDecode(jsonString));
+        totalPetsCared: data['totalPetsCared'] ?? 0,
+        totalCoinsEarned: data['totalCoinsEarned'] ?? 0,
+        totalXPEarned: data['totalXPEarned'] ?? 0,
+        totalMissionsCompleted: data['totalMissionsCompleted'] ?? 0,
+        totalAchievementsUnlocked: data['totalAchievementsUnlocked'] ?? 0,
+        totalTimeSpent: data['totalTimeSpent'] ?? 0,
+        loginStreak: data['loginStreak'] ?? 0
+        // lastLoginDate: UserModel._parseTimestamp(data['lastLoginDate']),
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -75,12 +44,10 @@ class UserStats {
       'totalAchievementsUnlocked': totalAchievementsUnlocked,
       'totalTimeSpent': totalTimeSpent,
       'loginStreak': loginStreak,
-      'lastLoginDate': Timestamp.fromDate(lastLoginDate),
-      'activityCounts': activityCounts,
+      'lastLoginDate':
+          lastLoginDate != null ? Timestamp.fromDate(lastLoginDate!) : null,
     };
   }
-
-  String toJson() => jsonEncode(toMap());
 
   UserStats copyWith({
     int? totalPetsCared,
@@ -91,7 +58,6 @@ class UserStats {
     int? totalTimeSpent,
     int? loginStreak,
     DateTime? lastLoginDate,
-    Map<String, int>? activityCounts,
   }) {
     return UserStats(
       totalPetsCared: totalPetsCared ?? this.totalPetsCared,
@@ -104,7 +70,6 @@ class UserStats {
       totalTimeSpent: totalTimeSpent ?? this.totalTimeSpent,
       loginStreak: loginStreak ?? this.loginStreak,
       lastLoginDate: lastLoginDate ?? this.lastLoginDate,
-      activityCounts: activityCounts ?? this.activityCounts,
     );
   }
 }

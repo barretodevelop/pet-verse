@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/core/theme/colors/app_colors.dart';
 import 'package:petverse/feature/minigames/games/food_catcher_game.dart';
 import 'package:petverse/feature/minigames/games/hidden_path_game.dart';
+import 'package:petverse/feature/minigames/games/lucky_wheel_game.dart';
 import 'package:petverse/feature/minigames/games/memory_game.dart';
 import 'package:petverse/feature/minigames/games/pet_puzzle_game.dart';
 import 'package:petverse/feature/minigames/games/pet_runner_game.dart';
@@ -39,6 +40,8 @@ class _MinigamesBottomSheetState extends ConsumerState<MinigamesBottomSheet> {
     PetPuzzleGame(),
     ReflexGame(),
     HiddenPathGame(),
+    LuckyWheelMiniGame(),
+    // DinoGame(),
     // SequenceGame(),
     // QuickTapGame(),
     // WordMatchGame(),

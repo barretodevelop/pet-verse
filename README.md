@@ -387,11 +387,19 @@ Polimento final
 
 
 
+glassmorphism 3.0.0
+
+
+
 comandos : prompt 
 
 voce e um analista senior em desenvolvimento de sotware especialidade em games com adocao de melhores praticas de desenvolvimento e arquitetura clean com altos conhecimentos em design e modelagem de jogos,  para analisar o código e corrigir os erros encontrados  ou incrmentar funcionalidades estaremos usando a estratégia de desenvolvimento incremental.
-Usar Artifacts  para cada arquivo Se o código não couber numa resposta,  usar a função update para adicionar mais partes. para evitar atingir o limite de mensagem.nao precisa enviar feeedback completo da alteração apenas se solicitado , sempre incluir  o nome e caminho do arquivo no inicio e add comentarios se e alteracao ou nova inclusao. enviar a resposta em portugues.  
+Usar Artifacts  para cada arquivo Se o código não couber numa resposta,  usar a função update para adicionar mais partes. para evitar atingir o limite de mensagem.nao precisa enviar feeedback completo da alteração apenas se solicitado , sempre incluir  o nome e caminho do arquivo no inicio e add comentarios se e alteracao ou nova inclusao. enviar a resposta em portugues.  criar um minigame RockPaperScissors profissional com design ux 
  
+erros localizados nao cria o pet no firebase 
+ficara atualizando a tela dem 50 em 30 segundos sempre voltando pra home 
+no fluxo esta grando o campo id do usuario porem deveria ser o campo uui 
+
 
 recebi essa analise do projeto vamos seguir gerando a correção para cada arquivo e gerando os novo necessarios , oriente-me tambem dos arquivo desse fluxo que poderam ser removidos apos o novo fluxo de adocao conforme abaixo ser implantado. nao usar build runner 
 

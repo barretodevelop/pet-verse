@@ -1,6 +1,5 @@
 // lib/core/providers/unified_user_state_provider.dart
-// NOVO: Provider unificado que centraliza todo o estado do usuário
-// Resolve problemas de fragmentação, sincronização e race conditions
+// CORRIGIDO: Removido timer automático que causava refresh constante
 
 import 'dart:async';
 
@@ -116,7 +115,8 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
 
   final Ref _ref;
   StreamSubscription? _authSubscription;
-  Timer? _refreshTimer;
+  // REMOVIDO: Timer automático que causava refresh constante
+  // Timer? _refreshTimer;
 
   // Inicialização do provider
   Future<void> _initialize() async {
@@ -128,12 +128,8 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
       _handleAuthChange(authState);
     });
 
-    // Configurar refresh automático a cada 30 segundos para dados críticos
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (state.isAuthenticated && !state.isInTransition) {
-        _refreshUserData(silent: true);
-      }
-    });
+    // REMOVIDO: Configuração do refresh automático que causava loops
+    // Agora o refresh será manual ou baseado em eventos específicos
 
     // Carregar estado inicial
     await _loadInitialState();
@@ -185,8 +181,8 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
 
       // Carregar dados em paralelo para melhor performance
       final results = await Future.wait([
-        _loadActiveRequest(user.id),
-        _loadUserPets(user.id),
+        _loadActiveRequest(user.uid), // CORRIGIDO: Usar uid ao invés de id
+        _loadUserPets(user.uid), // CORRIGIDO: Usar uid ao invés de id
       ]);
 
       final activeRequest = results[0] as CollaborativeAdoptionRequest?;
@@ -264,7 +260,7 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
   // MÉTODOS PÚBLICOS PARA AÇÕES DO USUÁRIO
   // =====================================================
 
-  // Refresh completo dos dados
+  // Refresh manual dos dados (removido o automático)
   Future<void> refreshUserData({bool silent = false}) async {
     if (!state.isAuthenticated) return;
 
@@ -326,7 +322,7 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
       await FirebaseAdoptionService.acceptAdoptionRequest(
         requestId: requestId,
         petId: petId,
-        coParentId: state.user!.id,
+        coParentId: state.user!.uid, // CORRIGIDO: Usar uid
         coParentDisplayName: coParentDisplayName,
         coParentCodename: coParentCodename,
       );
@@ -375,8 +371,8 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // Verificar se o pet apareceu nos pets do usuário
-        final userPets =
-            await FirebaseAdoptionService.getUserPets(state.user!.id);
+        final userPets = await FirebaseAdoptionService.getUserPets(
+            state.user!.uid); // CORRIGIDO: Usar uid
         final adoptedPet = userPets.firstWhere(
           (pet) => pet.id == petId,
           orElse: () => throw StateError('Pet não encontrado'),
@@ -420,7 +416,7 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
 
       final requestId =
           await FirebaseAdoptionService.createCollaborativeAdoptionRequest(
-        requesterId: state.user!.id,
+        requesterId: state.user!.uid, // CORRIGIDO: Usar uid
         requesterDisplayName: state.user!.displayName ?? 'Usuário',
         requesterCodename: codename,
         requesterColorTheme: colorTheme,
@@ -514,7 +510,8 @@ class UnifiedUserStateNotifier extends StateNotifier<UnifiedUserState> {
   @override
   void dispose() {
     _authSubscription?.cancel();
-    _refreshTimer?.cancel();
+    // REMOVIDO: Timer cleanup pois não há mais timer
+    // _refreshTimer?.cancel();
     super.dispose();
   }
 }
