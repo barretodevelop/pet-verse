@@ -37,8 +37,8 @@ class WelcomeHeader extends StatelessWidget {
             opacity: fadeController,
             child: Text(
               '$greeting! 👋',
-              style: AppTheme.headingLarge.copyWith(
-                color: AppTheme.primarySoft,
+              style: AppTheme.headlineLarge.copyWith(
+                color: AppTheme.primary,
               ),
             ),
           ),

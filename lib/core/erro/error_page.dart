@@ -35,7 +35,7 @@ class ErrorPage extends StatelessWidget {
                     color: AppTheme.errorColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(60),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.error_outline,
                     size: 60,
                     color: AppTheme.errorColor,
@@ -50,7 +50,7 @@ class ErrorPage extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.primary,
                   ),
                   textAlign: TextAlign.center,
                 ),

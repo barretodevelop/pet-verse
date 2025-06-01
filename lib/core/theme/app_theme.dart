@@ -194,6 +194,22 @@ class AppTheme {
   static const Curve smoothCurve = Curves.easeInOut;
   static const Curve sharpCurve = Curves.easeOutQuart;
 
+  static var errorColor;
+
+  static var primaryButtom;
+
+  static var accentCoral;
+
+  static var captionText;
+
+  static var accentPeach;
+
+  static var textLight;
+
+  static var accentGradient;
+
+  static var textTheme;
+
   // ============ TEMA LIGHT ============
 
   static ThemeData get lightTheme => ThemeData(

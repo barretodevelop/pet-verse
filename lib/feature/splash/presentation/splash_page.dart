@@ -203,7 +203,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                                   style: GoogleFonts.nunito(
                                     fontSize: 36,
                                     fontWeight: FontWeight.w800,
-                                    color: AppTheme.primaryColor,
+                                    color: AppTheme.primary,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -311,7 +311,7 @@ class _PulsingDotsState extends State<PulsingDots>
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(
+                color: AppTheme.primary.withOpacity(
                   0.3 + (_animations[index].value * 0.7),
                 ),
                 borderRadius: BorderRadius.circular(6),

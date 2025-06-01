@@ -47,7 +47,7 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
 
     _colorAnimation = ColorTween(
       begin: Colors.white,
-      end: AppTheme.primarySoft.withOpacity(0.05),
+      end: AppTheme.primary.withOpacity(0.05),
     ).animate(CurvedAnimation(
       parent: _selectionController,
       curve: Curves.easeInOut,
@@ -107,14 +107,14 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                 color: _colorAnimation.value,
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: isSelected ? AppTheme.primarySoft : Colors.transparent,
+                  color: isSelected ? AppTheme.primary : Colors.transparent,
                   width: 2.w,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: isSelected
-                        ? AppTheme.primarySoft.withOpacity(0.2)
-                        : AppTheme.cardShadow,
+                        ? AppTheme.primary.withOpacity(0.2)
+                        : AppTheme.primary,
                     blurRadius: isSelected ? 15 : 10,
                     offset: const Offset(0, 5),
                   ),
@@ -150,7 +150,7 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primarySoft.withOpacity(0.4),
+                                  color: AppTheme.primary.withOpacity(0.4),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -208,7 +208,7 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                                 style: AppTheme.bodyLarge.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: isSelected
-                                      ? AppTheme.primarySoft
+                                      ? AppTheme.primary
                                       : AppTheme.textPrimary,
                                 ),
                               ),
@@ -328,8 +328,8 @@ class SelectedPetsSummary extends ConsumerWidget {
           // Header
           Text(
             'Resumo da Seleção',
-            style: AppTheme.headingSmall.copyWith(
-              color: AppTheme.primarySoft,
+            style: AppTheme.headlineSmall.copyWith(
+              color: AppTheme.primary,
             ),
           ),
 
@@ -439,17 +439,17 @@ class SelectedPetsSummary extends ConsumerWidget {
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              AppTheme.primarySoft.withOpacity(0.02),
+              AppTheme.primary.withOpacity(0.02),
             ],
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: AppTheme.primarySoft.withOpacity(0.2),
+            color: AppTheme.primary.withOpacity(0.2),
             width: 1.w,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primarySoft.withOpacity(0.1),
+              color: AppTheme.primary.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -613,7 +613,7 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                 // Success message
                 Text(
                   'Pedido Criado! 🎉',
-                  style: AppTheme.headingLarge.copyWith(
+                  style: AppTheme.headlineLarge.copyWith(
                     color: AppTheme.success,
                   ),
                   textAlign: TextAlign.center,
@@ -648,7 +648,7 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                     borderRadius: BorderRadius.circular(20.r),
                     boxShadow: const [
                       BoxShadow(
-                        color: AppTheme.cardShadow,
+                        color: AppTheme.primary,
                         blurRadius: 15,
                         offset: Offset(0, 5),
                       ),
@@ -697,14 +697,14 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                         width: double.infinity,
                         padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
-                          color: AppTheme.primarySoft.withOpacity(0.05),
+                          color: AppTheme.primary.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
                           'ID do Pedido: ${widget.requestId.substring(0, 8).toUpperCase()}',
                           style: AppTheme.bodySmall.copyWith(
                             fontFamily: 'monospace',
-                            color: AppTheme.primarySoft,
+                            color: AppTheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,
@@ -754,8 +754,8 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                         icon: const Icon(Icons.list),
                         label: const Text('Ver Lista Pública'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.primarySoft,
-                          side: const BorderSide(color: AppTheme.primarySoft),
+                          foregroundColor: AppTheme.primary,
+                          side: const BorderSide(color: AppTheme.primary),
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                         ),
                       ),

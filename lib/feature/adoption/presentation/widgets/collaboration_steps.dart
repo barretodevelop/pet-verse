@@ -18,13 +18,13 @@ class CollaborationSteps extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primarySoft.withOpacity(0.05),
+            AppTheme.primary.withOpacity(0.05),
             AppTheme.accentCoral.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: AppTheme.primarySoft.withOpacity(0.1),
+          color: AppTheme.primary.withOpacity(0.1),
           width: 1.w,
         ),
       ),
@@ -36,14 +36,14 @@ class CollaborationSteps extends StatelessWidget {
             children: [
               Icon(
                 Icons.timeline,
-                color: AppTheme.primarySoft,
+                color: AppTheme.primary,
                 size: 24.sp,
               ),
               SizedBox(width: 12.w),
               Text(
                 'Como funciona o processo',
-                style: AppTheme.headingSmall.copyWith(
-                  color: AppTheme.primarySoft,
+                style: AppTheme.headlineSmall.copyWith(
+                  color: AppTheme.primary,
                 ),
               ),
             ],
@@ -57,7 +57,7 @@ class CollaborationSteps extends StatelessWidget {
             title: 'Escolha seus pets favoritos',
             description: 'Selecione até 3 pets que gostaria de adotar',
             icon: Icons.pets,
-            color: AppTheme.primarySoft,
+            color: AppTheme.primary,
             isFirst: true,
           ),
 

@@ -51,7 +51,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         border: Border.all(color: Colors.white, width: 2.w),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primarySoft.withOpacity(0.2),
+                            color: AppTheme.primary.withOpacity(0.2),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -136,7 +136,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   SizedBox(width: 8.w),
                   _HeaderActionButton(
                     icon: Icons.notifications_outlined,
-                    color: AppTheme.primarySoft,
+                    color: AppTheme.primary,
                     onTap: () => AppUtils.lightImpact(),
                   ),
                 ],

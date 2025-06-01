@@ -55,13 +55,13 @@ class _PetDetailsCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            AppTheme.primarySoft.withOpacity(0.02),
+            AppTheme.primary.withOpacity(0.02),
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primarySoft.withOpacity(0.15),
+            color: AppTheme.primary.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -81,7 +81,7 @@ class _PetDetailsCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primarySoft.withOpacity(0.2),
+                        color: AppTheme.primary.withOpacity(0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -162,7 +162,7 @@ class _PetDetailsCard extends StatelessWidget {
                 child: _PetActionButton(
                   label: 'Brincar',
                   icon: Icons.sports_tennis,
-                  color: AppTheme.primarySoft,
+                  color: AppTheme.primary,
                   onTap: () => AppUtils.mediumImpact(),
                 ),
               ),
@@ -313,7 +313,7 @@ class _NoPetFoundCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: const [
             BoxShadow(
-              color: AppTheme.cardShadow,
+              color: AppTheme.primary,
               blurRadius: 15,
               offset: Offset(0, 5),
             ),

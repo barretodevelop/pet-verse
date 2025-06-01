@@ -1,6 +1,7 @@
 // widgets/custom_bottom_navigation_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:petverse/core/theme/app_theme.dart';
 // Importe seu modelo
 // import 'models/bottom_nav_item.dart';
 
@@ -92,14 +93,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   Widget _buildNavItem(BuildContext context, int index, BottomNavItem item) {
     final isSelected = index == selectedIndex;
-    final color =
-        isSelected ? Theme.of(context).primaryColor : Colors.grey.shade600;
+    final color = isSelected ? AppTheme.primary : Colors.grey.shade600;
 
     return Expanded(
       child: InkWell(
         onTap: () => onItemTapped(index),
         borderRadius: BorderRadius.circular(16),
-        splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
+        splashColor: AppTheme.primary,
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -146,7 +146,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.4),
+                color: AppTheme.primary.withOpacity(0.4),
                 blurRadius: 15,
                 spreadRadius: 2,
                 offset: const Offset(0, 5),
