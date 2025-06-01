@@ -194,22 +194,6 @@ class AppTheme {
   static const Curve smoothCurve = Curves.easeInOut;
   static const Curve sharpCurve = Curves.easeOutQuart;
 
-  static var errorColor = const Color.fromARGB(255, 104, 21, 34);
-
-  static var accentPeach;
-
-  static var accentCoral;
-
-  static var cardShadowButtom;
-
-  static var textTheme;
-
-  static var textLight;
-
-  static var captionText;
-
-  static var accentGradient;
-
   // ============ TEMA LIGHT ============
 
   static ThemeData get lightTheme => ThemeData(

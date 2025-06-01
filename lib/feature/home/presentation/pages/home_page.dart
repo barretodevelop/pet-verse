@@ -423,13 +423,13 @@ class _PetStatusCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            AppTheme.primarySoft.withOpacity(0.02),
+            AppTheme.primary.withOpacity(0.02),
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primarySoft.withOpacity(0.15),
+            color: AppTheme.primary.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -450,7 +450,7 @@ class _PetStatusCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primarySoft.withOpacity(0.2),
+                        color: AppTheme.primary.withOpacity(0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -629,7 +629,7 @@ class _AdoptionOptionsWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primarySoft.withOpacity(0.1),
+                  color: AppTheme.primary.withOpacity(0.1),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -640,7 +640,7 @@ class _AdoptionOptionsWidget extends StatelessWidget {
                 Icon(
                   Icons.pets_rounded,
                   size: 80.sp,
-                  color: AppTheme.primarySoft,
+                  color: AppTheme.primary,
                 ),
                 SizedBox(height: 16.h),
                 Text(

@@ -5,7 +5,7 @@
 
 // class AppTheme {
 //   // Cores principais - Paleta suave e acolhedora
-//   static const Color primaryColor = Color(0xFF6B73FF);
+//   static const Color primary = Color(0xFF6B73FF);
 //   static const Color primaryVariant = Color(0xFF5A63E8);
 //   static const Color secondaryColor = Color(0xFFFF9F43);
 //   static const Color secondaryVariant = Color(0xFFFF8C2B);
@@ -38,7 +38,7 @@
 
 //   // Gradients
 //   static const LinearGradient primaryGradient = LinearGradient(
-//     colors: [primaryColor, primaryVariant],
+//     colors: [primary, primaryVariant],
 //     begin: Alignment.topLeft,
 //     end: Alignment.bottomRight,
 //   );
@@ -118,7 +118,7 @@
 //         useMaterial3: true,
 //         brightness: Brightness.light,
 //         colorScheme: const ColorScheme.light(
-//           primary: primaryColor,
+//           primary: primary,
 //           primaryContainer: Color(0xFFE8EAFF),
 //           secondary: secondaryColor,
 //           secondaryContainer: Color(0xFFFFE8D6),
@@ -161,7 +161,7 @@
 //         // Elevated Button Theme
 //         elevatedButtonTheme: ElevatedButtonThemeData(
 //           style: ElevatedButton.styleFrom(
-//             backgroundColor: primaryColor,
+//             backgroundColor: primary,
 //             foregroundColor: Colors.white,
 //             elevation: 2,
 //             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -189,7 +189,7 @@
 //           ),
 //           focusedBorder: OutlineInputBorder(
 //             borderRadius: BorderRadius.circular(12),
-//             borderSide: const BorderSide(color: primaryColor, width: 2),
+//             borderSide: const BorderSide(color: primary, width: 2),
 //           ),
 //           contentPadding:
 //               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -202,7 +202,7 @@
 //         // Bottom Navigation Bar Theme
 //         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
 //           backgroundColor: Colors.white,
-//           selectedItemColor: primaryColor,
+//           selectedItemColor: primary,
 //           unselectedItemColor: Color(0xFF95A5A6),
 //           type: BottomNavigationBarType.fixed,
 //           elevation: 8,
@@ -210,7 +210,7 @@
 
 //         // Progress Indicator Theme
 //         progressIndicatorTheme: const ProgressIndicatorThemeData(
-//           color: primaryColor,
+//           color: primary,
 //           linearTrackColor: Color(0xFFE8EAFF),
 //         ),
 //       );
@@ -278,7 +278,7 @@
 
 //   // ----------------------SEGUND LINHA
 //   // Paleta de cores suaves
-//   static const Color primarySoft = Color(0xFF6B73FF);
+//   static const Color primary = Color(0xFF6B73FF);
 //   static const Color primaryLightSoft = Color(0xFF9BA3FF);
 //   static const Color accentCoral = Color(0xFFFF8A80);
 //   static const Color accentPeach = Color(0xFFFFB74D);
@@ -298,7 +298,7 @@
 //   static const LinearGradient primaryGradient = LinearGradient(
 //     begin: Alignment.topLeft,
 //     end: Alignment.bottomRight,
-//     colors: [primarySoft, primaryLightSoft],
+//     colors: [primary, primaryLightSoft],
 //   );
 
 //   static const LinearGradient accentGradient = LinearGradient(
@@ -373,7 +373,7 @@
 //   // static ThemeData get lightTheme => ThemeData(
 //   //       useMaterial3: true,
 //   //       colorScheme: const ColorScheme.light(
-//   //         primary: primarySoft,
+//   //         primary: primary,
 //   //         secondary: accentCoral,
 //   //         surface: surfaceLight,
 //   //         error: error,
@@ -389,7 +389,7 @@
 //   //       ),
 //   //       elevatedButtonTheme: ElevatedButtonThemeData(
 //   //         style: ElevatedButton.styleFrom(
-//   //           backgroundColor: primarySoft,
+//   //           backgroundColor: primary,
 //   //           foregroundColor: Colors.white,
 //   //           elevation: 0,
 //   //           shadowColor: Colors.transparent,
@@ -484,7 +484,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Paleta de cores suaves
-  static const Color primarySoft = Color(0xFF6B73FF);
+  static const Color primary = Color(0xFF6B73FF);
   static const Color primaryLightSoft = Color(0xFF9BA3FF);
   static const Color accentCoral = Color(0xFFFF8A80);
   static const Color accentPeach = Color(0xFFFFB74D);
@@ -504,7 +504,7 @@ class AppTheme {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primarySoft, primaryLightSoft],
+    colors: [primary, primaryLightSoft],
   );
 
   static const LinearGradient accentGradient = LinearGradient(
@@ -579,7 +579,7 @@ class AppTheme {
   static ThemeData get lightTheme => ThemeData(
         useMaterial3: true,
         colorScheme: const ColorScheme.light(
-          primary: primarySoft,
+          primary: primary,
           secondary: accentCoral,
           surface: surfaceLight,
           error: error,
@@ -595,7 +595,7 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: primarySoft,
+            backgroundColor: primary,
             foregroundColor: Colors.white,
             elevation: 0,
             shadowColor: Colors.transparent,
@@ -687,7 +687,7 @@ class AppTheme {
   ///
 
   // Cores principais - Paleta suave e acolhedora
-  static const Color primaryColor = Color(0xFF6B73FF);
+  static const Color primary = Color(0xFF6B73FF);
   static const Color primaryVariant = Color(0xFF5A63E8);
   static const Color secondaryColor = Color(0xFFFF9F43);
   static const Color secondaryVariant = Color(0xFFFF8C2B);
@@ -720,7 +720,7 @@ class AppTheme {
 
   // Gradients
   // static const LinearGradient primaryGradient = LinearGradient(
-  //   colors: [primaryColor, primaryVariant],
+  //   colors: [primary, primaryVariant],
   //   begin: Alignment.topLeft,
   //   end: Alignment.bottomRight,
   // );
@@ -800,7 +800,7 @@ class AppTheme {
   //       useMaterial3: true,
   //       brightness: Brightness.light,
   //       colorScheme: const ColorScheme.light(
-  //         primary: primaryColor,
+  //         primary: primary,
   //         primaryContainer: Color(0xFFE8EAFF),
   //         secondary: secondaryColor,
   //         secondaryContainer: Color(0xFFFFE8D6),
@@ -843,7 +843,7 @@ class AppTheme {
   //       // Elevated Button Theme
   //       elevatedButtonTheme: ElevatedButtonThemeData(
   //         style: ElevatedButton.styleFrom(
-  //           backgroundColor: primaryColor,
+  //           backgroundColor: primary,
   //           foregroundColor: Colors.white,
   //           elevation: 2,
   //           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -871,7 +871,7 @@ class AppTheme {
   //         ),
   //         focusedBorder: OutlineInputBorder(
   //           borderRadius: BorderRadius.circular(12),
-  //           borderSide: const BorderSide(color: primaryColor, width: 2),
+  //           borderSide: const BorderSide(color: primary, width: 2),
   //         ),
   //         contentPadding:
   //             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -884,7 +884,7 @@ class AppTheme {
   //       // Bottom Navigation Bar Theme
   //       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
   //         backgroundColor: Colors.white,
-  //         selectedItemColor: primaryColor,
+  //         selectedItemColor: primary,
   //         unselectedItemColor: Color(0xFF95A5A6),
   //         type: BottomNavigationBarType.fixed,
   //         elevation: 8,
@@ -892,7 +892,7 @@ class AppTheme {
 
   //       // Progress Indicator Theme
   //       progressIndicatorTheme: const ProgressIndicatorThemeData(
-  //         color: primaryColor,
+  //         color: primary,
   //         linearTrackColor: Color(0xFFE8EAFF),
   //       ),
   //     );

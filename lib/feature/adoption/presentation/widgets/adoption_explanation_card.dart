@@ -16,7 +16,7 @@ class AdoptionExplanationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: const [
           BoxShadow(
-            color: AppTheme.cardShadow,
+            color: AppTheme.primary,
             blurRadius: 15,
             offset: Offset(0, 5),
           ),
@@ -44,8 +44,8 @@ class AdoptionExplanationCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Como funciona?',
-                  style: AppTheme.headingSmall.copyWith(
-                    color: AppTheme.primarySoft,
+                  style: AppTheme.headlineSmall.copyWith(
+                    color: AppTheme.primary,
                   ),
                 ),
               ),

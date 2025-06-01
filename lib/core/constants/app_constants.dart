@@ -248,16 +248,10 @@ class AppConstants {
     return '$lottiePath$animation.json';
   }
 
-  static bool isPetNameValid(String name) {
-    return RegExp(petNamePattern).hasMatch(name) &&
-        name.length >= minNameLength &&
-        name.length <= maxNameLength;
-  }
-
-  static bool isEmailValid(String email) {
-    return RegExp(emailPattern).hasMatch(email) &&
-        email.length >= minEmailLength;
-  }
+  // static bool isEmailValid(String email) {
+  //   return RegExp(emailPattern)asMatch(email) &&
+  //       email.length >= minEmailLength;
+  // }
 
   static int getXPForLevel(int level) {
     return level * 100; // Linear progression for simplicity

@@ -35,7 +35,7 @@ class LoadingOverlay extends StatelessWidget {
                   children: [
                     const CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          AlwaysStoppedAnimation<Color>(AppTheme.primary),
                     ),
                     if (message != null) ...[
                       const SizedBox(height: AppTheme.spaceMd),

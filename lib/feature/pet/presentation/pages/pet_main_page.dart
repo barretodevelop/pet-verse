@@ -63,7 +63,7 @@ class PetMainPage extends ConsumerWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primarySoft.withOpacity(0.3),
+                      color: AppTheme.primary.withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 5),
                     ),
@@ -79,8 +79,8 @@ class PetMainPage extends ConsumerWidget {
               // Pet name
               Text(
                 'Olá, ${pet.name}! 🐾',
-                style: AppTheme.headingLarge.copyWith(
-                  color: AppTheme.primarySoft,
+                style: AppTheme.headlineLarge.copyWith(
+                  color: AppTheme.primary,
                 ),
                 textAlign: TextAlign.center,
               )
@@ -122,7 +122,7 @@ class PetMainPage extends ConsumerWidget {
           SizedBox(height: 24.h),
           Text(
             'Nenhum pet encontrado',
-            style: AppTheme.headingMedium,
+            style: AppTheme.headlineMedium,
           ),
           SizedBox(height: 8.h),
           Text(
@@ -175,7 +175,7 @@ class PetMainPage extends ConsumerWidget {
           SizedBox(height: 16.h),
           Text(
             'Erro ao carregar pet',
-            style: AppTheme.headingSmall,
+            style: AppTheme.headlineSmall,
           ),
           SizedBox(height: 8.h),
           Text(

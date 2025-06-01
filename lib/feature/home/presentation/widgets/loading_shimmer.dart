@@ -39,7 +39,7 @@ class LoadingShimmer extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: const [
           BoxShadow(
-            color: AppTheme.cardShadow,
+            color: AppTheme.primary,
             blurRadius: 10,
             offset: Offset(0, 2),
           ),

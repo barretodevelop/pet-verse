@@ -3,7 +3,7 @@ import 'package:petverse/core/theme/app_theme.dart';
 
 extension AppThemeExtension on BuildContext {
   // 🎨 Cores
-  Color get primaryColor => AppTheme.primary;
+  Color get primary => AppTheme.primary;
   Color get secondaryColor => AppTheme.secondary;
   Color get successColor => AppTheme.success;
   Color get warningColor => AppTheme.warning;
@@ -128,15 +128,15 @@ extension ThemedWidgets on BuildContext {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: textColor ?? primaryColor,
+                    color: textColor ?? primary,
                   ),
                 )
               : Icon(icon),
           label: Text(text),
           style: OutlinedButton.styleFrom(
-            foregroundColor: textColor ?? primaryColor,
+            foregroundColor: textColor ?? primary,
             side: BorderSide(
-              color: backgroundColor ?? primaryColor,
+              color: backgroundColor ?? primary,
               width: 1.5,
             ),
           ),
@@ -160,7 +160,7 @@ extension ThemedWidgets on BuildContext {
             : Icon(icon),
         label: Text(text),
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? primaryColor,
+          backgroundColor: backgroundColor ?? primary,
           foregroundColor: textColor ?? Colors.white,
         ),
       ),
