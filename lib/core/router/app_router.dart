@@ -1,166 +1,162 @@
 // lib/core/router/app_router.dart
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:petverse/core/enums/enums.dart';
-import 'package:petverse/core/erro/error_page.dart';
-import 'package:petverse/core/providers/app_state_provider.dart';
-import 'package:petverse/feature/adoption/presentation/pages/create_adoption_page.dart';
-import 'package:petverse/feature/adoption/presentation/pages/list_adoption_page.dart';
-import 'package:petverse/feature/auth/presentation/login_page.dart';
-import 'package:petverse/feature/home/presentation/pages/home_page.dart';
-import 'package:petverse/feature/pet/presentation/pages/pet_main_page.dart';
-import 'package:petverse/feature/profile/presentation/profile_page.dart';
-import 'package:petverse/feature/settings/presentation/settings_page.dart';
-import 'package:petverse/feature/shop/presetation/shop.dart';
-import 'package:petverse/feature/splash/presentation/splash_page.dart';
+import 'package:petverse/features/album_conquistas/screens/album_achievements_screen.dart';
+import 'package:petverse/features/auth/providers/auth_providers.dart';
+import 'package:petverse/features/auth/screens/login_screen.dart';
+import 'package:petverse/features/decoration/screens/decorate_environment_screen.dart';
+import 'package:petverse/features/events/screens/events_screen.dart';
+import 'package:petverse/features/home/screens/home_screen.dart';
+import 'package:petverse/features/minigame/screens/click_emoji_minigame_screen.dart';
+import 'package:petverse/features/minigame/screens/minigames_list_screen.dart';
+import 'package:petverse/features/pet_care/screens/pet_care_screen.dart';
+import 'package:petverse/features/pet_selection/screens/select_pet_screen.dart';
+import 'package:petverse/features/profile/screens/profile_screen.dart';
+import 'package:petverse/features/quests/screens/quests_screen.dart';
+import 'package:petverse/features/settings/screens/settings_screen.dart';
+import 'package:petverse/features/shop/screens/shop_screen.dart';
+import 'package:petverse/features/splash/splash_screen.dart';
 
-final appRouterProvider = Provider<GoRouter>((ref) {
-  final uiState = ref.watch(uiStateProvider);
+// Chave global para o Navigator do ShellRoute
+final GlobalKey<NavigatorState> _rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shell');
 
-  return GoRouter(
-    initialLocation: '/splash',
-    debugLogDiagnostics: false,
+final GoRouter appRouter = GoRouter(
+  navigatorKey: _rootNavigatorKey,
+  initialLocation: '/', // Sempre começa pela Splash
+  routes: [
+    // Rotas de nível superior (fora do ShellRoute com BottomNavigationBar)
+    GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+    GoRoute(
+        path: '/select',
+        builder: (_, __) =>
+            const SelectPetScreen()), // Mantido fora se o fluxo for Splash -> Login -> Select -> Home(Main)
 
-    // --- LÓGICA DE REDIRECIONAMENTO CORRIGIDA ---
-    redirect: (context, state) {
-      final location = state.matchedLocation;
-      final isAuthenticated = uiState.isAuthenticated;
-      final isLoading = uiState.isLoading;
-      final appState = uiState.appState;
+    // StatefulShellRoute para a navegação com BottomNavigationBar
+    StatefulShellRoute.indexedStack(
+      builder: (BuildContext context, GoRouterState state,
+          StatefulNavigationShell navigationShell) {
+        // O widget que contém o Scaffold com a BottomNavigationBar e o corpo da aba
+        return HomeScreen(navigationShell: navigationShell);
+      },
+      branches: <StatefulShellBranch>[
+        // Branch para a aba "Pet" (Principal)
+        StatefulShellBranch(
+          // navigatorKey: _shellNavigatorKey, // Opcional: chave para este branch se precisar de navegação interna complexa
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/main', // Rota raiz desta aba
+              builder: (BuildContext context, GoRouterState state) =>
+                  const PetCareScreen(),
+              routes: <RouteBase>[
+                GoRoute(
+                  path: 'settings', // Acessível como /main/profile/settings
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const SettingsScreen(),
+                ),
+                GoRoute(
+                  path: 'profile', // Acessível como /main/profile
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const ProfileScreen(),
+                ),
+                // Outras sub-rotas da PetCareScreen, se houver (ex: um detalhe específico do pet)
+                GoRoute(
+                    path: 'minigame_click_emoji',
+                    builder: (_, __) =>
+                        const ClickEmojiMinigameScreen()), // Movido para ser sub-rota de /main
+                GoRoute(
+                    path: 'decorate_environment',
+                    builder: (_, __) => const DecorateEnvironmentScreen()),
+                GoRoute(
+                    path: 'quests',
+                    builder: (_, __) =>
+                        const QuestsScreen()), // Missões acessadas da PetCareScreen
+                GoRoute(
+                    path: 'album_achievements',
+                    builder: (_, __) =>
+                        const AlbumAchievementsScreen()), // Álbum acessado da PetCareScreen ou Perfil
+              ],
+            ),
+          ],
+        ),
 
-      // Lista de rotas públicas que não precisam de autenticação
-      final publicRoutes = ['/splash', '/auth/login'];
-      final isPublicRoute = publicRoutes.contains(location);
+        // Branch para a aba "Loja"
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/shop',
+              builder: (BuildContext context, GoRouterState state) =>
+                  const ShopScreen(),
+              // Se a loja tiver sub-rotas (ex: detalhes do item), adicione-as aqui
+            ),
+          ],
+        ),
 
-      // Se está carregando, manter na rota atual ou ir para splash
-      if (isLoading) {
-        return location == '/splash' ? null : '/splash';
-      }
+        // Branch para a aba "Jogos"
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/games', // Nova rota para a lista de minijogos
+              builder: (BuildContext context, GoRouterState state) =>
+                  const MinigamesListScreen(),
+              // A rota para o minijogo específico agora é sub-rota de /main para ser acessada de lá
+            ),
+          ],
+        ),
 
-      // Se não está autenticado
-      if (!isAuthenticated) {
-        // Se já está em rota pública, continuar
-        if (isPublicRoute) return null;
-        // Senão, redirecionar para login
-        return '/auth/login';
-      }
-
-      // Se está autenticado
-      if (isAuthenticated) {
-        // Se está em rota pública, redirecionar baseado no estado do app
-        if (isPublicRoute) {
-          switch (appState) {
-            case AppState.needsAdoption:
-              return '/need-adoption';
-            case AppState.hasPet:
-              return '/home';
-            case AppState.loading:
-              return '/splash';
-            default:
-              return '/home';
-          }
-        }
-
-        // Se está tentando acessar rota que não deveria baseado no estado
-        if (appState == AppState.needsAdoption &&
-            location.startsWith('/pet-')) {
-          return '/need-adoption';
-        }
-      }
-
-      return null; // Manter na rota atual
-    },
-
-    errorBuilder: (context, state) => ErrorPage(
-      error: state.error.toString(),
-      onRetry: () => context.go('/home'),
+        // Branch para a aba "Eventos"
+        StatefulShellBranch(
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/events', // Nova rota para a tela de eventos
+              builder: (BuildContext context, GoRouterState state) =>
+                  const EventsScreen(),
+            ),
+          ],
+        ),
+      ],
     ),
+    // Rotas que não fazem parte do Shell (ex: tela de customização de pet se for modal ou tela cheia separada)
+    // GoRoute(path: '/customize_pet_full', builder: (_, __) => const PetCustomizationScreen()),
+  ],
+  redirect: (BuildContext context, GoRouterState state) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final authState = container.read(authStateChangesProvider);
+    final firebaseUser = authState.asData?.value;
 
-    routes: [
-      // Splash Route
-      GoRoute(
-        path: '/splash',
-        name: 'splash',
-        builder: (context, state) => const SplashPage(),
-      ),
+    final loggingIn = state.matchedLocation == '/login';
+    final isSplash = state.matchedLocation == '/';
+    final selectingPet = state.matchedLocation == '/select';
 
-      // Auth Routes
-      GoRoute(
-        path: '/auth/login',
-        name: 'login',
-        builder: (context, state) => const LoginPage(),
-      ),
+    if (isSplash) return null; // Permite a SplashScreen carregar
 
-      // Home Route
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomePage(),
-      ),
-
-      // Profile Routes
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfilePage(),
-      ),
-
-      GoRoute(
-        path: '/settings',
-        name: 'settings',
-        builder: (context, state) => const SettingsPage(),
-      ),
-
-      // Adoption Routes
-      GoRoute(
-        path: '/need-adoption',
-        name: 'need-adoption',
-        builder: (context, state) => const HomePage(),
-      ),
-
-      GoRoute(
-        path: '/list-adoption',
-        name: 'list-adoption',
-        builder: (context, state) => const AdoptionListPage(),
-      ),
-
-      GoRoute(
-        path: '/create-adoption',
-        name: 'create-adoption',
-        builder: (context, state) => const CreateAdoptionPage(),
-      ),
-
-      // Pet Routes
-      GoRoute(
-        path: '/pet-main',
-        name: 'pet-main',
-        builder: (context, state) => const PetMainPage(),
-      ),
-
-      // shop
-      GoRoute(
-        path: '/shop',
-        name: 'shop',
-        builder: (context, state) => const ShopPage(),
-      ),
-    ],
-
-    observers: [
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
-    ],
-  );
-});
-
-// Provider para navegação com observação de estado
-final smartRouterProvider = Provider<GoRouter>((ref) {
-  // Observa mudanças no estado da aplicação
-  ref.listen(uiStateProvider, (previous, next) {
-    // Pode adicionar lógica de navegação automática aqui se necessário
-    if (previous?.isAuthenticated != next.isAuthenticated) {
-      // Usuário logou/deslogou - GoRouter já vai gerenciar via redirect
+    if (firebaseUser == null) {
+      // Não autenticado
+      return loggingIn ? null : '/login';
     }
-  });
 
-  return ref.watch(appRouterProvider);
-});
+    // Autenticado
+    if (loggingIn)
+      return '/'; // Se autenticado e na tela de login, vai para splash
+
+    // Se autenticado e não tem pet ativo, mas está tentando acessar /main ou suas sub-rotas
+    // A SplashScreen agora deve lidar com o gameDataLoadingProvider e o redirecionamento para /select ou /main
+    // Este redirect aqui é mais para proteger as rotas que exigem autenticação.
+
+    return null;
+  },
+  errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: const Text("Página não encontrada")),
+    body: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Text("Erro: ${state.error?.message ?? 'Rota não encontrada'}"),
+      ElevatedButton(
+          onPressed: () => context.go('/'),
+          child: const Text("Voltar para o Início"))
+    ])),
+  ),
+);

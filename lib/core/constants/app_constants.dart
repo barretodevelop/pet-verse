@@ -30,10 +30,10 @@ class AppConstants {
   static const String cacheBox = 'cache_box';
 
   // Pet Care Limits
-  static const int maxPetsPerUser = 5;
+  static const int maxPetsPerUser = 3;
   static const int maxCollaborativeSuggestions = 3;
   static const int collaborativeExpirationDays = 5;
-  static const int maxDailyCoins = 100;
+  static const int maxDailyCoins = 1000;
   static const int maxDailyGems = 20;
 
   // Status Thresholds
@@ -182,6 +182,8 @@ class AppConstants {
   // Validation
   static const int minNameLength = 2;
   static const int maxNameLength = 20;
+  static const int maxDescriptionLength = 500;
+
   static const int minEmailLength = 5;
   static const int minPasswordLength = 6;
 
@@ -323,43 +325,4 @@ class AppConstants {
   static const String adoptionAccepted =
       'Adoção aceita! Bem-vindo ao seu novo pet!';
   static const String linkCopied = 'Link copiado para a área de transferência!';
-
-  // Pet Types
-  // static const List<String> petTypes = [
-  //   'Cachorro',
-  //   'Gato',
-  //   'Pássaro',
-  //   'Peixe',
-  //   'Hamster',
-  //   'Coelho',
-  // ];
-
-  // // Pet Breeds (simplified)
-  // static const Map<String, List<String>> petBreeds = {
-  //   'Cachorro': [
-  //     'Golden Retriever',
-  //     'Labrador',
-  //     'Bulldog',
-  //     'Pastor Alemão',
-  //     'Beagle',
-  //     'Poodle',
-  //     'Shih Tzu',
-  //     'Vira-lata',
-  //   ],
-  //   'Gato': [
-  //     'Persa',
-  //     'Siamês',
-  //     'Maine Coon',
-  //     'British Shorthair',
-  //     'Ragdoll',
-  //     'Scottish Fold',
-  //     'Vira-lata',
-  //   ],
-  // Add more breeds as needed
-  // };
-
-  // Validation
-  // static const int minNameLength = 2;
-  // static const int maxNameLength = 50;
-  static const int maxDescriptionLength = 500;
 }

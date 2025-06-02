@@ -440,3 +440,34 @@ Usuário sem pet → escolhe da lista → aceita → automaticamente vê pet na 
 Zero estados inconsistentes ou conflitantes
 Loading states claros em todas as transições
 100% de confiabilidade na sincronização de estado
+
+
+
+
+
+Design Visual Atraente e Moderno:
+
+Estilo Visual: Buscamos um design [Especificar estilo, ex: minimalista, flat design, material design, neumorfismo sutil, etc.] que seja elegante, moderno e transmita [Mencionar sensações desejadas, ex: confiança, diversão, profissionalismo, tranquilidade].
+Paleta de Cores: [Sugerir cores primárias e secundárias, ou pedir sugestões baseadas na identidade da marca/conceito do app]. Priorizar cores que sejam agradáveis visualmente e que garantam boa legibilidade.
+Tipografia: Utilizar fontes limpas, legíveis e modernas. [Sugerir famílias tipográficas ou pedir recomendações]. Garantir hierarquia visual clara através do uso da tipografia.
+Iconografia: Ícones intuitivos, consistentes e com design coeso com o estilo visual geral do aplicativo. [Indicar se prefere ícones preenchidos, de linha, ou um estilo específico].
+Imagens e Ilustrações (se aplicável): [Descrever o estilo de imagens ou ilustrações desejadas, ex: fotografias de alta qualidade, ilustrações vetoriais personalizadas, etc.].
+Experiência de Usuário (UX) "Clean" e Intuitiva:
+
+Fluxo de Navegação Lógico: A jornada do usuário deve ser clara, simples e sem atritos. O usuário deve conseguir realizar as tarefas principais com o mínimo de cliques/toques possível.
+Arquitetura da Informação Clara: Organizar o conteúdo e as funcionalidades de forma lógica e fácil de entender.
+Feedback ao Usuário: Fornecer feedback visual e/ou tátil claro para as ações do usuário (ex: cliques em botões, carregamento de tela, sucesso/erro de operações).
+Mínimo de Distrações: Evitar elementos visuais desnecessários ou que possam sobrecarregar o usuário. Foco no conteúdo e nas funcionalidades essenciais.
+Consistência: Manter a consistência nos elementos de design, interações e padrões de navegação em todas as telas do aplicativo.
+Onboarding (se necessário): Se o aplicativo possuir funcionalidades complexas, criar um processo de onboarding simples e eficaz para guiar o novo usuário.
+Interface de Usuário (UI) de Fácil Uso:
+
+Componentes de UI Claros: Botões, campos de formulário, menus e outros elementos de interação devem ser facilmente identificáveis e compreensíveis.
+Legibilidade: Garantir excelente legibilidade do texto em diferentes tamanhos de tela e condições de iluminação.
+Acessibilidade: Considerar princípios básicos de acessibilidade (WCAG) para garantir que o aplicativo possa ser utilizado por um público mais amplo, incluindo pessoas com deficiência (ex: contraste adequado, legendas para mídias, navegação por teclado se aplicável).
+Gestos Intuitivos: Utilizar gestos padrão da plataforma (iOS/Android) e, se introduzir gestos customizados, garantir que sejam intuitivos e fáceis de aprender.
+Performance: A interface deve ser fluida e responsiva, sem atrasos perceptíveis.
+Funcionalidades Principais do Aplicativo:
+
+[Listar as funcionalidades essenciais do aplicativo. Ex: Cadastro e Login de Usuário(use dados mocado de uma classe principal onde ficara todos os dados mock da aplicao  ),  Notificações, ] porequanto quero ver o resulto do layout desse inicio crie splash --> primeiravez onbording --> senao home direto nessa home eu quero um appbar com o avatar d usuario actions butons pro perfil e alertas a tela de perfil deve permitir mudar o thema , na home crie aguns cards de alguns textos e botoes , a validacao inicial e o design quando acertamos as paleta de cores e o estilo comecamos o desenvolvimento.
+ 
