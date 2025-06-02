@@ -1,11 +1,7 @@
-// lib/core/utils/app_utils.dart
-// ATUALIZADO: Sistema de feedback avançado integrado
-import 'dart:io';
-
+// lib/core/feedback/advanced_feedback_system.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
 
 enum FeedbackType {
   success,
@@ -20,78 +16,10 @@ enum FeedbackType {
   gems
 }
 
-class AppUtils {
-  // ===== HAPTIC FEEDBACK =====
-  static void lightImpact() {
-    if (Platform.isIOS || Platform.isAndroid) {
-      HapticFeedback.lightImpact();
-    }
-  }
-
-  static void mediumImpact() {
-    if (Platform.isIOS || Platform.isAndroid) {
-      HapticFeedback.mediumImpact();
-    }
-  }
-
-  static void heavyImpact() {
-    if (Platform.isIOS || Platform.isAndroid) {
-      HapticFeedback.heavyImpact();
-    }
-  }
-
-  static void selectionClick() {
-    if (Platform.isIOS || Platform.isAndroid) {
-      HapticFeedback.selectionClick();
-    }
-  }
-
-  // ===== ENHANCED SNACKBAR METHODS =====
-  static void showSuccessSnackbar(BuildContext context, String message) {
-    _showEnhancedSnackbar(
-      context: context,
-      message: message,
-      type: FeedbackType.success,
-      icon: Icons.check_circle,
-      backgroundColor: const Color(0xFF10B981),
-    );
-  }
-
-  static void showErrorSnackbar(BuildContext context, String message) {
-    _showEnhancedSnackbar(
-      context: context,
-      message: message,
-      type: FeedbackType.error,
-      icon: Icons.error_outline,
-      backgroundColor: const Color(0xFFEF4444),
-    );
-  }
-
-  static void showInfoSnackbar(BuildContext context, String message) {
-    _showEnhancedSnackbar(
-      context: context,
-      message: message,
-      type: FeedbackType.info,
-      icon: Icons.info_outline,
-      backgroundColor: const Color(0xFF3B82F6),
-    );
-  }
-
-  static void showWarningSnackbar(BuildContext context, String message) {
-    _showEnhancedSnackbar(
-      context: context,
-      message: message,
-      type: FeedbackType.warning,
-      icon: Icons.warning_amber_outlined,
-      backgroundColor: const Color(0xFFF59E0B),
-    );
-  }
-
-  // ===== ADVANCED FEEDBACK SYSTEM =====
-
-  // Overlay de feedback animado
+class AdvancedFeedbackSystem {
   static OverlayEntry? _currentOverlay;
 
+  // 🎉 Feedback com overlay animado
   static void showAnimatedFeedback({
     required BuildContext context,
     required FeedbackType type,
@@ -130,7 +58,7 @@ class AppUtils {
     });
   }
 
-  // Toast personalizado com tema do app
+  // 💫 Toast personalizado com tema do app
   static void showCustomToast({
     required BuildContext context,
     required String message,
@@ -149,17 +77,18 @@ class AppUtils {
     );
 
     overlay.insert(overlayEntry);
+
     Future.delayed(duration, () => overlayEntry.remove());
   }
 
-  // Celebração épica para conquistas
+  // 🎊 Celebração épica para conquistas
   static void showEpicCelebration({
     required BuildContext context,
     required String achievement,
     String? description,
     Color? color,
   }) {
-    heavyImpact();
+    HapticFeedback.mediumImpact();
 
     final overlay = Overlay.of(context);
 
@@ -176,274 +105,27 @@ class AppUtils {
     overlay.insert(overlayEntry);
   }
 
-  // Feedback específico para pets
-  static void showPetFeedback({
-    required BuildContext context,
-    required String petName,
-    required String action,
-    required int value,
-    FeedbackType type = FeedbackType.petHappy,
-  }) {
-    showAnimatedFeedback(
-      context: context,
-      type: type,
-      message: '$petName $action!',
-      subtitle: _getPetActionMessage(action),
-      value: value,
-    );
-  }
-
-  // Feedback para ganho de recursos
-  static void showResourceGain({
-    required BuildContext context,
-    required String resource,
-    required int amount,
-  }) {
-    final type = resource.toLowerCase().contains('coin')
-        ? FeedbackType.coins
-        : FeedbackType.gems;
-
-    showAnimatedFeedback(
-      context: context,
-      type: type,
-      message: '+$amount $resource',
-      subtitle: 'Parabéns pelo ganho!',
-      value: amount,
-    );
-  }
-
   static void _triggerHapticFeedback(FeedbackType type) {
     switch (type) {
       case FeedbackType.success:
       case FeedbackType.petHappy:
       case FeedbackType.levelUp:
       case FeedbackType.achievement:
-        mediumImpact();
+        HapticFeedback.mediumImpact();
         break;
       case FeedbackType.error:
       case FeedbackType.petSad:
-        heavyImpact();
+        HapticFeedback.heavyImpact();
         break;
       case FeedbackType.coins:
       case FeedbackType.gems:
-        lightImpact();
+        HapticFeedback.lightImpact();
         break;
       default:
-        selectionClick();
+        HapticFeedback.selectionClick();
     }
-  }
-
-  static String _getPetActionMessage(String action) {
-    switch (action.toLowerCase()) {
-      case 'alimentou':
-        return 'Adorou a comida! 🍖';
-      case 'brincou':
-        return 'Se divertiu muito! 🎾';
-      case 'descansou':
-        return 'Está relaxado! 😴';
-      case 'cuidou':
-        return 'Está se sentindo melhor! 💊';
-      default:
-        return 'Está muito feliz! ❤️';
-    }
-  }
-
-  static void _showEnhancedSnackbar({
-    required BuildContext context,
-    required String message,
-    required FeedbackType type,
-    required IconData icon,
-    required Color backgroundColor,
-  }) {
-    // Trigger haptic feedback
-    _triggerHapticFeedback(type);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: backgroundColor,
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        elevation: 8,
-      ),
-    );
-  }
-
-  // ===== DATE FORMATTING =====
-  static String formatDate(DateTime date) {
-    return DateFormat('dd/MM/yyyy').format(date);
-  }
-
-  static String formatDateTime(DateTime dateTime) {
-    return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
-  }
-
-  static String formatTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays > 365) {
-      final years = (difference.inDays / 365).floor();
-      return '$years ano${years > 1 ? 's' : ''} atrás';
-    } else if (difference.inDays > 30) {
-      final months = (difference.inDays / 30).floor();
-      return '$months mês${months > 1 ? 'es' : ''} atrás';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays} dia${difference.inDays > 1 ? 's' : ''} atrás';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''} atrás';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''} atrás';
-    } else {
-      return 'Agora mesmo';
-    }
-  }
-
-  // ===== STRING UTILITIES =====
-  static String capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1).toLowerCase();
-  }
-
-  static String truncateText(String text, int maxLength) {
-    if (text.length <= maxLength) return text;
-    return '${text.substring(0, maxLength)}...';
-  }
-
-  // ===== VALIDATION =====
-  static bool isValidEmail(String email) {
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
-  }
-
-  static bool isValidPassword(String password) {
-    return password.length >= 6;
-  }
-
-  // ===== NUMBER FORMATTING =====
-  static String formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    } else {
-      return number.toString();
-    }
-  }
-
-  static String formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-      decimalDigits: 2,
-    ).format(amount);
-  }
-
-  // ===== COLOR UTILITIES =====
-  static Color getHealthColor(int health) {
-    if (health >= 80) return const Color(0xFF10B981);
-    if (health >= 50) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
-  }
-
-  static Color getEnergyColor(int energy) {
-    if (energy >= 70) return const Color(0xFF3B82F6);
-    if (energy >= 40) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
-  }
-
-  // ===== DIALOG UTILITIES =====
-  static Future<bool?> showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String message,
-    String confirmText = 'Confirmar',
-    String cancelText = 'Cancelar',
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(cancelText),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===== NETWORK UTILITIES =====
-  static Future<bool> hasInternetConnection() async {
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  // ===== CLIPBOARD =====
-  static Future<void> copyToClipboard(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-  }
-
-  // ===== DEVICE INFO =====
-  static bool get isIOS => Platform.isIOS;
-  static bool get isAndroid => Platform.isAndroid;
-
-  // ===== LOADING OVERLAY =====
-  static void showLoadingOverlay(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-
-  static void hideLoadingOverlay(BuildContext context) {
-    Navigator.of(context).pop();
   }
 }
-
-// ============ PRIVATE WIDGETS FOR ADVANCED FEEDBACK ============
 
 class _AnimatedFeedbackWidget extends StatefulWidget {
   final FeedbackType type;
@@ -522,10 +204,8 @@ class _AnimatedFeedbackWidgetState extends State<_AnimatedFeedbackWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Positioned(
-      top: screenSize.height * 0.1,
+      top: MediaQuery.of(context).size.height * 0.1,
       left: 20,
       right: 20,
       child: Material(
@@ -656,8 +336,6 @@ class _CustomToastWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Positioned(
       bottom: 100,
       left: 20,
@@ -665,7 +343,7 @@ class _CustomToastWidget extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
             color: const Color(0xFF2D3748).withOpacity(0.9),
             borderRadius: BorderRadius.circular(25),
@@ -693,7 +371,9 @@ class _CustomToastWidget extends StatelessWidget {
           .slideY(begin: 1, end: 0)
           .then(delay: 1600.ms)
           .fadeOut(duration: 200.ms)
-          .callback(callback: (value) => onComplete),
+          .callback(
+            callback: (value) => onComplete,
+          ),
     );
   }
 }
@@ -739,8 +419,6 @@ class _EpicCelebrationWidgetState extends State<_EpicCelebrationWidget>
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Material(
       color: Colors.black.withOpacity(0.5),
       child: Center(
@@ -749,8 +427,8 @@ class _EpicCelebrationWidgetState extends State<_EpicCelebrationWidget>
             // Confetti particles
             ...List.generate(20, (index) {
               return Positioned(
-                top: 100 + (index * 30.0),
-                left: 20 + (index * 15.0),
+                top: 100 + (index * 30),
+                left: 20 + (index * 15),
                 child: Container(
                   width: 10,
                   height: 10,
@@ -765,9 +443,9 @@ class _EpicCelebrationWidgetState extends State<_EpicCelebrationWidget>
                   ),
                 )
                     .animate(controller: _confettiController)
-                    .moveY(begin: 0, end: screenSize.height)
+                    .moveY(begin: 0, end: MediaQuery.of(context).size.height)
                     .moveX(begin: 0, end: (index.isEven ? 50 : -50))
-                    .fadeOut(begin: 1, duration: 300.ms),
+                    .fadeOut(begin: 1, delay: 300.ms),
               );
             }),
 
@@ -888,23 +566,4 @@ class _EpicCelebrationWidgetState extends State<_EpicCelebrationWidget>
       ),
     );
   }
-}
-
-// Extension para adicionar métodos úteis aos tipos básicos
-extension StringExtensions on String {
-  String get capitalized => AppUtils.capitalize(this);
-  String truncate(int maxLength) => AppUtils.truncateText(this, maxLength);
-  bool get isValidEmail => AppUtils.isValidEmail(this);
-}
-
-extension DateTimeExtensions on DateTime {
-  String get formatted => AppUtils.formatDate(this);
-  String get timeAgo => AppUtils.formatTimeAgo(this);
-  String get dateTimeFormatted => AppUtils.formatDateTime(this);
-}
-
-extension NumberExtensions on int {
-  String get formatted => AppUtils.formatNumber(this);
-  Color get asHealthColor => AppUtils.getHealthColor(this);
-  Color get asEnergyColor => AppUtils.getEnergyColor(this);
 }

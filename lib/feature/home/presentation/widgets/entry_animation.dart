@@ -1,7 +1,7 @@
 // lib/features/home/presentation/widgets/entry_animation.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 
 // lib/features/home/presentation/widgets/entry_animation.dart
 class EntryAnimation extends StatefulWidget {

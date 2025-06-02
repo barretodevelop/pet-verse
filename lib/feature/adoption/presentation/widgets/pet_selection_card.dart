@@ -7,7 +7,7 @@ import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/model/pet_model.dart';
 import 'package:petverse/core/providers/pet_provider.dart';
 
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/bck-app_theme.dart';
 import '../../../../core/utils/app_utils.dart';
 
 class PetSelectionCard extends ConsumerStatefulWidget {

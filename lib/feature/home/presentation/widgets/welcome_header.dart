@@ -1,7 +1,7 @@
 // lib/features/home/presentation/widgets/welcome_header.dart
 import 'package:flutter/material.dart';
 import 'package:petverse/core/constants/app_constants.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 
 class WelcomeHeader extends StatelessWidget {
   final AnimationController fadeController;

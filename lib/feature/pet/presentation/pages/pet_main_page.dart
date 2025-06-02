@@ -8,7 +8,7 @@ import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/model/pet_model.dart';
 import 'package:petverse/core/providers/pet_provider.dart';
 import 'package:petverse/core/providers/user_provider.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 
 class PetMainPage extends ConsumerWidget {
   const PetMainPage({super.key});
@@ -73,7 +73,7 @@ class PetMainPage extends ConsumerWidget {
                   .scale(duration: 800.ms, curve: Curves.elasticOut)
                   .fadeIn(),
 
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
 
               // Pet name
               Text(
@@ -87,7 +87,7 @@ class PetMainPage extends ConsumerWidget {
                   .fadeIn(duration: 600.ms, delay: 400.ms)
                   .slideY(begin: 0.3, end: 0),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               Text(
                 'Seu pet está aqui! Esta seria a tela principal\nonde você cuidaria dele.',
@@ -118,17 +118,17 @@ class PetMainPage extends ConsumerWidget {
             size: 80,
             color: AppTheme.textLight,
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           Text(
             'Nenhum pet encontrado',
             style: AppTheme.headlineMedium,
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Você ainda não possui um pet.',
             style: AppTheme.bodyMedium,
           ),
-          SizedBox(height: 32),
+          const SizedBox(height: 32),
           // ElevatedButton(
           //   onPressed: () => context.go('/need-adoption'),
           //   child: const Text('Adotar um Pet'),
@@ -151,7 +151,7 @@ class PetMainPage extends ConsumerWidget {
               fit: BoxFit.contain,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Carregando seu pet...',
             style: AppTheme.bodyMedium,
@@ -166,23 +166,23 @@ class PetMainPage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             size: 64,
             color: AppTheme.error,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Erro ao carregar pet',
             style: AppTheme.headlineSmall,
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             error,
             style: AppTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/home'),
             child: const Text('Voltar ao Início'),

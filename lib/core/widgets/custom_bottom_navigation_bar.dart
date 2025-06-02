@@ -1,7 +1,7 @@
 // widgets/custom_bottom_navigation_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 // Importe seu modelo
 // import 'models/bottom_nav_item.dart';
 

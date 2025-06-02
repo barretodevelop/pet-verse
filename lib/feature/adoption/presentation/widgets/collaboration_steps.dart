@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/bck-app_theme.dart';
 
 class CollaborationSteps extends StatelessWidget {
   const CollaborationSteps({super.key});

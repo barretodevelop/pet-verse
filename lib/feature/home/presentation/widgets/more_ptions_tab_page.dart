@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 
 class MoreOptionsTabPage extends StatelessWidget {
   const MoreOptionsTabPage({super.key});
@@ -7,8 +7,8 @@ class MoreOptionsTabPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
+      padding: const EdgeInsets.all(20),
+      child: const Column(
         children: [
           Text(
             'Mais Opções',

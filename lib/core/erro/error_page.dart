@@ -1,7 +1,7 @@
 // lib/core/widgets/error_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petverse/core/theme/app_theme.dart';
+import 'package:petverse/core/theme/bck-app_theme.dart';
 import 'package:petverse/core/widgets/custom_button.dart';
 
 class ErrorPage extends StatelessWidget {
