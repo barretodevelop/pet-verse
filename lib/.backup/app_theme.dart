@@ -1,6 +1,6 @@
 // // lib/core/theme/app_theme.dart
 // import 'package:flutter/material.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
+//
 // import 'package:google_fonts/google_fonts.dart';
 
 // class AppTheme {
@@ -315,55 +315,55 @@
 
 //   // Text Styles
 //   static TextStyle get headingLarge => GoogleFonts.inter(
-//         fontSize: 32.sp,
+//         fontSize: 32,
 //         fontWeight: FontWeight.w700,
 //         color: textPrimary,
 //         height: 1.2,
 //       );
 
 //   static TextStyle get headingMedium => GoogleFonts.inter(
-//         fontSize: 24.sp,
+//         fontSize: 24,
 //         fontWeight: FontWeight.w600,
 //         color: textPrimary,
 //         height: 1.3,
 //       );
 
 //   static TextStyle get headingSmall => GoogleFonts.inter(
-//         fontSize: 20.sp,
+//         fontSize: 20,
 //         fontWeight: FontWeight.w600,
 //         color: textPrimary,
 //         height: 1.3,
 //       );
 
 //   static TextStyle get bodyLarge => GoogleFonts.inter(
-//         fontSize: 16.sp,
+//         fontSize: 16,
 //         fontWeight: FontWeight.w400,
 //         color: textPrimary,
 //         height: 1.5,
 //       );
 
 //   static TextStyle get bodyMedium => GoogleFonts.inter(
-//         fontSize: 14.sp,
+//         fontSize: 14,
 //         fontWeight: FontWeight.w400,
 //         color: textSecondary,
 //         height: 1.4,
 //       );
 
 //   static TextStyle get bodySmall => GoogleFonts.inter(
-//         fontSize: 12.sp,
+//         fontSize: 12,
 //         fontWeight: FontWeight.w400,
 //         color: textLight,
 //         height: 1.3,
 //       );
 
 //   static TextStyle get buttonText => GoogleFonts.inter(
-//         fontSize: 16.sp,
+//         fontSize: 16,
 //         fontWeight: FontWeight.w600,
 //         color: Colors.white,
 //       );
 
 //   static TextStyle get captionText => GoogleFonts.inter(
-//         fontSize: 10.sp,
+//         fontSize: 10,
 //         fontWeight: FontWeight.w500,
 //         color: textLight,
 //         letterSpacing: 0.5,
@@ -394,9 +394,9 @@
 //   //           elevation: 0,
 //   //           shadowColor: Colors.transparent,
 //   //           shape: RoundedRectangleBorder(
-//   //             borderRadius: BorderRadius.circular(12.r),
+//   //             borderRadius: BorderRadius.circular(12),
 //   //           ),
-//   //           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+//   //           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
 //   //           textStyle: buttonText,
 //   //         ),
 //   //       ),
@@ -404,7 +404,7 @@
 //   //         color: surfaceLight,
 //   //         elevation: 0,
 //   //         shape: RoundedRectangleBorder(
-//   //           borderRadius: BorderRadius.circular(16.r),
+//   //           borderRadius: BorderRadius.circular(16),
 //   //         ),
 //   //         shadowColor: cardShadow,
 //   //       ),
@@ -443,9 +443,9 @@
 //   //           elevation: 0,
 //   //           shadowColor: Colors.transparent,
 //   //           shape: RoundedRectangleBorder(
-//   //             borderRadius: BorderRadius.circular(12.r),
+//   //             borderRadius: BorderRadius.circular(12),
 //   //           ),
-//   //           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+//   //           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
 //   //           textStyle: buttonText.copyWith(color: backgroundDark),
 //   //         ),
 //   //       ),
@@ -453,7 +453,7 @@
 //   //       //   color: surfaceDark,
 //   //       //   elevation: 0,
 //   //       //   shape: RoundedRectangleBorder(
-//   //       //     borderRadius: BorderRadius.circular(16.r),
+//   //       //     borderRadius: BorderRadius.circular(16),
 //   //       //   ),
 //   //       // ),
 //   //       appBarTheme: AppBarTheme(
@@ -479,7 +479,7 @@
 
 // lib/core/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
@@ -521,55 +521,55 @@ class AppTheme {
 
   // Text Styles
   static TextStyle get headingLarge => GoogleFonts.inter(
-        fontSize: 32.sp,
+        fontSize: 32,
         fontWeight: FontWeight.w700,
         color: textPrimary,
         height: 1.2,
       );
 
   static TextStyle get headingMedium => GoogleFonts.inter(
-        fontSize: 24.sp,
+        fontSize: 24,
         fontWeight: FontWeight.w600,
         color: textPrimary,
         height: 1.3,
       );
 
   static TextStyle get headingSmall => GoogleFonts.inter(
-        fontSize: 20.sp,
+        fontSize: 20,
         fontWeight: FontWeight.w600,
         color: textPrimary,
         height: 1.3,
       );
 
   static TextStyle get bodyLarge => GoogleFonts.inter(
-        fontSize: 16.sp,
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         color: textPrimary,
         height: 1.5,
       );
 
   static TextStyle get bodyMedium => GoogleFonts.inter(
-        fontSize: 14.sp,
+        fontSize: 14,
         fontWeight: FontWeight.w400,
         color: textSecondary,
         height: 1.4,
       );
 
   static TextStyle get bodySmall => GoogleFonts.inter(
-        fontSize: 12.sp,
+        fontSize: 12,
         fontWeight: FontWeight.w400,
         color: textLight,
         height: 1.3,
       );
 
   static TextStyle get buttonText => GoogleFonts.inter(
-        fontSize: 16.sp,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       );
 
   static TextStyle get captionText => GoogleFonts.inter(
-        fontSize: 10.sp,
+        fontSize: 10,
         fontWeight: FontWeight.w500,
         color: textLight,
         letterSpacing: 0.5,
@@ -600,9 +600,9 @@ class AppTheme {
             elevation: 0,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             textStyle: buttonText,
           ),
         ),
@@ -610,7 +610,7 @@ class AppTheme {
         //   color: surfaceLight,
         //   elevation: 0,
         //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(16.r),
+        //     borderRadius: BorderRadius.circular(16),
         //   ),
         //   shadowColor: cardShadow,
         // ),
@@ -649,9 +649,9 @@ class AppTheme {
             elevation: 0,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             textStyle: buttonText.copyWith(color: backgroundDark),
           ),
         ),
@@ -659,7 +659,7 @@ class AppTheme {
         //   color: surfaceDark,
         //   elevation: 0,
         //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(16.r),
+        //     borderRadius: BorderRadius.circular(16),
         //   ),
         // ),
         appBarTheme: AppBarTheme(

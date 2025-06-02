@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/model/pet_model.dart';
@@ -102,13 +101,13 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
             onTap: _handleSelection,
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16.w),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: _colorAnimation.value,
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected ? AppTheme.primary : Colors.transparent,
-                  width: 2.w,
+                  width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -124,10 +123,10 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                   Stack(
                     children: [
                       Container(
-                        width: 80.w,
-                        height: 80.w,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16.r),
+                          borderRadius: BorderRadius.circular(16),
                           image: DecorationImage(
                             image: NetworkImage(widget.pet.imageUrl),
                             fit: BoxFit.cover,
@@ -138,11 +137,11 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                       // Selection indicator
                       if (isSelected)
                         Positioned(
-                          top: -4.w,
-                          right: -4.w,
+                          top: -4,
+                          right: -4,
                           child: Container(
-                            width: 24.w,
-                            height: 24.w,
+                            width: 24,
+                            height: 24,
                             decoration: BoxDecoration(
                               gradient: AppTheme.primaryGradient,
                               shape: BoxShape.circle,
@@ -154,10 +153,10 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                                 ),
                               ],
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.check,
                               color: Colors.white,
-                              size: 14.sp,
+                              size: 14,
                             ),
                           ),
                         )
@@ -169,14 +168,14 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
 
                       // Health indicator
                       Positioned(
-                        bottom: 4.w,
-                        right: 4.w,
+                        bottom: 4,
+                        right: 4,
                         child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 2.h),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: _getHealthColor(widget.pet.health),
-                            borderRadius: BorderRadius.circular(8.r),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${widget.pet.health}%',
@@ -190,7 +189,7 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                     ],
                   ),
 
-                  SizedBox(width: 16.w),
+                  const SizedBox(width: 16),
 
                   // Pet Info
                   Expanded(
@@ -212,11 +211,11 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w, vertical: 4.h),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppTheme.accentCoral.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8.r),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 widget.pet.type,
@@ -229,7 +228,7 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                           ],
                         ),
 
-                        SizedBox(height: 4.h),
+                        const SizedBox(height: 4),
 
                         // Breed
                         Text(
@@ -239,20 +238,20 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
                           ),
                         ),
 
-                        SizedBox(height: 8.h),
+                        const SizedBox(height: 8),
 
                         // Stats
                         Row(
                           children: [
                             _buildStatChip('❤️', widget.pet.happiness),
-                            SizedBox(width: 8.w),
+                            const SizedBox(width: 8),
                             _buildStatChip('⚡', widget.pet.energy),
                             const Spacer(),
                             if (isSelected)
                               Icon(
                                 Icons.favorite,
                                 color: AppTheme.accentCoral,
-                                size: 16.sp,
+                                size: 16,
                               )
                                   .animate(
                                       onPlay: (controller) =>
@@ -278,20 +277,21 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
 
   Widget _buildStatChip(String emoji, int value) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppTheme.textLight.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6.r),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: TextStyle(fontSize: 10.sp)),
-          SizedBox(width: 2.w),
+          Text(emoji, style: const TextStyle(fontSize: 10)),
+          const SizedBox(width: 2),
           Text(
             value.toString(),
             style: AppTheme.captionText.copyWith(
               fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ],
@@ -306,6 +306,10 @@ class _PetSelectionCardState extends ConsumerState<PetSelectionCard>
   }
 }
 
+extension on Color {
+  copyWith({required Color color, required FontWeight fontWeight}) {}
+}
+
 // lib/features/adoption/presentation/widgets/selected_pets_summary.dart
 class SelectedPetsSummary extends ConsumerWidget {
   final List<PetModel> pets;
@@ -318,7 +322,7 @@ class SelectedPetsSummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.all(16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,7 +335,7 @@ class SelectedPetsSummary extends ConsumerWidget {
             ),
           ),
 
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
 
           Text(
             'Estes são os pets que você escolheu para adoção. Um co-parent poderá escolher um deles.',
@@ -341,7 +345,7 @@ class SelectedPetsSummary extends ConsumerWidget {
             ),
           ),
 
-          SizedBox(height: 24.h),
+          const SizedBox(height: 24),
 
           // Selected pets list
           ...pets.asMap().entries.map((entry) {
@@ -349,23 +353,23 @@ class SelectedPetsSummary extends ConsumerWidget {
             final pet = entry.value;
 
             return Padding(
-              padding: EdgeInsets.only(bottom: 16.h),
+              padding: const EdgeInsets.only(bottom: 16),
               child: _buildSelectedPetCard(context, ref, pet, index),
             );
           }),
 
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Info card
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(16.w),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: AppTheme.accentGradient.scale(0.1),
-              borderRadius: BorderRadius.circular(16.r),
+              gradient: AppTheme.primaryGradient.scale(0.1),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: AppTheme.accentCoral.withOpacity(0.2),
-                width: 1.w,
+                width: 1,
               ),
             ),
             child: Column(
@@ -376,9 +380,9 @@ class SelectedPetsSummary extends ConsumerWidget {
                     Icon(
                       Icons.info_outline,
                       color: AppTheme.accentCoral,
-                      size: 20.sp,
+                      size: 20,
                     ),
-                    SizedBox(width: 8.w),
+                    const SizedBox(width: 8),
                     Text(
                       'Como funciona?',
                       style: AppTheme.bodyMedium.copyWith(
@@ -388,7 +392,7 @@ class SelectedPetsSummary extends ConsumerWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                const SizedBox(height: 8),
                 Text(
                   '• Seu pedido ficará público por 5 dias\n'
                   '• Outros usuários verão estes pets\n'
@@ -418,19 +422,19 @@ class SelectedPetsSummary extends ConsumerWidget {
       },
       background: Container(
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20.w),
+        padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
           color: AppTheme.error.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.delete_outline,
           color: AppTheme.error,
-          size: 24.sp,
+          size: 24,
         ),
       ),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -440,10 +444,10 @@ class SelectedPetsSummary extends ConsumerWidget {
               AppTheme.primary.withOpacity(0.02),
             ],
           ),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.primary.withOpacity(0.2),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -457,8 +461,8 @@ class SelectedPetsSummary extends ConsumerWidget {
           children: [
             // Selection number
             Container(
-              width: 32.w,
-              height: 32.w,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 gradient: AppTheme.primaryGradient,
                 shape: BoxShape.circle,
@@ -474,14 +478,14 @@ class SelectedPetsSummary extends ConsumerWidget {
               ),
             ),
 
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
 
             // Pet image
             Container(
-              width: 60.w,
-              height: 60.w,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
                   image: NetworkImage(pet.imageUrl),
                   fit: BoxFit.cover,
@@ -489,7 +493,7 @@ class SelectedPetsSummary extends ConsumerWidget {
               ),
             ),
 
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
 
             // Pet info
             Expanded(
@@ -521,7 +525,7 @@ class SelectedPetsSummary extends ConsumerWidget {
               icon: Icon(
                 Icons.close,
                 color: AppTheme.textLight,
-                size: 20.sp,
+                size: 20,
               ),
             ),
           ],
@@ -590,15 +594,15 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
         ),
         child: SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(24.w),
+            padding: const EdgeInsets.all(24),
             child: Column(
               children: [
                 const Spacer(),
 
                 // Success animation
                 SizedBox(
-                  width: 200.w,
-                  height: 200.w,
+                  width: 200,
+                  height: 200,
                   child: Lottie.asset(
                     AppConstants.adoptionAnimation,
                     controller: _celebrationController,
@@ -606,7 +610,7 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                   ),
                 ),
 
-                SizedBox(height: 32.h),
+                const SizedBox(height: 32),
 
                 // Success message
                 Text(
@@ -620,7 +624,7 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                     .fadeIn(duration: 600.ms, delay: 500.ms)
                     .slideY(begin: 0.3, end: 0),
 
-                SizedBox(height: 16.h),
+                const SizedBox(height: 16),
 
                 Text(
                   'Seu pedido de adoção foi publicado com sucesso! '
@@ -635,15 +639,15 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                     .fadeIn(duration: 600.ms, delay: 700.ms)
                     .slideY(begin: 0.3, end: 0),
 
-                SizedBox(height: 32.h),
+                const SizedBox(height: 32),
 
                 // Info card
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(20.w),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: const [
                       BoxShadow(
                         color: AppTheme.primary,
@@ -657,18 +661,18 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                       Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(8.w),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppTheme.success.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.schedule,
                               color: AppTheme.success,
-                              size: 20.sp,
+                              size: 20,
                             ),
                           ),
-                          SizedBox(width: 12.w),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,13 +694,13 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                           ),
                         ],
                       ),
-                      SizedBox(height: 16.h),
+                      const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsets.all(12.w),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppTheme.primary.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           'ID do Pedido: ${widget.requestId.substring(0, 8).toUpperCase()}',
@@ -734,7 +738,8 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                               label: const Text('Compartilhar com Amigos'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.accentCoral,
-                                padding: EdgeInsets.symmetric(vertical: 16.h),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
                           ),
@@ -742,7 +747,7 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                       },
                     ),
 
-                    SizedBox(height: 12.h),
+                    const SizedBox(height: 12),
 
                     // View public list button
                     SizedBox(
@@ -754,12 +759,12 @@ class _CreateRequestSuccessState extends State<CreateRequestSuccess>
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.primary,
                           side: const BorderSide(color: AppTheme.primary),
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                       ),
                     ),
 
-                    SizedBox(height: 12.h),
+                    const SizedBox(height: 12),
 
                     // Go home button
                     TextButton(

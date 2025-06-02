@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
 import 'package:petverse/core/providers/dashboard_provider.dart';
 import 'package:petverse/core/providers/user_sync_provider.dart';
@@ -118,27 +117,27 @@ class DashboardPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.dashboard,
-              color: const Color(0xFF3B82F6),
-              size: 40.sp,
+              color: Color(0xFF3B82F6),
+              size: 40,
             ),
           )
               .animate(onPlay: (controller) => controller.repeat())
               .rotate(duration: 2000.ms),
-          SizedBox(height: 24.h),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'Carregando Dashboard...',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
         ],
@@ -151,26 +150,26 @@ class DashboardPage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
-            size: 64.sp,
-            color: const Color(0xFFEF4444),
+            size: 64,
+            color: Color(0xFFEF4444),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Erro',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Text(
             message,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -185,18 +184,18 @@ class DashboardPage extends ConsumerWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(currentUserData, state.notifications),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             _buildQuickActions(context, ref),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             _buildMyPetsSection(context, state.myActivePets, currentUserData),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             _buildNotificationsSection(state.notifications),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             _buildStatsSection(currentUserData, state.myActivePets),
           ],
         ),
@@ -210,7 +209,7 @@ class DashboardPage extends ConsumerWidget {
         (currentUser['xp'] as int) / (currentUser['xpToNext'] as int);
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -220,10 +219,10 @@ class DashboardPage extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Color(currentUser['colorTheme'] as int).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -232,15 +231,15 @@ class DashboardPage extends ConsumerWidget {
             children: [
               // Avatar
               Container(
-                width: 60.w,
-                height: 60.w,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color:
                       Color(currentUser['colorTheme'] as int).withOpacity(0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Color(currentUser['colorTheme'] as int),
-                    width: 2.w,
+                    width: 2,
                   ),
                 ),
                 child: Center(
@@ -250,7 +249,7 @@ class DashboardPage extends ConsumerWidget {
                         .map((word) => word[0])
                         .join(),
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: Color(currentUser['colorTheme'] as int),
                     ),
@@ -258,7 +257,7 @@ class DashboardPage extends ConsumerWidget {
                 ),
               ),
 
-              SizedBox(width: 16.w),
+              const SizedBox(width: 16),
 
               // User Info
               Expanded(
@@ -270,27 +269,27 @@ class DashboardPage extends ConsumerWidget {
                         Flexible(
                           child: Text(
                             currentUser['codename'] as String,
-                            style: TextStyle(
-                              fontSize: 18.sp,
+                            style: const TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
+                              color: Color(0xFF0F172A),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        SizedBox(width: 8.w),
+                        const SizedBox(width: 8),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 8.w, vertical: 2.h),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: Color(currentUser['colorTheme'] as int),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             'Lv.${currentUser['level']}',
-                            style: TextStyle(
-                              fontSize: 11.sp,
+                            style: const TextStyle(
+                              fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
@@ -298,12 +297,12 @@ class DashboardPage extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 4),
                     Text(
                       '${currentUser['successRate']}% sucesso • ${currentUser['totalAdoptions']} adoções',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF64748B),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -312,8 +311,8 @@ class DashboardPage extends ConsumerWidget {
 
               // Notifications bell
               Container(
-                width: 36.w,
-                height: 36.w,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
@@ -327,20 +326,20 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 child: Stack(
                   children: [
-                    Center(
+                    const Center(
                       child: Icon(
                         Icons.notifications_outlined,
-                        color: const Color(0xFF64748B),
-                        size: 18.sp,
+                        color: Color(0xFF64748B),
+                        size: 18,
                       ),
                     ),
                     if (notifications.any((n) => n['type'] == 'urgent'))
                       Positioned(
-                        top: 6.h,
-                        right: 6.w,
+                        top: 6,
+                        right: 6,
                         child: Container(
-                          width: 8.w,
-                          height: 8.w,
+                          width: 8,
+                          height: 8,
                           decoration: const BoxDecoration(
                             color: Color(0xFFEF4444),
                             shape: BoxShape.circle,
@@ -361,7 +360,7 @@ class DashboardPage extends ConsumerWidget {
             ],
           ),
 
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // XP Progress
           Column(
@@ -370,30 +369,30 @@ class DashboardPage extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Experiência',
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF64748B),
+                      color: Color(0xFF64748B),
                     ),
                   ),
                   Text(
                     '${currentUser['xp']} / ${currentUser['xpToNext']} XP',
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(currentUser['colorTheme'] as int),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 8.h),
+              const SizedBox(height: 8),
               Container(
-                height: 6.h,
+                height: 6,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(3.r),
+                  borderRadius: BorderRadius.circular(3),
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -401,7 +400,7 @@ class DashboardPage extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Color(currentUser['colorTheme'] as int),
-                      borderRadius: BorderRadius.circular(3.r),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                 ),
@@ -409,7 +408,7 @@ class DashboardPage extends ConsumerWidget {
             ],
           ),
 
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Currency Display (Novo)
           Row(
@@ -422,7 +421,7 @@ class DashboardPage extends ConsumerWidget {
                   const Color(0xFFF59E0B),
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildCurrencyChip(
                   '💎',
@@ -431,7 +430,7 @@ class DashboardPage extends ConsumerWidget {
                   const Color(0xFF06B6D4),
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildCurrencyChip(
                   '⚡',
@@ -450,13 +449,13 @@ class DashboardPage extends ConsumerWidget {
   Widget _buildCurrencyChip(
       String emoji, String label, String value, Color color) {
     return Container(
-      padding: EdgeInsets.all(8.w),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color.withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -464,24 +463,24 @@ class DashboardPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(emoji, style: TextStyle(fontSize: 14.sp)),
-              SizedBox(width: 4.w),
+              Text(emoji, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 4),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: color,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 2.h),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 9.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 9,
+              color: Color(0xFF64748B),
             ),
           ),
         ],
@@ -493,15 +492,15 @@ class DashboardPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Ações Rápidas',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
           ),
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
 
         // Row de ações compactas
         Row(
@@ -509,15 +508,15 @@ class DashboardPage extends ConsumerWidget {
             Expanded(
                 child: _buildCompactAction('Alimentar', Icons.restaurant,
                     const Color(0xFFF59E0B), 'feed_all', context, ref)),
-            SizedBox(width: 8.w),
+            const SizedBox(width: 8),
             Expanded(
                 child: _buildCompactAction('Nova', Icons.add_circle,
                     const Color(0xFF10B981), 'new_adoption', context, ref)),
-            SizedBox(width: 8.w),
+            const SizedBox(width: 8),
             Expanded(
                 child: _buildCompactAction('Buscar', Icons.search,
                     const Color(0xFF3B82F6), 'browse_adoptions', context, ref)),
-            SizedBox(width: 8.w),
+            const SizedBox(width: 8),
             Expanded(
                 child: _buildCompactAction('Meus', Icons.pets,
                     const Color(0xFF8B5CF6), 'my_pets', context, ref)),
@@ -532,13 +531,13 @@ class DashboardPage extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _onQuickAction(action, context, ref),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: color.withOpacity(0.2),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -551,8 +550,8 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           children: [
             Container(
-              width: 32.w,
-              height: 32.w,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -560,16 +559,16 @@ class DashboardPage extends ConsumerWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: 16.sp,
+                size: 16,
               ),
             ),
-            SizedBox(height: 6.h),
+            const SizedBox(height: 6),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 11.sp,
+              style: const TextStyle(
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/user_settings.dart';
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,20 +151,20 @@ class SettingsPage extends ConsumerWidget {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(context),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileSection(context),
-            SizedBox(height: 24.h),
+            const SizedBox(height: 24),
             _buildNotificationsSection(context, ref, settings.notifications),
-            SizedBox(height: 24.h),
+            const SizedBox(height: 24),
             _buildPrivacySection(context, ref, settings.privacy),
-            SizedBox(height: 24.h),
+            const SizedBox(height: 24),
             _buildGameplaySection(context, ref, settings.gameplay),
-            SizedBox(height: 24.h),
+            const SizedBox(height: 24),
             _buildAboutSection(context, ref),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -178,18 +177,18 @@ class SettingsPage extends ConsumerWidget {
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(
+        icon: const Icon(
           Icons.arrow_back,
-          color: const Color(0xFF0F172A),
-          size: 24.sp,
+          color: Color(0xFF0F172A),
+          size: 24,
         ),
       ),
-      title: Text(
+      title: const Text(
         'Configurações',
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
     );
@@ -197,7 +196,7 @@ class SettingsPage extends ConsumerWidget {
 
   Widget _buildProfileSection(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -207,38 +206,38 @@ class SettingsPage extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
           Container(
-            width: 60.w,
-            height: 60.w,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2.w),
+              border: Border.all(color: Colors.white, width: 2),
             ),
-            child: Center(
+            child: const Center(
               child: Text(
                 'GA', // Guardian Azul
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Guardian Azul',
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -246,7 +245,7 @@ class SettingsPage extends ConsumerWidget {
                 Text(
                   'Lv.12 • guardian.azul@petverse.com',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: Colors.white.withOpacity(0.8),
                   ),
                 ),
@@ -264,10 +263,10 @@ class SettingsPage extends ConsumerWidget {
                 ),
               );
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.edit,
               color: Colors.white,
-              size: 20.sp,
+              size: 20,
             ),
           ),
         ],
@@ -558,7 +557,7 @@ class SettingsPage extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.08),
@@ -571,21 +570,21 @@ class SettingsPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.all(20.w),
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
                 Icon(
                   icon,
                   color: const Color(0xFF3B82F6),
-                  size: 24.sp,
+                  size: 24,
                 ),
-                SizedBox(width: 12.w),
+                const SizedBox(width: 12),
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18.sp,
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
               ],
@@ -597,11 +596,11 @@ class SettingsPage extends ConsumerWidget {
             return Column(
               children: [
                 if (index > 0)
-                  Divider(
-                    height: 1.h,
-                    color: const Color(0xFFE2E8F0),
-                    indent: 20.w,
-                    endIndent: 20.w,
+                  const Divider(
+                    height: 1,
+                    color: Color(0xFFE2E8F0),
+                    indent: 20,
+                    endIndent: 20,
                   ),
                 child,
               ],
@@ -622,10 +621,10 @@ class SettingsPage extends ConsumerWidget {
     required Function(bool) onChanged,
   }) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
-        width: 40.w,
-        height: 40.w,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: const Color(0xFF3B82F6).withOpacity(0.1),
           shape: BoxShape.circle,
@@ -633,22 +632,22 @@ class SettingsPage extends ConsumerWidget {
         child: Icon(
           icon,
           color: const Color(0xFF3B82F6),
-          size: 20.sp,
+          size: 20,
         ),
       ),
       title: Text(
         title,
-        style: TextStyle(
-          fontSize: 14.sp,
+        style: const TextStyle(
+          fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: const Color(0xFF64748B),
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
         ),
       ),
       trailing: Switch(
@@ -667,43 +666,43 @@ class SettingsPage extends ConsumerWidget {
   Widget _buildVolumeSlider(
       BuildContext context, WidgetRef ref, double volume) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 40.w,
-                height: 40.w,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: const Color(0xFF3B82F6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.volume_up,
-                  color: const Color(0xFF3B82F6),
-                  size: 20.sp,
+                  color: Color(0xFF3B82F6),
+                  size: 20,
                 ),
               ),
-              SizedBox(width: 16.w),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Volume Geral',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                     Text(
                       '${(volume * 100).round()}%',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF64748B),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -711,14 +710,14 @@ class SettingsPage extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: const Color(0xFF10B981),
               inactiveTrackColor: const Color(0xFFE2E8F0),
               thumbColor: const Color(0xFF10B981),
               overlayColor: const Color(0xFF10B981).withOpacity(0.2),
-              trackHeight: 4.h,
+              trackHeight: 4,
             ),
             child: Slider(
               value: volume,
@@ -749,10 +748,10 @@ class SettingsPage extends ConsumerWidget {
     final tileColor = color ?? const Color(0xFF3B82F6);
 
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
-        width: 40.w,
-        height: 40.w,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: tileColor.withOpacity(0.1),
           shape: BoxShape.circle,
@@ -760,13 +759,13 @@ class SettingsPage extends ConsumerWidget {
         child: Icon(
           icon,
           color: tileColor,
-          size: 20.sp,
+          size: 20,
         ),
       ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: 14.sp,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color:
               onTap != null ? const Color(0xFF0F172A) : const Color(0xFF64748B),
@@ -774,16 +773,16 @@ class SettingsPage extends ConsumerWidget {
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: const Color(0xFF64748B),
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
         ),
       ),
       trailing: onTap != null
-          ? Icon(
+          ? const Icon(
               Icons.chevron_right,
-              color: const Color(0xFF94A3B8),
-              size: 20.sp,
+              color: Color(0xFF94A3B8),
+              size: 20,
             )
           : null,
       onTap: onTap,
@@ -795,43 +794,43 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
         ),
-        title: Row(
+        title: const Row(
           children: [
             Icon(
               Icons.logout,
-              color: const Color(0xFFEF4444),
-              size: 24.sp,
+              color: Color(0xFFEF4444),
+              size: 24,
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: 12),
             Text(
               'Sair da Conta',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ],
         ),
-        content: Text(
+        content: const Text(
           'Tem certeza que deseja sair da sua conta? Você precisará fazer login novamente para acessar o aplicativo.',
           style: TextStyle(
-            fontSize: 14.sp,
-            color: const Color(0xFF64748B),
+            fontSize: 14,
+            color: Color(0xFF64748B),
             height: 1.5,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancelar',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF64748B),
+                color: Color(0xFF64748B),
               ),
             ),
           ),
@@ -843,14 +842,14 @@ class SettingsPage extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               elevation: 0,
             ),
-            child: Text(
+            child: const Text(
               'Sair',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -871,43 +870,43 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
         ),
-        title: Row(
+        title: const Row(
           children: [
             Icon(
               Icons.warning_amber_rounded,
-              color: const Color(0xFFEF4444),
-              size: 24.sp,
+              color: Color(0xFFEF4444),
+              size: 24,
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: 12),
             Text(
               'Restaurar Padrões',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ],
         ),
-        content: Text(
+        content: const Text(
           'Tem certeza que deseja restaurar todas as configurações para os valores padrão? Esta ação não pode ser desfeita.',
           style: TextStyle(
-            fontSize: 14.sp,
-            color: const Color(0xFF64748B),
+            fontSize: 14,
+            color: Color(0xFF64748B),
             height: 1.5,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancelar',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF64748B),
+                color: Color(0xFF64748B),
               ),
             ),
           ),
@@ -926,14 +925,14 @@ class SettingsPage extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               elevation: 0,
             ),
-            child: Text(
+            child: const Text(
               'Restaurar',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -955,23 +954,23 @@ class SettingsPage extends ConsumerWidget {
 
       // Mostrar loading
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Row(
             children: [
               SizedBox(
-                width: 16.w,
-                height: 16.w,
+                width: 16,
+                height: 16,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.w,
+                  strokeWidth: 2,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(width: 12.w),
-              const Text('Saindo da conta...'),
+              SizedBox(width: 12),
+              Text('Saindo da conta...'),
             ],
           ),
-          backgroundColor: const Color(0xFF3B82F6),
-          duration: const Duration(seconds: 2),
+          backgroundColor: Color(0xFF3B82F6),
+          duration: Duration(seconds: 2),
         ),
       );
 

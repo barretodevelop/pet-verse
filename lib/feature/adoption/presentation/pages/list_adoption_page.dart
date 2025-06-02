@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
 import 'package:petverse/core/providers/unified_user_state_provider.dart';
@@ -122,11 +121,11 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24.r),
-                topRight: Radius.circular(24.r),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
             ),
             child: const Center(child: CircularProgressIndicator()),
@@ -136,11 +135,11 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         if (snapshot.hasError || !snapshot.hasData) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24.r),
-                topRight: Radius.circular(24.r),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
             ),
             child: const Center(child: Text('Erro ao carregar pet')),
@@ -162,52 +161,52 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: Column(
         children: [
           // Handle bar
           Container(
-            margin: EdgeInsets.only(top: 8.h),
-            width: 40.w,
-            height: 4.h,
+            margin: const EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
               color: const Color(0xFFE2E8F0),
-              borderRadius: BorderRadius.circular(2.r),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
 
           // Header compacto
           Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 8.h),
+            padding: const EdgeInsets.fromLTRB(20, 12, 16, 8),
             child: Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: Text(
                     'Detalhes do Pet',
                     style: TextStyle(
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.close,
-                    color: const Color(0xFF64748B),
-                    size: 22.sp,
+                    color: Color(0xFF64748B),
+                    size: 22,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(
-                    minWidth: 32.w,
-                    minHeight: 32.w,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
                   ),
                 ),
               ],
@@ -217,14 +216,14 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           // Content
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildCompactPetHeader(pet, adoption),
-                  SizedBox(height: 16.h),
+                  const SizedBox(height: 16),
                   _buildStatsAndTraits(pet, adoption),
-                  SizedBox(height: 16.h),
+                  const SizedBox(height: 16),
                   _buildCompactAdopterInfo(adoption),
                   const Spacer(),
                 ],
@@ -246,8 +245,8 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     return Row(
       children: [
         Container(
-          width: 80.w,
-          height: 80.w,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -260,17 +259,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             shape: BoxShape.circle,
             border: Border.all(
               color: Color(adoption.requesterColorTheme).withOpacity(0.3),
-              width: 2.w,
+              width: 2,
             ),
           ),
           child: Center(
             child: Text(
               pet.photo,
-              style: TextStyle(fontSize: 36.sp),
+              style: const TextStyle(fontSize: 36),
             ),
           ),
         ),
-        SizedBox(width: 16.w),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,25 +279,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   Expanded(
                     child: Text(
                       pet.name,
-                      style: TextStyle(
-                        fontSize: 22.sp,
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
                   Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color:
                           Color(adoption.requesterColorTheme).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       pet.type,
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Color(adoption.requesterColorTheme),
                       ),
@@ -306,25 +305,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   ),
                 ],
               ),
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               Text(
                 '${pet.breed} • ${pet.age}',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF64748B),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF64748B),
                 ),
               ),
-              SizedBox(height: 8.h),
+              const SizedBox(height: 8),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: _getPetMoodColor(pet).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   _getPetMoodText(pet),
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: _getPetMoodColor(pet),
                   ),
@@ -340,13 +339,13 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
   Widget _buildStatsAndTraits(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -355,44 +354,45 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           Row(
             children: [
               Expanded(child: _buildCompactStat('❤️', 'Saúde', pet.health)),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                   child: _buildCompactStat('😊', 'Felicidade', pet.happiness)),
             ],
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(child: _buildCompactStat('⚡', 'Energia', pet.energy)),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(child: _buildCompactStat('✨', 'Higiene', pet.hygiene)),
             ],
           ),
           if (pet.traits.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Text(
+            const SizedBox(height: 12),
+            const Text(
               'Características',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
-            SizedBox(height: 6.h),
+            const SizedBox(height: 6),
             Wrap(
-              spacing: 6.w,
-              runSpacing: 4.h,
+              spacing: 6,
+              runSpacing: 4,
               children: pet.traits.take(4).map((trait) {
                 return Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Color(adoption.requesterColorTheme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     trait,
                     style: TextStyle(
-                      fontSize: 11.sp,
+                      fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: Color(adoption.requesterColorTheme),
                     ),
@@ -409,46 +409,46 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
   Widget _buildCompactStat(String emoji, String label, int value) {
     return Row(
       children: [
-        Text(emoji, style: TextStyle(fontSize: 14.sp)),
-        SizedBox(width: 6.w),
+        Text(emoji, style: const TextStyle(fontSize: 14)),
+        const SizedBox(width: 6),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: const Color(0xFF64748B),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF64748B),
                 ),
               ),
-              SizedBox(height: 2.h),
+              const SizedBox(height: 2),
               Stack(
                 children: [
                   Container(
-                    height: 6.h,
+                    height: 6,
                     decoration: BoxDecoration(
                       color: _getStatColor(value).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(3.r),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   FractionallySizedBox(
                     widthFactor: value / 100,
                     child: Container(
-                      height: 6.h,
+                      height: 6,
                       decoration: BoxDecoration(
                         color: _getStatColor(value),
-                        borderRadius: BorderRadius.circular(3.r),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 2.h),
+              const SizedBox(height: 2),
               Text(
                 '$value%',
                 style: TextStyle(
-                  fontSize: 10.sp,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: _getStatColor(value),
                 ),
@@ -462,7 +462,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildCompactAdopterInfo(CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -470,23 +470,23 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             Color(adoption.requesterColorTheme).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 36.w,
-            height: 36.w,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: Color(adoption.requesterColorTheme).withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
                 color: Color(adoption.requesterColorTheme),
-                width: 1.w,
+                width: 1,
               ),
             ),
             child: Center(
@@ -496,31 +496,31 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                     .map((word) => word[0])
                     .join(),
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Color(adoption.requesterColorTheme),
                 ),
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   adoption.requesterCodename,
-                  style: TextStyle(
-                    fontSize: 14.sp,
+                  style: const TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
                 Text(
                   'Lv.${adoption.requesterLevel} • ${adoption.region}',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFF64748B),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -529,7 +529,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           Icon(
             Icons.people,
             color: Color(adoption.requesterColorTheme),
-            size: 18.sp,
+            size: 18,
           ),
         ],
       ),
@@ -539,7 +539,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
   Widget _buildCompactBottomAction(
       FirebasePetModel pet, CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -555,25 +555,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.info_outline,
-                    color: const Color(0xFF3B82F6),
-                    size: 16.sp,
+                    color: Color(0xFF3B82F6),
+                    size: 16,
                   ),
-                  SizedBox(width: 8.w),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Ao adotar, você se tornará co-guardião junto com ${adoption.requesterCodename}',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: const Color(0xFF3B82F6),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF3B82F6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -581,33 +581,33 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 ],
               ),
             ),
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: BorderSide(
-                          color: const Color(0xFFE2E8F0),
-                          width: 1.w,
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(
+                          color: Color(0xFFE2E8F0),
+                          width: 1,
                         ),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Cancelar',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 12.w),
+                const SizedBox(width: 12),
                 Expanded(
                   flex: 2,
                   child: Consumer(
@@ -622,34 +622,34 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
-                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
                         child: isInTransition
-                            ? SizedBox(
-                                width: 16.w,
-                                height: 16.w,
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
-                                  strokeWidth: 2.w,
+                                  strokeWidth: 2,
                                 ),
                               )
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.favorite,
                                     color: Colors.white,
-                                    size: 16.sp,
+                                    size: 16,
                                   ),
-                                  SizedBox(width: 6.w),
+                                  const SizedBox(width: 6),
                                   Text(
                                     'Adotar ${pet.name}',
-                                    style: TextStyle(
-                                      fontSize: 14.sp,
+                                    style: const TextStyle(
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
@@ -721,18 +721,18 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(
+        icon: const Icon(
           Icons.arrow_back,
-          color: const Color(0xFF0F172A),
-          size: 24.sp,
+          color: Color(0xFF0F172A),
+          size: 24,
         ),
       ),
-      title: Text(
+      title: const Text(
         'Adoções Disponíveis',
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
       actions: [
@@ -740,10 +740,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           onPressed: () {
             ref.invalidate(publicAdoptionRequestsFirebaseProvider);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.refresh,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
       ],
@@ -756,16 +756,16 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.pets_rounded,
-              color: const Color(0xFF3B82F6),
-              size: 40.sp,
+              color: Color(0xFF3B82F6),
+              size: 40,
             ),
           )
               .animate(onPlay: (controller) => controller.repeat())
@@ -775,23 +775,23 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 end: const Offset(1.2, 1.2),
                 duration: 1000.ms,
               ),
-          SizedBox(height: 24.h),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'Carregando Adoções...',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Conectando com Firebase...',
               style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+                fontSize: 14,
+                color: Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
             ),
@@ -838,30 +838,30 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.login,
-            size: 80.sp,
-            color: const Color(0xFF64748B),
+            size: 80,
+            color: Color(0xFF64748B),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Login Necessário',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'Você precisa estar logado para ver as adoções disponíveis',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Voltar'),
@@ -873,7 +873,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildFilters() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -888,16 +888,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                margin: EdgeInsets.only(right: 12.w),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                margin: const EdgeInsets.only(right: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF10B981) : Colors.white,
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? const Color(0xFF10B981)
                         : const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    width: 1,
                   ),
                   boxShadow: isSelected
                       ? [
@@ -912,7 +913,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 child: Text(
                   filter,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected ? Colors.white : const Color(0xFF64748B),
                   ),
@@ -932,8 +933,8 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     final filteredCount = filteredAdoptions.length;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -941,10 +942,10 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             const Color(0xFF1E40AF).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF3B82F6).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Row(
@@ -954,25 +955,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               children: [
                 Text(
                   '$filteredCount',
-                  style: TextStyle(
-                    fontSize: 24.sp,
+                  style: const TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
-                Text(
+                const Text(
                   'Disponíveis',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            width: 1.w,
-            height: 40.h,
+            width: 1,
+            height: 40,
             color: const Color(0xFFE2E8F0),
           ),
           Expanded(
@@ -980,25 +981,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               children: [
                 Text(
                   '$urgentAdoptions',
-                  style: TextStyle(
-                    fontSize: 24.sp,
+                  style: const TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFFEF4444),
+                    color: Color(0xFFEF4444),
                   ),
                 ),
-                Text(
+                const Text(
                   'Urgentes',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            width: 1.w,
-            height: 40.h,
+            width: 1,
+            height: 40,
             color: const Color(0xFFE2E8F0),
           ),
           Expanded(
@@ -1006,17 +1007,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               children: [
                 Text(
                   '$totalAdoptions',
-                  style: TextStyle(
-                    fontSize: 24.sp,
+                  style: const TextStyle(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF10B981),
+                    color: Color(0xFF10B981),
                   ),
                 ),
-                Text(
+                const Text(
                   'Total',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -1033,33 +1034,33 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 100.w,
-            height: 100.w,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               color: const Color(0xFF64748B).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.search_off,
-              color: const Color(0xFF64748B),
-              size: 50.sp,
+              color: Color(0xFF64748B),
+              size: 50,
             ),
           ),
-          SizedBox(height: 24.h),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'Nenhuma adoção encontrada',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'Tente alterar os filtros ou aguarde novas adoções',
             style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -1073,30 +1074,30 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
-            size: 64.sp,
-            color: const Color(0xFFEF4444),
+            size: 64,
+            color: Color(0xFFEF4444),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Erro ao carregar dados',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Text(
             error,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               ref.invalidate(publicAdoptionRequestsFirebaseProvider);
@@ -1110,7 +1111,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildAdoptionsList(List<CollaborativeAdoptionRequest> adoptions) {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       itemCount: adoptions.length,
       itemBuilder: (context, index) {
         final adoption = adoptions[index];
@@ -1127,18 +1128,18 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     return GestureDetector(
       onTap: () => _onAdoptionTap(adoption),
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        padding: EdgeInsets.all(16.w),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isUrgent
                 ? const Color(0xFFEF4444).withOpacity(0.3)
                 : isHot
                     ? const Color(0xFFF59E0B).withOpacity(0.3)
                     : const Color(0xFFE2E8F0),
-            width: isUrgent || isHot ? 2.w : 1.w,
+            width: isUrgent || isHot ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -1152,11 +1153,11 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildCardHeader(adoption),
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
             _buildCardPetsPreview(adoption, ref),
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
             _buildCardMessage(adoption),
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
             _buildCardFooter(adoption),
           ],
         ),
@@ -1174,14 +1175,14 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     return Row(
       children: [
         Container(
-          width: 50.w,
-          height: 50.w,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
             color: Color(adoption.requesterColorTheme).withOpacity(0.1),
             shape: BoxShape.circle,
             border: Border.all(
               color: Color(adoption.requesterColorTheme),
-              width: 2.w,
+              width: 2,
             ),
           ),
           child: Center(
@@ -1191,14 +1192,14 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   .map((word) => word[0])
                   .join(),
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Color(adoption.requesterColorTheme),
               ),
             ),
           ),
         ),
-        SizedBox(width: 12.w),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1208,25 +1209,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   Expanded(
                     child: Text(
                       adoption.requesterCodename,
-                      style: TextStyle(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
                   if (adoption.isNew)
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
+                      child: const Text(
                         'NOVO',
                         style: TextStyle(
-                          fontSize: 10.sp,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -1239,17 +1240,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                   Text(
                     'Lv.${adoption.requesterLevel}',
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(adoption.requesterColorTheme),
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  const SizedBox(width: 8),
                   Text(
                     adoption.region,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF64748B),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -1262,15 +1263,15 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           children: [
             if (isUrgent)
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEF4444),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
+                child: const Text(
                   'URGENTE',
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -1278,25 +1279,25 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               )
             else if (isHot)
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF59E0B),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
+                child: const Text(
                   'HOT',
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
               ),
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
             Text(
               '${adoption.daysRemaining.toStringAsFixed(1)} dias',
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isUrgent
                     ? const Color(0xFFEF4444)
@@ -1336,13 +1337,13 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
     }
 
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Color(adoption.requesterColorTheme).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -1352,20 +1353,20 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               Icon(
                 Icons.pets,
                 color: Color(adoption.requesterColorTheme),
-                size: 16.sp,
+                size: 16,
               ),
-              SizedBox(width: 6.w),
+              const SizedBox(width: 6),
               Text(
                 'Escolha um dos pets:',
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Color(adoption.requesterColorTheme),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Row(
             children: pets.asMap().entries.map((entry) {
               final index = entry.key;
@@ -1374,7 +1375,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
               return Expanded(
                 child: Container(
-                  margin: EdgeInsets.only(right: isLast ? 0 : 8.w),
+                  margin: EdgeInsets.only(right: isLast ? 0 : 8),
                   child: _buildPetPreviewCard(pet, adoption),
                 ),
               );
@@ -1393,13 +1394,13 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         _showPetDetailsModal(pet.id, adoption);
       },
       child: Container(
-        padding: EdgeInsets.all(8.w),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: Color(adoption.requesterColorTheme).withOpacity(0.3),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -1413,8 +1414,8 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 32.w,
-              height: 32.w,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: Color(adoption.requesterColorTheme).withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -1422,17 +1423,17 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               child: Center(
                 child: Text(
                   pet.photo,
-                  style: TextStyle(fontSize: 16.sp),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
             Text(
               pet.name,
-              style: TextStyle(
-                fontSize: 10.sp,
+              style: const TextStyle(
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1440,21 +1441,21 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
             ),
             Text(
               pet.type,
-              style: TextStyle(
-                fontSize: 8.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 8,
+                color: Color(0xFF64748B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 2.h),
+            const SizedBox(height: 2),
             Container(
               width: double.infinity,
-              height: 2.h,
+              height: 2,
               decoration: BoxDecoration(
                 color: _getHealthColor(pet.health).withOpacity(0.3),
-                borderRadius: BorderRadius.circular(1.r),
+                borderRadius: BorderRadius.circular(1),
               ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
@@ -1462,7 +1463,7 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
                 child: Container(
                   decoration: BoxDecoration(
                     color: _getHealthColor(pet.health),
-                    borderRadius: BorderRadius.circular(1.r),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 ),
               ),
@@ -1481,30 +1482,30 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildPetsLoading(CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Color(adoption.requesterColorTheme).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 16.w,
-            height: 16.w,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(
-              strokeWidth: 2.w,
+              strokeWidth: 2,
               color: Color(adoption.requesterColorTheme),
             ),
           ),
-          SizedBox(width: 8.w),
+          const SizedBox(width: 8),
           Text(
             'Carregando pets...',
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               color: Color(adoption.requesterColorTheme),
               fontStyle: FontStyle.italic,
             ),
@@ -1516,29 +1517,29 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildPetsError(CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFEF4444).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
           Icon(
             Icons.error_outline,
-            color: const Color(0xFFEF4444),
-            size: 16.sp,
+            color: Color(0xFFEF4444),
+            size: 16,
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               'Erro ao carregar pets desta adoção',
               style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFFEF4444),
+                fontSize: 12,
+                color: Color(0xFFEF4444),
               ),
             ),
           ),
@@ -1549,32 +1550,32 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
 
   Widget _buildCardMessage(CollaborativeAdoptionRequest adoption) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Mensagem Codificada:',
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF64748B),
+              color: Color(0xFF64748B),
             ),
           ),
-          SizedBox(height: 4.h),
+          const SizedBox(height: 4),
           Text(
             adoption.codedMessage,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: const Color(0xFF0F172A),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF0F172A),
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -1589,18 +1590,19 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
         if (adoption.personalityTags.isNotEmpty)
           Expanded(
             child: Wrap(
-              spacing: 4.w,
+              spacing: 4,
               children: adoption.personalityTags.take(2).map((tag) {
                 return Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Color(adoption.requesterColorTheme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     tag,
                     style: TextStyle(
-                      fontSize: 9.sp,
+                      fontSize: 9,
                       fontWeight: FontWeight.w500,
                       color: Color(adoption.requesterColorTheme),
                     ),
@@ -1609,34 +1611,34 @@ class _AdoptionListPageState extends ConsumerState<AdoptionListPage>
               }).toList(),
             ),
           ),
-        SizedBox(width: 12.w),
+        const SizedBox(width: 12),
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.visibility,
-              size: 14.sp,
-              color: const Color(0xFF64748B),
+              size: 14,
+              color: Color(0xFF64748B),
             ),
-            SizedBox(width: 4.w),
+            const SizedBox(width: 4),
             Text(
               '${adoption.views}',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
               ),
             ),
-            SizedBox(width: 12.w),
-            Icon(
+            const SizedBox(width: 12),
+            const Icon(
               Icons.favorite_border,
-              size: 14.sp,
-              color: const Color(0xFF64748B),
+              size: 14,
+              color: Color(0xFF64748B),
             ),
-            SizedBox(width: 4.w),
+            const SizedBox(width: 4),
             Text(
               '${adoption.interested}',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
               ),
             ),
           ],

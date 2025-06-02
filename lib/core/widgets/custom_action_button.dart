@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BuildActionButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -26,7 +25,7 @@ class BuildActionButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
@@ -37,10 +36,10 @@ class BuildActionButton extends StatelessWidget {
               Color(0xFFF8FAFC),
             ],
           ),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: gradient.colors.first.withOpacity(0.15),
-            width: 1.5.w,
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
@@ -60,11 +59,11 @@ class BuildActionButton extends StatelessWidget {
           children: [
             // Ícone com gradiente
             Container(
-              width: 48.w,
-              height: 48.w,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 gradient: gradient,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: gradient.colors.first.withOpacity(0.3),
@@ -76,10 +75,10 @@ class BuildActionButton extends StatelessWidget {
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: 24.sp,
+                size: 24,
               ),
             ),
-            SizedBox(width: 16.w),
+            const SizedBox(width: 16),
             // Textos
             Expanded(
               child: Column(
@@ -88,19 +87,19 @@ class BuildActionButton extends StatelessWidget {
                 children: [
                   Text(
                     text,
-                    style: TextStyle(
-                      fontSize: 15.sp,
+                    style: const TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                       letterSpacing: -0.2,
                     ),
                   ),
-                  SizedBox(height: 3.h),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF64748B),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -109,7 +108,7 @@ class BuildActionButton extends StatelessWidget {
             ),
             // Seta com gradiente
             Container(
-              padding: EdgeInsets.all(8.w),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 gradient: gradient.colors.first.withOpacity(0.1) != null
                     ? LinearGradient(
@@ -119,12 +118,12 @@ class BuildActionButton extends StatelessWidget {
                         ],
                       )
                     : null,
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: gradient.colors.first.withOpacity(0.7),
-                size: 16.sp,
+                size: 16,
               ),
             ),
           ],

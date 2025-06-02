@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/enums/enums.dart';
 import 'package:petverse/core/model/economy/game_item.dart';
 import 'package:petverse/core/providers/inventory_providers.dart';
@@ -22,11 +21,11 @@ class InventoryStatsWidget extends ConsumerWidget {
     final lowStockItems = ref.watch(lowStockItemsProvider);
 
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(20.w),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -39,13 +38,13 @@ class InventoryStatsWidget extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           _buildOverviewCards(context, stats),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           _buildCategoryBreakdown(context, stats['category_breakdown']),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           _buildRarityBreakdown(context, stats['rarity_breakdown']),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           _buildQuickActions(
               context, ref, consumableItems, collectibleItems, lowStockItems),
         ],
@@ -57,35 +56,35 @@ class InventoryStatsWidget extends ConsumerWidget {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(12.w),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: const Color(0xFF3B82F6).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
+          child: const Icon(
             Icons.analytics,
-            color: const Color(0xFF3B82F6),
-            size: 24.sp,
+            color: Color(0xFF3B82F6),
+            size: 24,
           ),
         ),
-        SizedBox(width: 12.w),
-        Expanded(
+        const SizedBox(width: 12),
+        const Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Estatísticas do Inventário',
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: Color(0xFF0F172A),
                 ),
               ),
               Text(
                 'Resumo dos seus itens',
                 style: TextStyle(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF64748B),
+                  fontSize: 14,
+                  color: Color(0xFF64748B),
                 ),
               ),
             ],
@@ -128,23 +127,23 @@ class InventoryStatsWidget extends ConsumerWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12.w,
-        mainAxisSpacing: 12.h,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
         childAspectRatio: 1.2,
       ),
       itemCount: cards.length,
       itemBuilder: (context, index) {
         final card = cards[index];
         return Container(
-          padding: EdgeInsets.all(16.w),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: (card['color'] as Color).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: (card['color'] as Color).withOpacity(0.2),
-              width: 1.w,
+              width: 1,
             ),
           ),
           child: Column(
@@ -153,33 +152,33 @@ class InventoryStatsWidget extends ConsumerWidget {
               Icon(
                 card['icon'] as IconData,
                 color: card['color'] as Color,
-                size: 24.sp,
+                size: 24,
               ),
               const Spacer(),
               Text(
                 card['value'] as String,
-                style: TextStyle(
-                  fontSize: 20.sp,
+                style: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: Color(0xFF0F172A),
                 ),
               ),
               if (card['subtitle'] != null) ...[
                 Text(
                   card['subtitle'] as String,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: const Color(0xFF64748B),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               Text(
                 card['title'] as String,
-                style: TextStyle(
-                  fontSize: 12.sp,
+                style: const TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF64748B),
+                  color: Color(0xFF64748B),
                 ),
               ),
             ],
@@ -200,29 +199,29 @@ class InventoryStatsWidget extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Por Categoria',
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
           ),
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
         ...categoryBreakdown.entries.map((entry) {
           final category = entry.key;
           final count = entry.value;
           final percentage = count / total;
 
           return Padding(
-            padding: EdgeInsets.only(bottom: 8.h),
+            padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
                 Text(
                   category.emoji,
-                  style: TextStyle(fontSize: 16.sp),
+                  style: const TextStyle(fontSize: 16),
                 ),
-                SizedBox(width: 8.w),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,31 +231,31 @@ class InventoryStatsWidget extends ConsumerWidget {
                         children: [
                           Text(
                             category.displayName,
-                            style: TextStyle(
-                              fontSize: 14.sp,
+                            style: const TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF0F172A),
+                              color: Color(0xFF0F172A),
                             ),
                           ),
                           Text(
                             '$count itens',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: const Color(0xFF64748B),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 4.h),
+                      const SizedBox(height: 4),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(4.r),
+                        borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: percentage,
                           backgroundColor: const Color(0xFFE2E8F0),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             Color(category.hashCode | 0xFF000000),
                           ),
-                          minHeight: 6.h,
+                          minHeight: 6,
                         ),
                       ),
                     ],
@@ -278,15 +277,15 @@ class InventoryStatsWidget extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Por Raridade',
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
           ),
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
         Row(
           children: rarityBreakdown.entries.map((entry) {
             final rarity = entry.key;
@@ -295,21 +294,21 @@ class InventoryStatsWidget extends ConsumerWidget {
 
             return Expanded(
               child: Container(
-                margin: EdgeInsets.only(right: 8.w),
-                padding: EdgeInsets.all(12.w),
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Color(rarity.colorValue).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Color(rarity.colorValue).withOpacity(0.3),
-                    width: 1.w,
+                    width: 1,
                   ),
                 ),
                 child: Column(
                   children: [
                     Container(
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
                         color: Color(rarity.colorValue),
                         shape: BoxShape.circle,
@@ -317,29 +316,29 @@ class InventoryStatsWidget extends ConsumerWidget {
                       child: Center(
                         child: Text(
                           '$count',
-                          style: TextStyle(
-                            fontSize: 10.sp,
+                          style: const TextStyle(
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 6.h),
+                    const SizedBox(height: 6),
                     Text(
                       rarity.displayName,
-                      style: TextStyle(
-                        fontSize: 10.sp,
+                      style: const TextStyle(
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                       textAlign: TextAlign.center,
                     ),
                     Text(
                       '$percentage%',
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: const Color(0xFF64748B),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -362,15 +361,15 @@ class InventoryStatsWidget extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Ações Rápidas',
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
           ),
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -384,7 +383,7 @@ class InventoryStatsWidget extends ConsumerWidget {
                     _showConsumableItems(context, ref, consumableItems),
               ),
             ),
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
                 context,
@@ -398,7 +397,7 @@ class InventoryStatsWidget extends ConsumerWidget {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
         if (lowStockItems.isNotEmpty) ...[
           _buildActionCard(
             context,
@@ -427,52 +426,52 @@ class InventoryStatsWidget extends ConsumerWidget {
       onTap: onTap,
       child: Container(
         width: fullWidth ? double.infinity : null,
-        padding: EdgeInsets.all(16.w),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: color.withOpacity(0.2),
-            width: 1.w,
+            width: 1,
           ),
         ),
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(8.w),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: color, size: 20.sp),
+              child: Icon(icon, color: color, size: 20),
             ),
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF64748B),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios,
-              size: 16.sp,
-              color: const Color(0xFF64748B),
+              size: 16,
+              color: Color(0xFF64748B),
             ),
           ],
         ),
@@ -522,22 +521,22 @@ class InventoryStatsWidget extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
         ),
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    color: Color(0xFFE2E8F0),
+                    width: 1,
                   ),
                 ),
               ),
@@ -546,19 +545,19 @@ class InventoryStatsWidget extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: TextStyle(
-                        fontSize: 18.sp,
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.close,
-                      size: 24.sp,
-                      color: const Color(0xFF64748B),
+                      size: 24,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -570,80 +569,80 @@ class InventoryStatsWidget extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.inbox,
-                            size: 64.sp,
-                            color: const Color(0xFF94A3B8),
+                            size: 64,
+                            color: Color(0xFF94A3B8),
                           ),
-                          SizedBox(height: 16.h),
+                          const SizedBox(height: 16),
                           Text(
                             emptyMessage,
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              color: const Color(0xFF64748B),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ],
                       ),
                     )
                   : ListView.builder(
-                      padding: EdgeInsets.all(20.w),
+                      padding: const EdgeInsets.all(20),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final item = items[index];
                         return Container(
-                          margin: EdgeInsets.only(bottom: 12.h),
-                          padding: EdgeInsets.all(16.w),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: const Color(0xFFE2E8F0),
-                              width: 1.w,
+                              width: 1,
                             ),
                           ),
                           child: Row(
                             children: [
                               Text(
                                 item.item.emoji,
-                                style: TextStyle(fontSize: 32.sp),
+                                style: const TextStyle(fontSize: 32),
                               ),
-                              SizedBox(width: 12.w),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       item.item.name,
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
+                                      style: const TextStyle(
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF0F172A),
+                                        color: Color(0xFF0F172A),
                                       ),
                                     ),
                                     Text(
                                       'Quantidade: ${item.quantity}',
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        color: const Color(0xFF64748B),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF64748B),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w,
-                                  vertical: 4.h,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Color(item.item.rarity.colorValue),
-                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   item.item.rarity.displayName,
-                                  style: TextStyle(
-                                    fontSize: 10.sp,
+                                  style: const TextStyle(
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),

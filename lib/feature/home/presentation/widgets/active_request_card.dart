@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/active_request_provider.dart';
 import 'package:petverse/feature/home/presentation/widgets/request_action_buttons.dart';
@@ -17,19 +16,19 @@ class ActiveRequestCard extends ConsumerWidget {
     final petsAsync = ref.watch(userActiveRequestPetsProvider);
 
     return Container(
-      margin: EdgeInsets.all(20.w),
+      margin: const EdgeInsets.all(20),
       child: SingleChildScrollView(
         child: Column(
           children: [
             RequestHeader(activeRequest: activeRequest),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             petsAsync.when(
               data: (pets) =>
                   RequestPetsList(pets: pets, request: activeRequest),
               loading: () => const _PetsLoadingIndicator(),
               error: (_, __) => const _PetsErrorDisplay(),
             ),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             RequestActionButtons(activeRequest: activeRequest),
           ],
         ),
@@ -44,10 +43,10 @@ class _PetsLoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120.h,
+      height: 120,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: const Center(
         child: CircularProgressIndicator(),
@@ -62,16 +61,16 @@ class _PetsErrorDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
+      child: const Text(
         'Erro ao carregar pets',
         style: TextStyle(
-          fontSize: 14.sp,
-          color: const Color(0xFFEF4444),
+          fontSize: 14,
+          color: Color(0xFFEF4444),
         ),
         textAlign: TextAlign.center,
       ),

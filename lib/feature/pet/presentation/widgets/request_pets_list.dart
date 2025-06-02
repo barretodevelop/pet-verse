@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 
 class RequestPetsList extends StatelessWidget {
@@ -12,17 +11,17 @@ class RequestPetsList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (pets.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(20.w),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
-        child: Text(
+        child: const Text(
           'Nenhum pet selecionado para esta solicitação.',
           style: TextStyle(
-            fontSize: 14.sp,
-            color: const Color(0xFF64748B),
+            fontSize: 14,
+            color: Color(0xFF64748B),
           ),
           textAlign: TextAlign.center,
         ),
@@ -31,7 +30,7 @@ class RequestPetsList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.1),
@@ -43,14 +42,14 @@ class RequestPetsList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.all(20.w),
+          const Padding(
+            padding: EdgeInsets.all(20),
             child: Text(
               'Seus Pets Selecionados',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ),
@@ -85,14 +84,14 @@ class _RequestPetListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(
-        left: 20.w,
-        right: 20.w,
-        bottom: isLast ? 20.w : 12.w,
+        left: 20,
+        right: 20,
+        bottom: isLast ? 20 : 12,
       ),
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Color(requesterColorTheme).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Color(requesterColorTheme).withOpacity(0.2),
         ),
@@ -101,41 +100,41 @@ class _RequestPetListItem extends StatelessWidget {
         children: [
           Text(
             pet.photo,
-            style: TextStyle(fontSize: 32.sp),
+            style: const TextStyle(fontSize: 32),
           ),
-          SizedBox(width: 16.w),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   pet.name,
-                  style: TextStyle(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
                 Text(
                   '${pet.breed} • ${pet.age}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF64748B),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF10B981),
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(
+            child: const Text(
               'ATIVO',
               style: TextStyle(
-                fontSize: 10.sp,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),

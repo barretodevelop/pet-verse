@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/enums/enums.dart';
 import 'package:petverse/core/model/economy/game_item.dart';
 import 'package:petverse/core/model/mocks.dart';
@@ -54,7 +53,7 @@ class ShopPage extends ConsumerWidget {
         icon: Icon(
           Icons.arrow_back_ios,
           color: const Color(0xFF0F172A),
-          size: 22.sp,
+          size: 22,
         ),
       ),
       title: Column(
@@ -63,7 +62,7 @@ class ShopPage extends ConsumerWidget {
           Text(
             'Loja de Itens',
             style: TextStyle(
-              fontSize: 20.sp,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
@@ -71,7 +70,7 @@ class ShopPage extends ConsumerWidget {
           Text(
             'Encontre tudo para seu pet',
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               color: const Color(0xFF64748B),
               fontWeight: FontWeight.w400,
             ),
@@ -80,15 +79,15 @@ class ShopPage extends ConsumerWidget {
       ),
       actions: [
         Container(
-          margin: EdgeInsets.only(right: 16.w),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          margin: EdgeInsets.only(right: 16),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFFF59E0B), Color(0xFFEAB308)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFF59E0B).withOpacity(0.3),
@@ -100,23 +99,23 @@ class ShopPage extends ConsumerWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('🪙', style: TextStyle(fontSize: 16.sp)),
-              SizedBox(width: 4.w),
+              Text('🪙', style: TextStyle(fontSize: 16)),
+              SizedBox(width: 4),
               Text(
                 '${wallet.coins}',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(width: 12.w),
-              Text('💎', style: TextStyle(fontSize: 16.sp)),
-              SizedBox(width: 4.w),
+              SizedBox(width: 12),
+              Text('💎', style: TextStyle(fontSize: 16)),
+              SizedBox(width: 4),
               Text(
                 '${wallet.gems}',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -133,7 +132,7 @@ class ShopPage extends ConsumerWidget {
     final categoriesWithCount = ref.watch(categoriesWithCountProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -148,16 +147,16 @@ class ShopPage extends ConsumerWidget {
                 ref.read(selectedCategoryProvider.notifier).state = category;
               },
               child: Container(
-                margin: EdgeInsets.only(right: 8.w),
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                margin: EdgeInsets.only(right: 8),
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? const Color(0xFF3B82F6)
                         : const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    width: 1,
                   ),
                   boxShadow: isSelected
                       ? [
@@ -180,33 +179,33 @@ class ShopPage extends ConsumerWidget {
                   children: [
                     Text(
                       catData['emoji'] as String,
-                      style: TextStyle(fontSize: 16.sp),
+                      style: TextStyle(fontSize: 16),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 8),
                     Text(
                       catData['name'] as String,
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color:
                             isSelected ? Colors.white : const Color(0xFF64748B),
                       ),
                     ),
                     if (count > 0) ...[
-                      SizedBox(width: 6.w),
+                      SizedBox(width: 6),
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 6.w, vertical: 2.h),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.white.withOpacity(0.2)
                               : const Color(0xFF3B82F6).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '$count',
                           style: TextStyle(
-                            fontSize: 11.sp,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? Colors.white
@@ -227,10 +226,10 @@ class ShopPage extends ConsumerWidget {
 
   Widget _buildSearchBar(BuildContext context, WidgetRef ref) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
@@ -248,16 +247,15 @@ class ShopPage extends ConsumerWidget {
           hintText: 'Buscar itens...',
           hintStyle: TextStyle(
             color: const Color(0xFF94A3B8),
-            fontSize: 14.sp,
+            fontSize: 14,
           ),
           prefixIcon: Icon(
             Icons.search,
             color: const Color(0xFF64748B),
-            size: 20.sp,
+            size: 20,
           ),
           border: InputBorder.none,
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
@@ -272,11 +270,11 @@ class ShopPage extends ConsumerWidget {
             color: Color(0xFF3B82F6),
             strokeWidth: 3,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           Text(
             'Carregando itens...',
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF64748B),
             ),
@@ -289,50 +287,50 @@ class ShopPage extends ConsumerWidget {
   Widget _buildErrorState(BuildContext context, WidgetRef ref, String error) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32.w),
+        padding: EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.error_outline_rounded,
-              size: 64.sp,
+              size: 64,
               color: const Color(0xFFEF4444),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 16),
             Text(
               'Ops! Algo deu errado',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Text(
               'Não foi possível carregar os itens da loja',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: const Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
                 ref.invalidate(shopItemsProvider);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(Icons.refresh, size: 18.sp, color: Colors.white),
+              icon: Icon(Icons.refresh, size: 18, color: Colors.white),
               label: Text(
                 'Tentar Novamente',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -351,11 +349,11 @@ class ShopPage extends ConsumerWidget {
     }
 
     return GridView.builder(
-      padding: EdgeInsets.all(10.w),
+      padding: EdgeInsets.all(10),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 16.w,
-        mainAxisSpacing: 16.h,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
         childAspectRatio: 0.8,
       ),
       itemCount: items.length,
@@ -370,39 +368,39 @@ class ShopPage extends ConsumerWidget {
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32.w),
+        padding: EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               '📦',
-              style: TextStyle(fontSize: 64.sp),
+              style: TextStyle(fontSize: 64),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 16),
             Text(
               'Nenhum item encontrado',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Text(
               'Não há itens disponíveis em "${selectedCategory.displayName}"',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: const Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 24),
             TextButton.icon(
               onPressed: () {
                 ref.read(selectedCategoryProvider.notifier).state =
                     ItemCategory.food;
               },
-              icon: Icon(Icons.category, size: 18.sp),
+              icon: Icon(Icons.category, size: 18),
               label: const Text('Ver Todas as Categorias'),
             ),
           ],
@@ -421,13 +419,13 @@ class ShopPage extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _showItemDetails(context, ref, item, wallet),
       child: Container(
-        padding: EdgeInsets.all(10.w), // Reduzido para melhor adaptação
+        padding: EdgeInsets.all(10), // Reduzido para melhor adaptação
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: rarityColor.withOpacity(0.3),
-            width: 1.5.w,
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
@@ -450,20 +448,20 @@ class ShopPage extends ConsumerWidget {
               alignment: Alignment.center,
               children: [
                 Container(
-                  width: 56.w,
-                  height: 56.w,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     color: rarityColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: rarityColor.withOpacity(0.2),
-                      width: 1.w,
+                      width: 1,
                     ),
                   ),
                   child: Center(
                     child: Text(
                       item.emoji,
-                      style: TextStyle(fontSize: 28.sp),
+                      style: TextStyle(fontSize: 28),
                     ),
                   ),
                 ),
@@ -472,7 +470,7 @@ class ShopPage extends ConsumerWidget {
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: EdgeInsets.all(3.w),
+                      padding: EdgeInsets.all(3),
                       decoration: const BoxDecoration(
                         color: Color(0xFF10B981),
                         shape: BoxShape.circle,
@@ -480,7 +478,7 @@ class ShopPage extends ConsumerWidget {
                       child: Text(
                         '$itemQuantity',
                         style: TextStyle(
-                          fontSize: 8.sp,
+                          fontSize: 8,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -490,13 +488,13 @@ class ShopPage extends ConsumerWidget {
               ],
             ),
 
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
 
             // Item Name
             Text(
               item.name,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF0F172A),
               ),
@@ -505,19 +503,19 @@ class ShopPage extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
 
-            SizedBox(height: 4.h),
+            SizedBox(height: 4),
 
             // Rarity Badge
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: rarityColor,
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 item.rarity.displayName,
                 style: TextStyle(
-                  fontSize: 8.sp,
+                  fontSize: 8,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -529,21 +527,20 @@ class ShopPage extends ConsumerWidget {
             // Effects Preview
             if (item.effects.isNotEmpty) ...[
               Wrap(
-                spacing: 3.w,
-                runSpacing: 2.h,
+                spacing: 3,
+                runSpacing: 2,
                 children: item.effects.entries.take(2).map((effect) {
                   final effectData = MockDataService.getEffectData(effect.key);
                   return Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6.r),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '+${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'} ${effectData['emoji']}',
                       style: TextStyle(
-                        fontSize: 7.sp,
+                        fontSize: 7,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF10B981),
                       ),
@@ -551,7 +548,7 @@ class ShopPage extends ConsumerWidget {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 6.h),
+              SizedBox(height: 6),
             ],
 
             // Price Button
@@ -565,9 +562,9 @@ class ShopPage extends ConsumerWidget {
                   backgroundColor: canAfford
                       ? const Color(0xFF10B981)
                       : const Color(0xFF94A3B8),
-                  padding: EdgeInsets.symmetric(vertical: 6.h),
+                  padding: EdgeInsets.symmetric(vertical: 6),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 0,
                 ),
@@ -576,44 +573,42 @@ class ShopPage extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (item.coins != null) ...[
-                      Text('🪙', style: TextStyle(fontSize: 10.sp)),
-                      SizedBox(width: 2.w),
+                      Text('🪙', style: TextStyle(fontSize: 10)),
+                      SizedBox(width: 2),
                       Text(
                         '${item.coins}',
                         style: TextStyle(
-                          fontSize: 9.sp,
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
                     ],
                     if (item.coins != null && item.gems != null) ...[
-                      SizedBox(width: 3.w),
+                      SizedBox(width: 3),
                       Text('+',
-                          style:
-                              TextStyle(fontSize: 7.sp, color: Colors.white)),
-                      SizedBox(width: 3.w),
+                          style: TextStyle(fontSize: 7, color: Colors.white)),
+                      SizedBox(width: 3),
                     ],
                     if (item.gems != null) ...[
-                      Text('💎', style: TextStyle(fontSize: 10.sp)),
-                      SizedBox(width: 2.w),
+                      Text('💎', style: TextStyle(fontSize: 10)),
+                      SizedBox(width: 2),
                       Text(
                         '${item.gems}',
                         style: TextStyle(
-                          fontSize: 9.sp,
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
                     ],
                     if (item.isFree) ...[
-                      Icon(Icons.card_giftcard,
-                          size: 12.sp, color: Colors.white),
-                      SizedBox(width: 3.w),
+                      Icon(Icons.card_giftcard, size: 12, color: Colors.white),
+                      SizedBox(width: 3),
                       Text(
                         'Grátis',
                         style: TextStyle(
-                          fontSize: 9.sp,
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -649,60 +644,60 @@ class ShopPage extends ConsumerWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28.r),
-            topRight: Radius.circular(28.r),
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
         ),
         child: Column(
           children: [
             // Handle
             Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w,
-              height: 4.h,
+              margin: EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(2.r),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
 
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.w),
+                padding: EdgeInsets.all(24),
                 child: Column(
                   children: [
                     // Item Icon Large
                     Stack(
                       children: [
                         Container(
-                          width: 120.w,
-                          height: 120.w,
+                          width: 120,
+                          height: 120,
                           decoration: BoxDecoration(
                             color: rarityColor.withOpacity(0.1),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: rarityColor.withOpacity(0.3),
-                              width: 2.w,
+                              width: 2,
                             ),
                           ),
                           child: Center(
                             child: Text(
                               item.emoji,
-                              style: TextStyle(fontSize: 60.sp),
+                              style: TextStyle(fontSize: 60),
                             ),
                           ),
                         ),
                         if (itemQuantity > 0)
                           Positioned(
-                            right: 5.w,
-                            top: 5.h,
+                            right: 5,
+                            top: 5,
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 12.w, vertical: 6.h),
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981),
-                                borderRadius: BorderRadius.circular(16.r),
+                                borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
                                     color: const Color(0xFF10B981)
@@ -715,7 +710,7 @@ class ShopPage extends ConsumerWidget {
                               child: Text(
                                 'Possui: $itemQuantity',
                                 style: TextStyle(
-                                  fontSize: 12.sp,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
@@ -725,27 +720,27 @@ class ShopPage extends ConsumerWidget {
                       ],
                     ),
 
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 24),
 
                     Text(
                       item.name,
                       style: TextStyle(
-                        fontSize: 28.sp,
+                        fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
                       ),
                       textAlign: TextAlign.center,
                     ),
 
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 12),
 
                     // Rarity Badge
                     Container(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: rarityColor,
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
                             color: rarityColor.withOpacity(0.3),
@@ -759,14 +754,14 @@ class ShopPage extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.star,
-                            size: 16.sp,
+                            size: 16,
                             color: Colors.white,
                           ),
-                          SizedBox(width: 6.w),
+                          SizedBox(width: 6),
                           Text(
                             item.rarity.displayName,
                             style: TextStyle(
-                              fontSize: 14.sp,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
@@ -775,31 +770,31 @@ class ShopPage extends ConsumerWidget {
                       ),
                     ),
 
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 20),
 
                     Text(
                       item.description,
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         color: const Color(0xFF64748B),
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
                     ),
 
-                    SizedBox(height: 28.h),
+                    SizedBox(height: 28),
 
                     // Effects Detail
                     if (item.effects.isNotEmpty) ...[
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsets.all(20.w),
+                        padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(16.r),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: const Color(0xFFE2E8F0),
-                            width: 1.w,
+                            width: 1,
                           ),
                         ),
                         child: Column(
@@ -809,31 +804,31 @@ class ShopPage extends ConsumerWidget {
                               children: [
                                 Icon(
                                   Icons.auto_fix_high,
-                                  size: 20.sp,
+                                  size: 20,
                                   color: const Color(0xFF3B82F6),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: 8),
                                 Text(
                                   'Efeitos do Item',
                                   style: TextStyle(
-                                    fontSize: 18.sp,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0F172A),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
+                            SizedBox(height: 16),
                             ...item.effects.entries.map((effect) {
                               final effectData =
                                   MockDataService.getEffectData(effect.key);
                               return Padding(
-                                padding: EdgeInsets.only(bottom: 12.h),
+                                padding: EdgeInsets.only(bottom: 12),
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: 32.w,
-                                      height: 32.w,
+                                      width: 32,
+                                      height: 32,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF10B981)
                                             .withOpacity(0.1),
@@ -842,11 +837,11 @@ class ShopPage extends ConsumerWidget {
                                       child: Center(
                                         child: Text(
                                           effectData['emoji'],
-                                          style: TextStyle(fontSize: 16.sp),
+                                          style: TextStyle(fontSize: 16),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(width: 12.w),
+                                    SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -855,7 +850,7 @@ class ShopPage extends ConsumerWidget {
                                           Text(
                                             effectData['name'],
                                             style: TextStyle(
-                                              fontSize: 14.sp,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                               color: const Color(0xFF0F172A),
                                             ),
@@ -863,7 +858,7 @@ class ShopPage extends ConsumerWidget {
                                           Text(
                                             effectData['description'],
                                             style: TextStyle(
-                                              fontSize: 12.sp,
+                                              fontSize: 12,
                                               color: const Color(0xFF64748B),
                                             ),
                                           ),
@@ -872,16 +867,15 @@ class ShopPage extends ConsumerWidget {
                                     ),
                                     Container(
                                       padding: EdgeInsets.symmetric(
-                                          horizontal: 8.w, vertical: 4.h),
+                                          horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF10B981),
-                                        borderRadius:
-                                            BorderRadius.circular(8.r),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
                                         '+${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'}',
                                         style: TextStyle(
-                                          fontSize: 12.sp,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w700,
                                           color: Colors.white,
                                         ),
@@ -894,23 +888,23 @@ class ShopPage extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 28.h),
+                      SizedBox(height: 28),
                     ],
 
                     // Price Display
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.all(20.w),
+                      padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: canAfford
                             ? const Color(0xFF10B981).withOpacity(0.1)
                             : const Color(0xFFEF4444).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: canAfford
                               ? const Color(0xFF10B981)
                               : const Color(0xFFEF4444),
-                          width: 1.w,
+                          width: 1,
                         ),
                       ),
                       child: Column(
@@ -920,18 +914,18 @@ class ShopPage extends ConsumerWidget {
                             children: [
                               Icon(
                                 canAfford ? Icons.check_circle : Icons.cancel,
-                                size: 20.sp,
+                                size: 20,
                                 color: canAfford
                                     ? const Color(0xFF10B981)
                                     : const Color(0xFFEF4444),
                               ),
-                              SizedBox(width: 8.w),
+                              SizedBox(width: 8),
                               Text(
                                 canAfford
                                     ? 'Você pode comprar este item'
                                     : 'Saldo insuficiente',
                                 style: TextStyle(
-                                  fontSize: 14.sp,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: canAfford
                                       ? const Color(0xFF10B981)
@@ -940,48 +934,48 @@ class ShopPage extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 'Preço: ',
                                 style: TextStyle(
-                                  fontSize: 16.sp,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF0F172A),
                                 ),
                               ),
                               if (item.coins != null) ...[
-                                Text('🪙', style: TextStyle(fontSize: 20.sp)),
-                                SizedBox(width: 4.w),
+                                Text('🪙', style: TextStyle(fontSize: 20)),
+                                SizedBox(width: 4),
                                 Text(
                                   '${item.coins}',
                                   style: TextStyle(
-                                    fontSize: 18.sp,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0F172A),
                                   ),
                                 ),
                               ],
                               if (item.coins != null && item.gems != null) ...[
-                                SizedBox(width: 8.w),
+                                SizedBox(width: 8),
                                 Text(
                                   '+',
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 14,
                                     color: const Color(0xFF64748B),
                                   ),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: 8),
                               ],
                               if (item.gems != null) ...[
-                                Text('💎', style: TextStyle(fontSize: 20.sp)),
-                                SizedBox(width: 4.w),
+                                Text('💎', style: TextStyle(fontSize: 20)),
+                                SizedBox(width: 4),
                                 Text(
                                   '${item.gems}',
                                   style: TextStyle(
-                                    fontSize: 18.sp,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF0F172A),
                                   ),
@@ -990,14 +984,14 @@ class ShopPage extends ConsumerWidget {
                               if (item.isFree) ...[
                                 Icon(
                                   Icons.card_giftcard,
-                                  size: 24.sp,
+                                  size: 24,
                                   color: const Color(0xFF10B981),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: 8),
                                 Text(
                                   'Grátis!',
                                   style: TextStyle(
-                                    fontSize: 18.sp,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF10B981),
                                   ),
@@ -1015,7 +1009,7 @@ class ShopPage extends ConsumerWidget {
 
             // Purchase Button
             Container(
-              padding: EdgeInsets.all(24.w),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -1039,9 +1033,9 @@ class ShopPage extends ConsumerWidget {
                     backgroundColor: canAfford
                         ? const Color(0xFF10B981)
                         : const Color(0xFF94A3B8),
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),
@@ -1051,13 +1045,13 @@ class ShopPage extends ConsumerWidget {
                       Icon(
                         canAfford ? Icons.shopping_cart_checkout : Icons.block,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: 20,
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: 8),
                       Text(
                         canAfford ? 'Comprar Agora' : 'Saldo Insuficiente',
                         style: TextStyle(
-                          fontSize: 16.sp,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -1080,20 +1074,20 @@ class ShopPage extends ConsumerWidget {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24.r),
+          borderRadius: BorderRadius.circular(24),
         ),
         title: Row(
           children: [
             Text(
               item.emoji,
-              style: TextStyle(fontSize: 28.sp),
+              style: TextStyle(fontSize: 28),
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Confirmar Compra',
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF0F172A),
                 ),
@@ -1108,20 +1102,20 @@ class ShopPage extends ConsumerWidget {
             Text(
               'Tem certeza que deseja comprar "${item.name}"?',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 color: const Color(0xFF64748B),
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: const Color(0xFFE2E8F0),
-                  width: 1.w,
+                  width: 1,
                 ),
               ),
               child: Column(
@@ -1130,69 +1124,69 @@ class ShopPage extends ConsumerWidget {
                   Text(
                     'Detalhes da compra:',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Item:',
                         style: TextStyle(
-                          fontSize: 14.sp,
+                          fontSize: 14,
                           color: const Color(0xFF64748B),
                         ),
                       ),
                       Text(
                         item.name,
                         style: TextStyle(
-                          fontSize: 14.sp,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF0F172A),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Custo:',
                         style: TextStyle(
-                          fontSize: 14.sp,
+                          fontSize: 14,
                           color: const Color(0xFF64748B),
                         ),
                       ),
                       Row(
                         children: [
                           if (item.coins != null) ...[
-                            Text('🪙', style: TextStyle(fontSize: 16.sp)),
-                            SizedBox(width: 4.w),
+                            Text('🪙', style: TextStyle(fontSize: 16)),
+                            SizedBox(width: 4),
                             Text(
                               '${item.coins}',
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF0F172A),
                               ),
                             ),
                           ],
                           if (item.coins != null && item.gems != null) ...[
-                            SizedBox(width: 8.w),
-                            Text(' + ', style: TextStyle(fontSize: 12.sp)),
-                            SizedBox(width: 8.w),
+                            SizedBox(width: 8),
+                            Text(' + ', style: TextStyle(fontSize: 12)),
+                            SizedBox(width: 8),
                           ],
                           if (item.gems != null) ...[
-                            Text('💎', style: TextStyle(fontSize: 16.sp)),
-                            SizedBox(width: 4.w),
+                            Text('💎', style: TextStyle(fontSize: 16)),
+                            SizedBox(width: 4),
                             Text(
                               '${item.gems}',
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF0F172A),
                               ),
@@ -1202,7 +1196,7 @@ class ShopPage extends ConsumerWidget {
                             Text(
                               'Grátis',
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF10B981),
                               ),
@@ -1223,7 +1217,7 @@ class ShopPage extends ConsumerWidget {
             child: Text(
               'Cancelar',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: const Color(0xFF64748B),
               ),
             ),
@@ -1236,14 +1230,14 @@ class ShopPage extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
               ),
               elevation: 0,
             ),
             child: Text(
               'Confirmar Compra',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -1278,12 +1272,12 @@ class ShopPage extends ConsumerWidget {
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.error, color: Colors.white, size: 20.sp),
-              SizedBox(width: 8.w),
+              Icon(Icons.error, color: Colors.white, size: 20),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Erro ao processar compra: ${e.toString()}',
-                  style: TextStyle(fontSize: 14.sp),
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
             ],
@@ -1291,7 +1285,7 @@ class ShopPage extends ConsumerWidget {
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       );
@@ -1307,18 +1301,18 @@ class ShopPage extends ConsumerWidget {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            width: 240.w,
-            height: 240.w,
+            width: 240,
+            height: 240,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24.r),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 100.w,
-                  height: 100.w,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -1326,32 +1320,32 @@ class ShopPage extends ConsumerWidget {
                   child: Center(
                     child: Text(
                       item.emoji,
-                      style: TextStyle(fontSize: 50.sp),
+                      style: TextStyle(fontSize: 50),
                     ),
                   ),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 20),
                 Icon(
                   Icons.check_circle,
-                  size: 32.sp,
+                  size: 32,
                   color: const Color(0xFF10B981),
                 ),
-                SizedBox(height: 12.h),
+                SizedBox(height: 12),
                 Text(
                   'Compra Realizada!',
                   style: TextStyle(
-                    fontSize: 20.sp,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF10B981),
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 8),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     item.name,
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 16,
                       color: const Color(0xFF64748B),
                     ),
                     textAlign: TextAlign.center,
@@ -1382,18 +1376,18 @@ class ShopPage extends ConsumerWidget {
           SnackBar(
             content: Row(
               children: [
-                Text(item.emoji, style: TextStyle(fontSize: 20.sp)),
-                SizedBox(width: 12.w),
+                Text(item.emoji, style: TextStyle(fontSize: 20)),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text('${item.name} foi adicionado ao seu inventário!'),
                 ),
-                Icon(Icons.inventory_2, color: Colors.white, size: 20.sp),
+                Icon(Icons.inventory_2, color: Colors.white, size: 20),
               ],
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
@@ -1415,10 +1409,10 @@ class ShopPage extends ConsumerWidget {
       color: Colors.black.withOpacity(0.5),
       child: Center(
         child: Container(
-          padding: EdgeInsets.all(32.w),
+          padding: EdgeInsets.all(32),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1426,11 +1420,11 @@ class ShopPage extends ConsumerWidget {
               const CircularProgressIndicator(
                 color: Color(0xFF3B82F6),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 16),
               Text(
                 'Processando compra...',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
                 ),
@@ -1461,9 +1455,9 @@ class ShopPage extends ConsumerWidget {
             );
           },
           backgroundColor: const Color(0xFF3B82F6),
-          child: Icon(Icons.inventory_2, color: Colors.white, size: 24.sp),
+          child: Icon(Icons.inventory_2, color: Colors.white, size: 24),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 16),
 
         // Debug/Reset button (only in development)
         FloatingActionButton(
@@ -1471,7 +1465,7 @@ class ShopPage extends ConsumerWidget {
           onPressed: () => _showDebugMenu(context, ref),
           backgroundColor: const Color(0xFF64748B),
           mini: true,
-          child: Icon(Icons.developer_mode, color: Colors.white, size: 20.sp),
+          child: Icon(Icons.developer_mode, color: Colors.white, size: 20),
         ),
       ],
     );
@@ -1481,18 +1475,18 @@ class ShopPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: EdgeInsets.all(24.w),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Menu de Desenvolvimento',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.refresh),
               title: const Text('Reset Loja'),

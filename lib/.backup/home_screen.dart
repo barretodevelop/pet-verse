@@ -365,7 +365,7 @@
   //       // Main Content Area
   //       Expanded(
   //         child: Padding(
-  //           padding: EdgeInsets.symmetric(horizontal: 20.w),
+  //           padding: EdgeInsets.symmetric(horizontal: 20),
   //           child: user.hasPet
   //               ? _buildPetSection(user.currentPetId!)
   //               : _buildAdoptionSection(),

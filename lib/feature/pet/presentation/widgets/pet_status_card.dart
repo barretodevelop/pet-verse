@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/pet_model.dart';
 import 'package:petverse/core/providers/pet_provider.dart';
 import 'package:petverse/core/theme/app_theme.dart';
@@ -47,8 +46,8 @@ class _PetDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(24.w),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -58,7 +57,7 @@ class _PetDetailsCard extends StatelessWidget {
             AppTheme.primary.withOpacity(0.02),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: AppTheme.primary.withOpacity(0.15),
@@ -75,8 +74,8 @@ class _PetDetailsCard extends StatelessWidget {
               return Transform.translate(
                 offset: Offset(0, floatController.value * 8),
                 child: Container(
-                  width: 120.w,
-                  height: 120.w,
+                  width: 120,
+                  height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
@@ -97,9 +96,9 @@ class _PetDetailsCard extends StatelessWidget {
                             gradient: AppTheme.primaryGradient,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.pets,
-                            size: 60.sp,
+                            size: 60,
                             color: Colors.white,
                           ),
                         );
@@ -110,43 +109,43 @@ class _PetDetailsCard extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           Text(
             pet.name,
-            style: TextStyle(
-              fontSize: 22.sp,
+            style: const TextStyle(
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppTheme.accentCoral.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${pet.breed} • ${pet.type}',
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 color: AppTheme.accentCoral,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          SizedBox(height: 24.h),
+          const SizedBox(height: 24),
           Column(
             children: [
               _PetStatBar(
                   'Felicidade', pet.happiness, AppTheme.accentCoral, '❤️'),
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
               _PetStatBar('Saúde', pet.health, AppTheme.success, '🏥'),
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
               _PetStatBar('Energia', pet.energy, AppTheme.warning, '⚡'),
             ],
           ),
-          SizedBox(height: 24.h),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -157,7 +156,7 @@ class _PetDetailsCard extends StatelessWidget {
                   onTap: () => AppUtils.mediumImpact(),
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: _PetActionButton(
                   label: 'Brincar',
@@ -166,7 +165,7 @@ class _PetDetailsCard extends StatelessWidget {
                   onTap: () => AppUtils.mediumImpact(),
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: _PetActionButton(
                   label: 'Cuidar',
@@ -197,24 +196,24 @@ class _PetStatBar extends StatelessWidget {
       children: [
         Text(
           emoji,
-          style: TextStyle(fontSize: 16.sp),
+          style: const TextStyle(fontSize: 16),
         ),
-        SizedBox(width: 8.w),
+        const SizedBox(width: 8),
         Text(
           '$label:',
-          style: TextStyle(
-            fontSize: 13.sp,
+          style: const TextStyle(
+            fontSize: 13,
             fontWeight: FontWeight.w500,
             color: AppTheme.textPrimary,
           ),
         ),
-        SizedBox(width: 12.w),
+        const SizedBox(width: 12),
         Expanded(
           child: Container(
-            height: 8.h,
+            height: 8,
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4.r),
+              borderRadius: BorderRadius.circular(4),
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
@@ -224,17 +223,17 @@ class _PetStatBar extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [color, color.withOpacity(0.7)],
                   ),
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
           ),
         ),
-        SizedBox(width: 8.w),
+        const SizedBox(width: 8),
         Text(
           '$value%',
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
             color: color,
           ),
@@ -262,12 +261,12 @@ class _PetActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [color, color.withOpacity(0.8)],
           ),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: color.withOpacity(0.3),
@@ -281,14 +280,14 @@ class _PetActionButton extends StatelessWidget {
             Icon(
               icon,
               color: Colors.white,
-              size: 20.sp,
+              size: 20,
             ),
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
-                fontSize: 11.sp,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -306,11 +305,11 @@ class _NoPetFoundCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        margin: EdgeInsets.all(20.w),
-        padding: EdgeInsets.all(24.w),
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: const [
             BoxShadow(
               color: AppTheme.primary,
@@ -324,28 +323,28 @@ class _NoPetFoundCard extends StatelessWidget {
           children: [
             Icon(
               Icons.pets,
-              size: 80.sp,
+              size: 80,
               color: AppTheme.textLight,
             ),
-            SizedBox(height: 16.h),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Pet não encontrado',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
               ),
             ),
-            SizedBox(height: 8.h),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               'Não foi possível carregar\nas informações do seu pet',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
             ),
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
             Consumer(
               // Using Consumer here to access ref
               builder: (context, ref, child) {

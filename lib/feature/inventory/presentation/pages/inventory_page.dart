@@ -77,7 +77,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     leading: IconButton(
   //       onPressed: () => Navigator.pop(context),
   //       icon: Icon(Icons.arrow_back_ios,
-  //           color: const Color(0xFF0F172A), size: 22.sp),
+  //           color: const Color(0xFF0F172A), size: 22),
   //     ),
   //     title: Column(
   //       crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,14 +85,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         Text(
   //           'Meu Inventário',
   //           style: TextStyle(
-  //               fontSize: 20.sp,
+  //               fontSize: 20,
   //               fontWeight: FontWeight.w700,
   //               color: const Color(0xFF0F172A)),
   //         ),
   //         Text(
   //           '$totalItems itens • Valor: ${totalValue.toInt()} moedas',
   //           style: TextStyle(
-  //               fontSize: 12.sp,
+  //               fontSize: 12,
   //               color: const Color(0xFF64748B),
   //               fontWeight: FontWeight.w400),
   //         ),
@@ -100,12 +100,12 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     ),
   //     actions: [
   //       Container(
-  //         margin: EdgeInsets.only(right: 16.w),
-  //         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+  //         margin: EdgeInsets.only(right: 16),
+  //         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   //         decoration: BoxDecoration(
   //           gradient: const LinearGradient(
   //               colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
-  //           borderRadius: BorderRadius.circular(20.r),
+  //           borderRadius: BorderRadius.circular(20),
   //           boxShadow: [
   //             BoxShadow(
   //                 color: const Color(0xFF8B5CF6).withOpacity(0.3),
@@ -116,11 +116,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         child: Row(
   //           mainAxisSize: MainAxisSize.min,
   //           children: [
-  //             Icon(Icons.inventory_2, color: Colors.white, size: 16.sp),
-  //             SizedBox(width: 6.w),
+  //             Icon(Icons.inventory_2, color: Colors.white, size: 16),
+  //             SizedBox(width: 6),
   //             Text('$totalItems',
   //                 style: TextStyle(
-  //                     fontSize: 14.sp,
+  //                     fontSize: 14,
   //                     fontWeight: FontWeight.w700,
   //                     color: Colors.white)),
   //           ],
@@ -132,14 +132,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
 
   // Widget _buildSearchAndFilter(BuildContext context, WidgetRef ref) {
   //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+  //     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
   //     child: Row(
   //       children: [
   //         Expanded(
   //           child: Container(
   //             decoration: BoxDecoration(
   //               color: Colors.white,
-  //               borderRadius: BorderRadius.circular(16.r),
+  //               borderRadius: BorderRadius.circular(16),
   //               border: Border.all(color: const Color(0xFFE2E8F0)),
   //               boxShadow: [
   //                 BoxShadow(
@@ -155,9 +155,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //               decoration: InputDecoration(
   //                 hintText: 'Buscar no inventário...',
   //                 hintStyle: TextStyle(
-  //                     color: const Color(0xFF94A3B8), fontSize: 14.sp),
+  //                     color: const Color(0xFF94A3B8), fontSize: 14),
   //                 prefixIcon: Icon(Icons.search,
-  //                     color: const Color(0xFF64748B), size: 20.sp),
+  //                     color: const Color(0xFF64748B), size: 20),
   //                 suffixIcon: _searchController.text.isNotEmpty
   //                     ? IconButton(
   //                         onPressed: () {
@@ -165,21 +165,21 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                           ref.read(searchQueryProvider.notifier).state = '';
   //                         },
   //                         icon: Icon(Icons.clear,
-  //                             color: const Color(0xFF64748B), size: 18.sp),
+  //                             color: const Color(0xFF64748B), size: 18),
   //                       )
   //                     : null,
   //                 border: InputBorder.none,
   //                 contentPadding:
-  //                     EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+  //                     EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   //               ),
   //             ),
   //           ),
   //         ),
-  //         SizedBox(width: 12.w),
+  //         SizedBox(width: 12),
   //         Container(
   //           decoration: BoxDecoration(
   //             color: const Color(0xFF3B82F6),
-  //             borderRadius: BorderRadius.circular(16.r),
+  //             borderRadius: BorderRadius.circular(16),
   //             boxShadow: [
   //               BoxShadow(
   //                   color: const Color(0xFF3B82F6).withOpacity(0.3),
@@ -189,7 +189,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           ),
   //           child: IconButton(
   //             onPressed: () => _showFilterOptions(context, ref),
-  //             icon: Icon(Icons.tune, color: Colors.white, size: 20.sp),
+  //             icon: Icon(Icons.tune, color: Colors.white, size: 20),
   //           ),
   //         ),
   //       ],
@@ -200,44 +200,44 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   // Widget _buildCategoryTabs(BuildContext context,
   //     Map<ItemCategory, List<InventoryItem>> inventoryByCategory) {
   //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w),
+  //     padding: EdgeInsets.symmetric(horizontal: 20),
   //     child: TabBar(
   //       controller: _tabController,
   //       isScrollable: true,
   //       indicator: BoxDecoration(
   //         color: const Color(0xFF3B82F6),
-  //         borderRadius: BorderRadius.circular(16.r),
+  //         borderRadius: BorderRadius.circular(16),
   //       ),
   //       labelColor: Colors.white,
   //       unselectedLabelColor: const Color(0xFF64748B),
-  //       labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+  //       labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
   //       unselectedLabelStyle:
-  //           TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+  //           TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
   //       tabs: ItemCategory.values.map((category) {
   //         final count = inventoryByCategory[category]
   //                 ?.fold(0, (sum, item) => sum + item.quantity) ??
   //             0;
   //         return Tab(
   //           child: Container(
-  //             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+  //             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
   //             child: Row(
   //               mainAxisSize: MainAxisSize.min,
   //               children: [
   //                 Text(category.emoji),
-  //                 SizedBox(width: 6.w),
+  //                 SizedBox(width: 6),
   //                 Text(category.displayName),
   //                 if (count > 0) ...[
-  //                   SizedBox(width: 6.w),
+  //                   SizedBox(width: 6),
   //                   Container(
   //                     padding:
-  //                         EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+  //                         EdgeInsets.symmetric(horizontal: 6, vertical: 2),
   //                     decoration: BoxDecoration(
   //                       color: Colors.white.withOpacity(0.2),
-  //                       borderRadius: BorderRadius.circular(8.r),
+  //                       borderRadius: BorderRadius.circular(8),
   //                     ),
   //                     child: Text('$count',
   //                         style: TextStyle(
-  //                             fontSize: 10.sp, fontWeight: FontWeight.w700)),
+  //                             fontSize: 10, fontWeight: FontWeight.w700)),
   //                   ),
   //                 ],
   //               ],
@@ -254,11 +254,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //   if (items.isEmpty) return _buildEmptyState(context, ref, category);
 
   //   return GridView.builder(
-  //     padding: EdgeInsets.all(20.w),
+  //     padding: EdgeInsets.all(20),
   //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
   //       crossAxisCount: 2,
-  //       crossAxisSpacing: 16.w,
-  //       mainAxisSpacing: 16.h,
+  //       crossAxisSpacing: 16,
+  //       mainAxisSpacing: 16,
   //       childAspectRatio: 0.75,
   //     ),
   //     itemCount: items.length,
@@ -276,11 +276,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //   return GestureDetector(
   //     onTap: () => _showItemDetails(context, ref, inventoryItem),
   //     child: Container(
-  //       padding: EdgeInsets.all(16.w),
+  //       padding: EdgeInsets.all(16),
   //       decoration: BoxDecoration(
   //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(20.r),
-  //         border: Border.all(color: rarityColor.withOpacity(0.3), width: 2.w),
+  //         borderRadius: BorderRadius.circular(20),
+  //         border: Border.all(color: rarityColor.withOpacity(0.3), width: 2),
   //         boxShadow: [
   //           BoxShadow(
   //               color: rarityColor.withOpacity(0.1),
@@ -298,32 +298,32 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           Stack(
   //             children: [
   //               Container(
-  //                 width: 64.w,
-  //                 height: 64.w,
+  //                 width: 64,
+  //                 height: 64,
   //                 decoration: BoxDecoration(
   //                   color: rarityColor.withOpacity(0.1),
   //                   shape: BoxShape.circle,
   //                   border: Border.all(
-  //                       color: rarityColor.withOpacity(0.2), width: 1.w),
+  //                       color: rarityColor.withOpacity(0.2), width: 1),
   //                 ),
   //                 child: Center(
   //                     child:
-  //                         Text(item.emoji, style: TextStyle(fontSize: 32.sp))),
+  //                         Text(item.emoji, style: TextStyle(fontSize: 32))),
   //               ),
   //               Positioned(
   //                 right: 0,
   //                 top: 0,
   //                 child: Container(
-  //                   padding: EdgeInsets.all(6.w),
+  //                   padding: EdgeInsets.all(6),
   //                   decoration: BoxDecoration(
   //                     color: const Color(0xFF10B981),
   //                     shape: BoxShape.circle,
-  //                     border: Border.all(color: Colors.white, width: 2.w),
+  //                     border: Border.all(color: Colors.white, width: 2),
   //                   ),
   //                   child: Text(
   //                     '${inventoryItem.quantity}',
   //                     style: TextStyle(
-  //                         fontSize: 12.sp,
+  //                         fontSize: 12,
   //                         fontWeight: FontWeight.w700,
   //                         color: Colors.white),
   //                   ),
@@ -331,29 +331,29 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //               ),
   //             ],
   //           ),
-  //           SizedBox(height: 12.h),
+  //           SizedBox(height: 12),
 
   //           // Item name & rarity
   //           Text(
   //             item.name,
   //             style: TextStyle(
-  //                 fontSize: 14.sp,
+  //                 fontSize: 14,
   //                 fontWeight: FontWeight.w700,
   //                 color: const Color(0xFF0F172A)),
   //             textAlign: TextAlign.center,
   //             maxLines: 2,
   //             overflow: TextOverflow.ellipsis,
   //           ),
-  //           SizedBox(height: 6.h),
+  //           SizedBox(height: 6),
   //           Container(
-  //             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+  //             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
   //             decoration: BoxDecoration(
   //                 color: rarityColor,
-  //                 borderRadius: BorderRadius.circular(12.r)),
+  //                 borderRadius: BorderRadius.circular(12)),
   //             child: Text(
   //               item.rarity.displayName,
   //               style: TextStyle(
-  //                   fontSize: 10.sp,
+  //                   fontSize: 10,
   //                   fontWeight: FontWeight.w600,
   //                   color: Colors.white),
   //             ),
@@ -364,27 +364,27 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           // Effects preview
   //           if (item.effects.isNotEmpty) ...[
   //             Wrap(
-  //               spacing: 4.w,
+  //               spacing: 4,
   //               children: item.effects.entries.take(2).map((effect) {
   //                 final effectData = MockDataService.getEffectData(effect.key);
   //                 return Container(
   //                   padding:
-  //                       EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+  //                       EdgeInsets.symmetric(horizontal: 6, vertical: 2),
   //                   decoration: BoxDecoration(
   //                     color: const Color(0xFF10B981).withOpacity(0.1),
-  //                     borderRadius: BorderRadius.circular(8.r),
+  //                     borderRadius: BorderRadius.circular(8),
   //                   ),
   //                   child: Text(
   //                     '+${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'} ${effectData['emoji']}',
   //                     style: TextStyle(
-  //                         fontSize: 9.sp,
+  //                         fontSize: 9,
   //                         fontWeight: FontWeight.w500,
   //                         color: const Color(0xFF10B981)),
   //                   ),
   //                 );
   //               }).toList(),
   //             ),
-  //             SizedBox(height: 8.h),
+  //             SizedBox(height: 8),
   //           ],
 
   //           // Action button
@@ -398,15 +398,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                 backgroundColor: canUse
   //                     ? const Color(0xFF3B82F6)
   //                     : const Color(0xFF94A3B8),
-  //                 padding: EdgeInsets.symmetric(vertical: 8.h),
+  //                 padding: EdgeInsets.symmetric(vertical: 8),
   //                 shape: RoundedRectangleBorder(
-  //                     borderRadius: BorderRadius.circular(12.r)),
+  //                     borderRadius: BorderRadius.circular(12)),
   //                 elevation: 0,
   //               ),
   //               child: Text(
   //                 canUse ? 'Usar Item' : 'Colecionável',
   //                 style: TextStyle(
-  //                     fontSize: 12.sp,
+  //                     fontSize: 12,
   //                     fontWeight: FontWeight.w600,
   //                     color: Colors.white),
   //               ),
@@ -426,34 +426,34 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     BuildContext context, WidgetRef ref, ItemCategory category) {
   //   return Center(
   //     child: Padding(
-  //       padding: EdgeInsets.all(32.w),
+  //       padding: EdgeInsets.all(32),
   //       child: Column(
   //         mainAxisAlignment: MainAxisAlignment.center,
   //         children: [
-  //           Text('📦', style: TextStyle(fontSize: 64.sp)),
-  //           SizedBox(height: 16.h),
+  //           Text('📦', style: TextStyle(fontSize: 64)),
+  //           SizedBox(height: 16),
   //           Text(
   //             'Nenhum item encontrado',
   //             style: TextStyle(
-  //                 fontSize: 18.sp,
+  //                 fontSize: 18,
   //                 fontWeight: FontWeight.w600,
   //                 color: const Color(0xFF0F172A)),
   //           ),
-  //           SizedBox(height: 8.h),
+  //           SizedBox(height: 8),
   //           Text(
   //             'Você ainda não possui itens em "${category.displayName}"',
-  //             style: TextStyle(fontSize: 14.sp, color: const Color(0xFF64748B)),
+  //             style: TextStyle(fontSize: 14, color: const Color(0xFF64748B)),
   //             textAlign: TextAlign.center,
   //           ),
-  //           SizedBox(height: 24.h),
+  //           SizedBox(height: 24),
   //           ElevatedButton.icon(
   //             onPressed: () => Navigator.pop(context),
   //             style: ElevatedButton.styleFrom(
   //               backgroundColor: const Color(0xFF3B82F6),
   //               shape: RoundedRectangleBorder(
-  //                   borderRadius: BorderRadius.circular(12.r)),
+  //                   borderRadius: BorderRadius.circular(12)),
   //             ),
-  //             icon: Icon(Icons.shopping_cart, size: 18.sp),
+  //             icon: Icon(Icons.shopping_cart, size: 18),
   //             label: const Text('Ir para Loja'),
   //           ),
   //         ],
@@ -486,41 +486,41 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //       decoration: BoxDecoration(
   //         color: Colors.white,
   //         borderRadius: BorderRadius.only(
-  //             topLeft: Radius.circular(28.r), topRight: Radius.circular(28.r)),
+  //             topLeft: Radius.circular(28), topRight: Radius.circular(28)),
   //       ),
   //       child: Column(
   //         children: [
   //           Container(
-  //             margin: EdgeInsets.only(top: 12.h),
-  //             width: 40.w,
-  //             height: 4.h,
+  //             margin: EdgeInsets.only(top: 12),
+  //             width: 40,
+  //             height: 4,
   //             decoration: BoxDecoration(
   //                 color: const Color(0xFFE2E8F0),
-  //                 borderRadius: BorderRadius.circular(2.r)),
+  //                 borderRadius: BorderRadius.circular(2)),
   //           ),
   //           Expanded(
   //             child: SingleChildScrollView(
-  //               padding: EdgeInsets.all(24.w),
+  //               padding: EdgeInsets.all(24),
   //               child: Column(
   //                 children: [
   //                   // Header com ícone e info
   //                   Row(
   //                     children: [
   //                       Container(
-  //                         width: 80.w,
-  //                         height: 80.w,
+  //                         width: 80,
+  //                         height: 80,
   //                         decoration: BoxDecoration(
   //                           color: rarityColor.withOpacity(0.1),
   //                           shape: BoxShape.circle,
   //                           border: Border.all(
   //                               color: rarityColor.withOpacity(0.3),
-  //                               width: 2.w),
+  //                               width: 2),
   //                         ),
   //                         child: Center(
   //                             child: Text(item.emoji,
-  //                                 style: TextStyle(fontSize: 40.sp))),
+  //                                 style: TextStyle(fontSize: 40))),
   //                       ),
-  //                       SizedBox(width: 16.w),
+  //                       SizedBox(width: 16),
   //                       Expanded(
   //                         child: Column(
   //                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -528,36 +528,36 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                             Text(
   //                               item.name,
   //                               style: TextStyle(
-  //                                   fontSize: 22.sp,
+  //                                   fontSize: 22,
   //                                   fontWeight: FontWeight.w700,
   //                                   color: const Color(0xFF0F172A)),
   //                             ),
-  //                             SizedBox(height: 4.h),
+  //                             SizedBox(height: 4),
   //                             Container(
   //                               padding: EdgeInsets.symmetric(
-  //                                   horizontal: 12.w, vertical: 6.h),
+  //                                   horizontal: 12, vertical: 6),
   //                               decoration: BoxDecoration(
   //                                   color: rarityColor,
-  //                                   borderRadius: BorderRadius.circular(16.r)),
+  //                                   borderRadius: BorderRadius.circular(16)),
   //                               child: Text(
   //                                 item.rarity.displayName,
   //                                 style: TextStyle(
-  //                                     fontSize: 12.sp,
+  //                                     fontSize: 12,
   //                                     fontWeight: FontWeight.w700,
   //                                     color: Colors.white),
   //                               ),
   //                             ),
-  //                             SizedBox(height: 8.h),
+  //                             SizedBox(height: 8),
   //                             Row(
   //                               children: [
   //                                 Icon(Icons.inventory_2,
-  //                                     size: 16.sp,
+  //                                     size: 16,
   //                                     color: const Color(0xFF64748B)),
-  //                                 SizedBox(width: 6.w),
+  //                                 SizedBox(width: 6),
   //                                 Text(
   //                                   'Quantidade: ${inventoryItem.quantity}',
   //                                   style: TextStyle(
-  //                                       fontSize: 14.sp,
+  //                                       fontSize: 14,
   //                                       fontWeight: FontWeight.w600,
   //                                       color: const Color(0xFF64748B)),
   //                                 ),
@@ -568,35 +568,35 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       ),
   //                     ],
   //                   ),
-  //                   SizedBox(height: 24.h),
+  //                   SizedBox(height: 24),
 
   //                   // Descrição
   //                   Container(
   //                     width: double.infinity,
-  //                     padding: EdgeInsets.all(16.w),
+  //                     padding: EdgeInsets.all(16),
   //                     decoration: BoxDecoration(
   //                       color: const Color(0xFFF8FAFC),
-  //                       borderRadius: BorderRadius.circular(12.r),
+  //                       borderRadius: BorderRadius.circular(12),
   //                       border: Border.all(color: const Color(0xFFE2E8F0)),
   //                     ),
   //                     child: Text(
   //                       item.description,
   //                       style: TextStyle(
-  //                           fontSize: 14.sp,
+  //                           fontSize: 14,
   //                           color: const Color(0xFF64748B),
   //                           height: 1.5),
   //                     ),
   //                   ),
-  //                   SizedBox(height: 20.h),
+  //                   SizedBox(height: 20),
 
   //                   // Efeitos
   //                   if (item.effects.isNotEmpty) ...[
   //                     Container(
   //                       width: double.infinity,
-  //                       padding: EdgeInsets.all(16.w),
+  //                       padding: EdgeInsets.all(16),
   //                       decoration: BoxDecoration(
   //                         color: const Color(0xFFF0F9FF),
-  //                         borderRadius: BorderRadius.circular(12.r),
+  //                         borderRadius: BorderRadius.circular(12),
   //                         border: Border.all(
   //                             color: const Color(0xFF3B82F6).withOpacity(0.2)),
   //                       ),
@@ -606,34 +606,34 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                           Row(
   //                             children: [
   //                               Icon(Icons.auto_fix_high,
-  //                                   size: 20.sp,
+  //                                   size: 20,
   //                                   color: const Color(0xFF3B82F6)),
-  //                               SizedBox(width: 8.w),
+  //                               SizedBox(width: 8),
   //                               Text(
   //                                 'Efeitos do Item',
   //                                 style: TextStyle(
-  //                                     fontSize: 16.sp,
+  //                                     fontSize: 16,
   //                                     fontWeight: FontWeight.w700,
   //                                     color: const Color(0xFF0F172A)),
   //                               ),
   //                             ],
   //                           ),
-  //                           SizedBox(height: 12.h),
+  //                           SizedBox(height: 12),
   //                           ...item.effects.entries.map((effect) {
   //                             final effectData =
   //                                 MockDataService.getEffectData(effect.key);
   //                             return Padding(
-  //                               padding: EdgeInsets.only(bottom: 8.h),
+  //                               padding: EdgeInsets.only(bottom: 8),
   //                               child: Row(
   //                                 children: [
   //                                   Text(effectData['emoji'],
-  //                                       style: TextStyle(fontSize: 16.sp)),
-  //                                   SizedBox(width: 8.w),
+  //                                       style: TextStyle(fontSize: 16)),
+  //                                   SizedBox(width: 8),
   //                                   Expanded(
   //                                     child: Text(
   //                                       '${effectData['name']}: +${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'}',
   //                                       style: TextStyle(
-  //                                           fontSize: 14.sp,
+  //                                           fontSize: 14,
   //                                           color: const Color(0xFF0F172A)),
   //                                     ),
   //                                   ),
@@ -644,16 +644,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                         ],
   //                       ),
   //                     ),
-  //                     SizedBox(height: 20.h),
+  //                     SizedBox(height: 20),
   //                   ],
 
   //                   // Info adicional
   //                   Container(
   //                     width: double.infinity,
-  //                     padding: EdgeInsets.all(16.w),
+  //                     padding: EdgeInsets.all(16),
   //                     decoration: BoxDecoration(
   //                       color: const Color(0xFFFFFBEB),
-  //                       borderRadius: BorderRadius.circular(12.r),
+  //                       borderRadius: BorderRadius.circular(12),
   //                       border: Border.all(
   //                           color: const Color(0xFFF59E0B).withOpacity(0.2)),
   //                     ),
@@ -663,11 +663,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                         Text(
   //                           'Informações do Item',
   //                           style: TextStyle(
-  //                               fontSize: 14.sp,
+  //                               fontSize: 14,
   //                               fontWeight: FontWeight.w700,
   //                               color: const Color(0xFF0F172A)),
   //                         ),
-  //                         SizedBox(height: 8.h),
+  //                         SizedBox(height: 8),
   //                         _buildInfoRow('Categoria', item.category.displayName),
   //                         _buildInfoRow('Adquirido em',
   //                             _formatDate(inventoryItem.purchasedAt)),
@@ -687,7 +687,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           // Botões de ação
   //           if (inventoryItem.isConsumable) ...[
   //             Container(
-  //               padding: EdgeInsets.all(24.w),
+  //               padding: EdgeInsets.all(24),
   //               decoration: BoxDecoration(
   //                 color: Colors.white,
   //                 boxShadow: [
@@ -707,14 +707,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       },
   //                       style: ElevatedButton.styleFrom(
   //                         backgroundColor: const Color(0xFF3B82F6),
-  //                         padding: EdgeInsets.symmetric(vertical: 16.h),
+  //                         padding: EdgeInsets.symmetric(vertical: 16),
   //                         shape: RoundedRectangleBorder(
-  //                             borderRadius: BorderRadius.circular(12.r)),
+  //                             borderRadius: BorderRadius.circular(12)),
   //                       ),
   //                       child: Text(
   //                         'Usar Item',
   //                         style: TextStyle(
-  //                             fontSize: 16.sp,
+  //                             fontSize: 16,
   //                             fontWeight: FontWeight.w700,
   //                             color: Colors.white),
   //                       ),
@@ -732,16 +732,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
 
   // Widget _buildInfoRow(String label, String value) {
   //   return Padding(
-  //     padding: EdgeInsets.only(bottom: 4.h),
+  //     padding: EdgeInsets.only(bottom: 4),
   //     child: Row(
   //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
   //       children: [
   //         Text(label,
   //             style:
-  //                 TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B))),
+  //                 TextStyle(fontSize: 12, color: const Color(0xFF64748B))),
   //         Text(value,
   //             style: TextStyle(
-  //                 fontSize: 12.sp,
+  //                 fontSize: 12,
   //                 fontWeight: FontWeight.w600,
   //                 color: const Color(0xFF0F172A))),
   //       ],
@@ -758,16 +758,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     builder: (context) => StatefulBuilder(
   //       builder: (context, setState) => AlertDialog(
   //         shape:
-  //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+  //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
   //         title: Row(
   //           children: [
-  //             Text(inventoryItem.item.emoji, style: TextStyle(fontSize: 24.sp)),
-  //             SizedBox(width: 12.w),
+  //             Text(inventoryItem.item.emoji, style: TextStyle(fontSize: 24)),
+  //             SizedBox(width: 12),
   //             Expanded(
   //               child: Text(
   //                 'Usar ${inventoryItem.item.name}',
   //                 style: TextStyle(
-  //                     fontSize: 18.sp,
+  //                     fontSize: 18,
   //                     fontWeight: FontWeight.w700,
   //                     color: const Color(0xFF0F172A)),
   //               ),
@@ -780,16 +780,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //             Text(
   //               'Quantos itens você deseja usar?',
   //               style:
-  //                   TextStyle(fontSize: 14.sp, color: const Color(0xFF64748B)),
+  //                   TextStyle(fontSize: 14, color: const Color(0xFF64748B)),
   //             ),
-  //             SizedBox(height: 20.h),
+  //             SizedBox(height: 20),
 
   //             // Quantity selector
   //             Container(
-  //               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+  //               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   //               decoration: BoxDecoration(
   //                 color: const Color(0xFFF8FAFC),
-  //                 borderRadius: BorderRadius.circular(12.r),
+  //                 borderRadius: BorderRadius.circular(12),
   //                 border: Border.all(color: const Color(0xFFE2E8F0)),
   //               ),
   //               child: Row(
@@ -809,14 +809,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       Text(
   //                         '$useQuantity',
   //                         style: TextStyle(
-  //                             fontSize: 24.sp,
+  //                             fontSize: 24,
   //                             fontWeight: FontWeight.w700,
   //                             color: const Color(0xFF0F172A)),
   //                       ),
   //                       Text(
   //                         'de ${inventoryItem.quantity}',
   //                         style: TextStyle(
-  //                             fontSize: 12.sp, color: const Color(0xFF64748B)),
+  //                             fontSize: 12, color: const Color(0xFF64748B)),
   //                       ),
   //                     ],
   //                   ),
@@ -832,16 +832,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                 ],
   //               ),
   //             ),
-  //             SizedBox(height: 16.h),
+  //             SizedBox(height: 16),
 
   //             // Effects preview
   //             if (inventoryItem.item.effects.isNotEmpty) ...[
   //               Container(
   //                 width: double.infinity,
-  //                 padding: EdgeInsets.all(12.w),
+  //                 padding: EdgeInsets.all(12),
   //                 decoration: BoxDecoration(
   //                   color: const Color(0xFF10B981).withOpacity(0.1),
-  //                   borderRadius: BorderRadius.circular(8.r),
+  //                   borderRadius: BorderRadius.circular(8),
   //                 ),
   //                 child: Column(
   //                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -849,11 +849,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                     Text(
   //                       'Efeitos aplicados:',
   //                       style: TextStyle(
-  //                           fontSize: 12.sp,
+  //                           fontSize: 12,
   //                           fontWeight: FontWeight.w600,
   //                           color: const Color(0xFF10B981)),
   //                     ),
-  //                     SizedBox(height: 4.h),
+  //                     SizedBox(height: 4),
   //                     ...inventoryItem.item.effects.entries.map((effect) {
   //                       final effectData =
   //                           MockDataService.getEffectData(effect.key);
@@ -861,7 +861,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       return Text(
   //                         '${effectData['emoji']} ${effectData['name']}: +${totalEffect.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'}',
   //                         style: TextStyle(
-  //                             fontSize: 11.sp, color: const Color(0xFF10B981)),
+  //                             fontSize: 11, color: const Color(0xFF10B981)),
   //                       );
   //                     }),
   //                   ],
@@ -875,7 +875,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //             onPressed: () => Navigator.pop(context),
   //             child: Text('Cancelar',
   //                 style: TextStyle(
-  //                     fontSize: 14.sp, color: const Color(0xFF64748B))),
+  //                     fontSize: 14, color: const Color(0xFF64748B))),
   //           ),
   //           ElevatedButton(
   //             onPressed: () {
@@ -885,11 +885,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //             style: ElevatedButton.styleFrom(
   //               backgroundColor: const Color(0xFF10B981),
   //               shape: RoundedRectangleBorder(
-  //                   borderRadius: BorderRadius.circular(8.r)),
+  //                   borderRadius: BorderRadius.circular(8)),
   //             ),
   //             child: Text('Usar Item',
   //                 style: TextStyle(
-  //                     fontSize: 14.sp,
+  //                     fontSize: 14,
   //                     fontWeight: FontWeight.w600,
   //                     color: Colors.white)),
   //           ),
@@ -916,15 +916,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //       SnackBar(
   //         content: Row(
   //           children: [
-  //             Icon(Icons.error, color: Colors.white, size: 20.sp),
-  //             SizedBox(width: 8.w),
+  //             Icon(Icons.error, color: Colors.white, size: 20),
+  //             SizedBox(width: 8),
   //             Expanded(child: Text('Erro ao usar item: ${e.toString()}')),
   //           ],
   //         ),
   //         backgroundColor: const Color(0xFFEF4444),
   //         behavior: SnackBarBehavior.floating,
   //         shape:
-  //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+  //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   //       ),
   //     );
   //   }
@@ -940,40 +940,40 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //       child: Material(
   //         color: Colors.transparent,
   //         child: Container(
-  //           width: 240.w,
-  //           height: 240.w,
+  //           width: 240,
+  //           height: 240,
   //           decoration: BoxDecoration(
-  //               color: Colors.white, borderRadius: BorderRadius.circular(24.r)),
+  //               color: Colors.white, borderRadius: BorderRadius.circular(24)),
   //           child: Column(
   //             mainAxisAlignment: MainAxisAlignment.center,
   //             children: [
   //               Container(
-  //                 width: 100.w,
-  //                 height: 100.w,
+  //                 width: 100,
+  //                 height: 100,
   //                 decoration: BoxDecoration(
   //                   color: const Color(0xFF10B981).withOpacity(0.1),
   //                   shape: BoxShape.circle,
   //                 ),
   //                 child: Center(
   //                     child: Text(inventoryItem.item.emoji,
-  //                         style: TextStyle(fontSize: 50.sp))),
+  //                         style: TextStyle(fontSize: 50))),
   //               ),
-  //               SizedBox(height: 20.h),
+  //               SizedBox(height: 20),
   //               Icon(Icons.check_circle,
-  //                   size: 32.sp, color: const Color(0xFF10B981)),
-  //               SizedBox(height: 12.h),
+  //                   size: 32, color: const Color(0xFF10B981)),
+  //               SizedBox(height: 12),
   //               Text(
   //                 'Item Usado!',
   //                 style: TextStyle(
-  //                     fontSize: 20.sp,
+  //                     fontSize: 20,
   //                     fontWeight: FontWeight.w700,
   //                     color: const Color(0xFF10B981)),
   //               ),
-  //               SizedBox(height: 8.h),
+  //               SizedBox(height: 8),
   //               Text(
   //                 '${inventoryItem.item.name} ${quantity > 1 ? '(${quantity}x)' : ''}',
   //                 style: TextStyle(
-  //                     fontSize: 14.sp, color: const Color(0xFF64748B)),
+  //                     fontSize: 14, color: const Color(0xFF64748B)),
   //                 textAlign: TextAlign.center,
   //               ),
   //             ],
@@ -994,18 +994,18 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           content: Row(
   //             children: [
   //               Text(inventoryItem.item.emoji,
-  //                   style: TextStyle(fontSize: 20.sp)),
-  //               SizedBox(width: 12.w),
+  //                   style: TextStyle(fontSize: 20)),
+  //               SizedBox(width: 12),
   //               Expanded(
   //                   child: Text(
   //                       'Efeitos de ${inventoryItem.item.name} aplicados!')),
-  //               Icon(Icons.pets, color: Colors.white, size: 20.sp),
+  //               Icon(Icons.pets, color: Colors.white, size: 20),
   //             ],
   //           ),
   //           backgroundColor: const Color(0xFF10B981),
   //           behavior: SnackBarBehavior.floating,
   //           shape: RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.circular(12.r)),
+  //               borderRadius: BorderRadius.circular(12)),
   //           duration: const Duration(seconds: 3),
   //         ),
   //       );
@@ -1018,33 +1018,33 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     context: context,
   //     shape: RoundedRectangleBorder(
   //         borderRadius: BorderRadius.only(
-  //             topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r))),
+  //             topLeft: Radius.circular(20), topRight: Radius.circular(20))),
   //     builder: (context) => Container(
-  //       padding: EdgeInsets.all(24.w),
+  //       padding: EdgeInsets.all(24),
   //       child: Column(
   //         mainAxisSize: MainAxisSize.min,
   //         crossAxisAlignment: CrossAxisAlignment.start,
   //         children: [
   //           Row(
   //             children: [
-  //               Icon(Icons.tune, color: const Color(0xFF3B82F6), size: 24.sp),
-  //               SizedBox(width: 12.w),
+  //               Icon(Icons.tune, color: const Color(0xFF3B82F6), size: 24),
+  //               SizedBox(width: 12),
   //               Text(
   //                 'Filtros e Ordenação',
   //                 style: TextStyle(
-  //                     fontSize: 20.sp,
+  //                     fontSize: 20,
   //                     fontWeight: FontWeight.w700,
   //                     color: const Color(0xFF0F172A)),
   //               ),
   //             ],
   //           ),
-  //           SizedBox(height: 20.h),
+  //           SizedBox(height: 20),
   //           Text('Ordenar por:',
   //               style: TextStyle(
-  //                   fontSize: 16.sp,
+  //                   fontSize: 16,
   //                   fontWeight: FontWeight.w600,
   //                   color: const Color(0xFF0F172A))),
-  //           SizedBox(height: 12.h),
+  //           SizedBox(height: 12),
   //           ...[
   //             'Mais recentes',
   //             'Quantidade',
@@ -1063,30 +1063,30 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                   );
   //                 },
   //               )),
-  //           SizedBox(height: 16.h),
+  //           SizedBox(height: 16),
   //           Text('Filtrar por raridade:',
   //               style: TextStyle(
-  //                   fontSize: 16.sp,
+  //                   fontSize: 16,
   //                   fontWeight: FontWeight.w600,
   //                   color: const Color(0xFF0F172A))),
-  //           SizedBox(height: 12.h),
+  //           SizedBox(height: 12),
   //           Wrap(
-  //             spacing: 8.w,
+  //             spacing: 8,
   //             children: ItemRarity.values
   //                 .map((rarity) => FilterChip(
   //                       label: Row(
   //                         mainAxisSize: MainAxisSize.min,
   //                         children: [
   //                           Container(
-  //                             width: 12.w,
-  //                             height: 12.w,
+  //                             width: 12,
+  //                             height: 12,
   //                             decoration: BoxDecoration(
   //                                 color: Color(rarity.colorValue),
   //                                 shape: BoxShape.circle),
   //                           ),
-  //                           SizedBox(width: 6.w),
+  //                           SizedBox(width: 6),
   //                           Text(rarity.displayName,
-  //                               style: TextStyle(fontSize: 12.sp)),
+  //                               style: TextStyle(fontSize: 12)),
   //                         ],
   //                       ),
   //                       onSelected: (selected) {
@@ -1110,9 +1110,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         heroTag: "shop",
   //         onPressed: () => Navigator.pop(context),
   //         backgroundColor: const Color(0xFF10B981),
-  //         child: Icon(Icons.shopping_cart, color: Colors.white, size: 24.sp),
+  //         child: Icon(Icons.shopping_cart, color: Colors.white, size: 24),
   //       ),
-  //       SizedBox(height: 12.h),
+  //       SizedBox(height: 12),
 
   //       // Sort button
   //       FloatingActionButton(
@@ -1120,7 +1120,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         onPressed: () => _showFilterOptions(context, ref),
   //         backgroundColor: const Color(0xFF3B82F6),
   //         mini: true,
-  //         child: Icon(Icons.sort, color: Colors.white, size: 20.sp),
+  //         child: Icon(Icons.sort, color: Colors.white, size: 20),
   //       ),
   //     ],
   //   );
@@ -1153,7 +1153,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     leading: IconButton(
   //       onPressed: () => Navigator.pop(context),
   //       icon: Icon(Icons.arrow_back_ios,
-  //           color: const Color(0xFF0F172A), size: 22.sp),
+  //           color: const Color(0xFF0F172A), size: 22),
   //     ),
   //     title: Column(
   //       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1161,14 +1161,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         Text(
   //           'Meu Inventário',
   //           style: TextStyle(
-  //               fontSize: 20.sp,
+  //               fontSize: 20,
   //               fontWeight: FontWeight.w700,
   //               color: const Color(0xFF0F172A)),
   //         ),
   //         Text(
   //           '$totalItems itens • Valor: ${totalValue.toInt()} moedas',
   //           style: TextStyle(
-  //               fontSize: 12.sp,
+  //               fontSize: 12,
   //               color: const Color(0xFF64748B),
   //               fontWeight: FontWeight.w400),
   //         ),
@@ -1176,12 +1176,12 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     ),
   //     actions: [
   //       Container(
-  //         margin: EdgeInsets.only(right: 16.w),
-  //         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+  //         margin: EdgeInsets.only(right: 16),
+  //         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   //         decoration: BoxDecoration(
   //           gradient: const LinearGradient(
   //               colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
-  //           borderRadius: BorderRadius.circular(20.r),
+  //           borderRadius: BorderRadius.circular(20),
   //           boxShadow: [
   //             BoxShadow(
   //                 color: const Color(0xFF8B5CF6).withOpacity(0.3),
@@ -1192,11 +1192,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //         child: Row(
   //           mainAxisSize: MainAxisSize.min,
   //           children: [
-  //             Icon(Icons.inventory_2, color: Colors.white, size: 16.sp),
-  //             SizedBox(width: 6.w),
+  //             Icon(Icons.inventory_2, color: Colors.white, size: 16),
+  //             SizedBox(width: 6),
   //             Text('$totalItems',
   //                 style: TextStyle(
-  //                     fontSize: 14.sp,
+  //                     fontSize: 14,
   //                     fontWeight: FontWeight.w700,
   //                     color: Colors.white)),
   //           ],
@@ -1208,14 +1208,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
 
   // Widget _buildSearchAndFilter(BuildContext context, WidgetRef ref) {
   //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+  //     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
   //     child: Row(
   //       children: [
   //         Expanded(
   //           child: Container(
   //             decoration: BoxDecoration(
   //               color: Colors.white,
-  //               borderRadius: BorderRadius.circular(16.r),
+  //               borderRadius: BorderRadius.circular(16),
   //               border: Border.all(color: const Color(0xFFE2E8F0)),
   //               boxShadow: [
   //                 BoxShadow(
@@ -1231,9 +1231,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //               decoration: InputDecoration(
   //                 hintText: 'Buscar no inventário...',
   //                 hintStyle: TextStyle(
-  //                     color: const Color(0xFF94A3B8), fontSize: 14.sp),
+  //                     color: const Color(0xFF94A3B8), fontSize: 14),
   //                 prefixIcon: Icon(Icons.search,
-  //                     color: const Color(0xFF64748B), size: 20.sp),
+  //                     color: const Color(0xFF64748B), size: 20),
   //                 suffixIcon: _searchController.text.isNotEmpty
   //                     ? IconButton(
   //                         onPressed: () {
@@ -1241,21 +1241,21 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                           ref.read(searchQueryProvider.notifier).state = '';
   //                         },
   //                         icon: Icon(Icons.clear,
-  //                             color: const Color(0xFF64748B), size: 18.sp),
+  //                             color: const Color(0xFF64748B), size: 18),
   //                       )
   //                     : null,
   //                 border: InputBorder.none,
   //                 contentPadding:
-  //                     EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+  //                     EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   //               ),
   //             ),
   //           ),
   //         ),
-  //         SizedBox(width: 12.w),
+  //         SizedBox(width: 12),
   //         Container(
   //           decoration: BoxDecoration(
   //             color: const Color(0xFF3B82F6),
-  //             borderRadius: BorderRadius.circular(16.r),
+  //             borderRadius: BorderRadius.circular(16),
   //             boxShadow: [
   //               BoxShadow(
   //                   color: const Color(0xFF3B82F6).withOpacity(0.3),
@@ -1265,7 +1265,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           ),
   //           child: IconButton(
   //             onPressed: () => _showFilterOptions(context, ref),
-  //             icon: Icon(Icons.tune, color: Colors.white, size: 20.sp),
+  //             icon: Icon(Icons.tune, color: Colors.white, size: 20),
   //           ),
   //         ),
   //       ],
@@ -1276,44 +1276,44 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   // Widget _buildCategoryTabs(BuildContext context,
   //     Map<ItemCategory, List<InventoryItem>> inventoryByCategory) {
   //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w),
+  //     padding: EdgeInsets.symmetric(horizontal: 20),
   //     child: TabBar(
   //       controller: _tabController,
   //       isScrollable: true,
   //       indicator: BoxDecoration(
   //         color: const Color(0xFF3B82F6),
-  //         borderRadius: BorderRadius.circular(16.r),
+  //         borderRadius: BorderRadius.circular(16),
   //       ),
   //       labelColor: Colors.white,
   //       unselectedLabelColor: const Color(0xFF64748B),
-  //       labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+  //       labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
   //       unselectedLabelStyle:
-  //           TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+  //           TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
   //       tabs: ItemCategory.values.map((category) {
   //         final count = inventoryByCategory[category]
   //                 ?.fold(0, (sum, item) => sum + item.quantity) ??
   //             0;
   //         return Tab(
   //           child: Container(
-  //             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+  //             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
   //             child: Row(
   //               mainAxisSize: MainAxisSize.min,
   //               children: [
   //                 Text(category.emoji),
-  //                 SizedBox(width: 6.w),
+  //                 SizedBox(width: 6),
   //                 Text(category.displayName),
   //                 if (count > 0) ...[
-  //                   SizedBox(width: 6.w),
+  //                   SizedBox(width: 6),
   //                   Container(
   //                     padding:
-  //                         EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+  //                         EdgeInsets.symmetric(horizontal: 6, vertical: 2),
   //                     decoration: BoxDecoration(
   //                       color: Colors.white.withOpacity(0.2),
-  //                       borderRadius: BorderRadius.circular(8.r),
+  //                       borderRadius: BorderRadius.circular(8),
   //                     ),
   //                     child: Text('$count',
   //                         style: TextStyle(
-  //                             fontSize: 10.sp, fontWeight: FontWeight.w700)),
+  //                             fontSize: 10, fontWeight: FontWeight.w700)),
   //                   ),
   //                 ],
   //               ],
@@ -1330,11 +1330,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //   if (items.isEmpty) return _buildEmptyState(context, ref, category);
 
   //   return GridView.builder(
-  //     padding: EdgeInsets.all(20.w),
+  //     padding: EdgeInsets.all(20),
   //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
   //       crossAxisCount: 2,
-  //       crossAxisSpacing: 16.w,
-  //       mainAxisSpacing: 16.h,
+  //       crossAxisSpacing: 16,
+  //       mainAxisSpacing: 16,
   //       childAspectRatio: 0.75,
   //     ),
   //     itemCount: items.length,
@@ -1352,11 +1352,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //   return GestureDetector(
   //     onTap: () => _showItemDetails(context, ref, inventoryItem),
   //     child: Container(
-  //       padding: EdgeInsets.all(16.w),
+  //       padding: EdgeInsets.all(16),
   //       decoration: BoxDecoration(
   //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(20.r),
-  //         border: Border.all(color: rarityColor.withOpacity(0.3), width: 2.w),
+  //         borderRadius: BorderRadius.circular(20),
+  //         border: Border.all(color: rarityColor.withOpacity(0.3), width: 2),
   //         boxShadow: [
   //           BoxShadow(
   //               color: rarityColor.withOpacity(0.1),
@@ -1374,32 +1374,32 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           Stack(
   //             children: [
   //               Container(
-  //                 width: 64.w,
-  //                 height: 64.w,
+  //                 width: 64,
+  //                 height: 64,
   //                 decoration: BoxDecoration(
   //                   color: rarityColor.withOpacity(0.1),
   //                   shape: BoxShape.circle,
   //                   border: Border.all(
-  //                       color: rarityColor.withOpacity(0.2), width: 1.w),
+  //                       color: rarityColor.withOpacity(0.2), width: 1),
   //                 ),
   //                 child: Center(
   //                     child:
-  //                         Text(item.emoji, style: TextStyle(fontSize: 32.sp))),
+  //                         Text(item.emoji, style: TextStyle(fontSize: 32))),
   //               ),
   //               Positioned(
   //                 right: 0,
   //                 top: 0,
   //                 child: Container(
-  //                   padding: EdgeInsets.all(6.w),
+  //                   padding: EdgeInsets.all(6),
   //                   decoration: BoxDecoration(
   //                     color: const Color(0xFF10B981),
   //                     shape: BoxShape.circle,
-  //                     border: Border.all(color: Colors.white, width: 2.w),
+  //                     border: Border.all(color: Colors.white, width: 2),
   //                   ),
   //                   child: Text(
   //                     '${inventoryItem.quantity}',
   //                     style: TextStyle(
-  //                         fontSize: 12.sp,
+  //                         fontSize: 12,
   //                         fontWeight: FontWeight.w700,
   //                         color: Colors.white),
   //                   ),
@@ -1407,29 +1407,29 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //               ),
   //             ],
   //           ),
-  //           SizedBox(height: 12.h),
+  //           SizedBox(height: 12),
 
   //           // Item name & rarity
   //           Text(
   //             item.name,
   //             style: TextStyle(
-  //                 fontSize: 14.sp,
+  //                 fontSize: 14,
   //                 fontWeight: FontWeight.w700,
   //                 color: const Color(0xFF0F172A)),
   //             textAlign: TextAlign.center,
   //             maxLines: 2,
   //             overflow: TextOverflow.ellipsis,
   //           ),
-  //           SizedBox(height: 6.h),
+  //           SizedBox(height: 6),
   //           Container(
-  //             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+  //             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
   //             decoration: BoxDecoration(
   //                 color: rarityColor,
-  //                 borderRadius: BorderRadius.circular(12.r)),
+  //                 borderRadius: BorderRadius.circular(12)),
   //             child: Text(
   //               item.rarity.displayName,
   //               style: TextStyle(
-  //                   fontSize: 10.sp,
+  //                   fontSize: 10,
   //                   fontWeight: FontWeight.w600,
   //                   color: Colors.white),
   //             ),
@@ -1440,27 +1440,27 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           // Effects preview
   //           if (item.effects.isNotEmpty) ...[
   //             Wrap(
-  //               spacing: 4.w,
+  //               spacing: 4,
   //               children: item.effects.entries.take(2).map((effect) {
   //                 final effectData = MockDataService.getEffectData(effect.key);
   //                 return Container(
   //                   padding:
-  //                       EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+  //                       EdgeInsets.symmetric(horizontal: 6, vertical: 2),
   //                   decoration: BoxDecoration(
   //                     color: const Color(0xFF10B981).withOpacity(0.1),
-  //                     borderRadius: BorderRadius.circular(8.r),
+  //                     borderRadius: BorderRadius.circular(8),
   //                   ),
   //                   child: Text(
   //                     '+${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'} ${effectData['emoji']}',
   //                     style: TextStyle(
-  //                         fontSize: 9.sp,
+  //                         fontSize: 9,
   //                         fontWeight: FontWeight.w500,
   //                         color: const Color(0xFF10B981)),
   //                   ),
   //                 );
   //               }).toList(),
   //             ),
-  //             SizedBox(height: 8.h),
+  //             SizedBox(height: 8),
   //           ],
 
   //           // Action button
@@ -1474,15 +1474,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                 backgroundColor: canUse
   //                     ? const Color(0xFF3B82F6)
   //                     : const Color(0xFF94A3B8),
-  //                 padding: EdgeInsets.symmetric(vertical: 8.h),
+  //                 padding: EdgeInsets.symmetric(vertical: 8),
   //                 shape: RoundedRectangleBorder(
-  //                     borderRadius: BorderRadius.circular(12.r)),
+  //                     borderRadius: BorderRadius.circular(12)),
   //                 elevation: 0,
   //               ),
   //               child: Text(
   //                 canUse ? 'Usar Item' : 'Colecionável',
   //                 style: TextStyle(
-  //                     fontSize: 12.sp,
+  //                     fontSize: 12,
   //                     fontWeight: FontWeight.w600,
   //                     color: Colors.white),
   //               ),
@@ -1502,34 +1502,34 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //     BuildContext context, WidgetRef ref, ItemCategory category) {
   //   return Center(
   //     child: Padding(
-  //       padding: EdgeInsets.all(32.w),
+  //       padding: EdgeInsets.all(32),
   //       child: Column(
   //         mainAxisAlignment: MainAxisAlignment.center,
   //         children: [
-  //           Text('📦', style: TextStyle(fontSize: 64.sp)),
-  //           SizedBox(height: 16.h),
+  //           Text('📦', style: TextStyle(fontSize: 64)),
+  //           SizedBox(height: 16),
   //           Text(
   //             'Nenhum item encontrado',
   //             style: TextStyle(
-  //                 fontSize: 18.sp,
+  //                 fontSize: 18,
   //                 fontWeight: FontWeight.w600,
   //                 color: const Color(0xFF0F172A)),
   //           ),
-  //           SizedBox(height: 8.h),
+  //           SizedBox(height: 8),
   //           Text(
   //             'Você ainda não possui itens em "${category.displayName}"',
-  //             style: TextStyle(fontSize: 14.sp, color: const Color(0xFF64748B)),
+  //             style: TextStyle(fontSize: 14, color: const Color(0xFF64748B)),
   //             textAlign: TextAlign.center,
   //           ),
-  //           SizedBox(height: 24.h),
+  //           SizedBox(height: 24),
   //           ElevatedButton.icon(
   //             onPressed: () => Navigator.pop(context),
   //             style: ElevatedButton.styleFrom(
   //               backgroundColor: const Color(0xFF3B82F6),
   //               shape: RoundedRectangleBorder(
-  //                   borderRadius: BorderRadius.circular(12.r)),
+  //                   borderRadius: BorderRadius.circular(12)),
   //             ),
-  //             icon: Icon(Icons.shopping_cart, size: 18.sp),
+  //             icon: Icon(Icons.shopping_cart, size: 18),
   //             label: const Text('Ir para Loja'),
   //           ),
   //         ],
@@ -1562,41 +1562,41 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //       decoration: BoxDecoration(
   //         color: Colors.white,
   //         borderRadius: BorderRadius.only(
-  //             topLeft: Radius.circular(28.r), topRight: Radius.circular(28.r)),
+  //             topLeft: Radius.circular(28), topRight: Radius.circular(28)),
   //       ),
   //       child: Column(
   //         children: [
   //           Container(
-  //             margin: EdgeInsets.only(top: 12.h),
-  //             width: 40.w,
-  //             height: 4.h,
+  //             margin: EdgeInsets.only(top: 12),
+  //             width: 40,
+  //             height: 4,
   //             decoration: BoxDecoration(
   //                 color: const Color(0xFFE2E8F0),
-  //                 borderRadius: BorderRadius.circular(2.r)),
+  //                 borderRadius: BorderRadius.circular(2)),
   //           ),
   //           Expanded(
   //             child: SingleChildScrollView(
-  //               padding: EdgeInsets.all(24.w),
+  //               padding: EdgeInsets.all(24),
   //               child: Column(
   //                 children: [
   //                   // Header com ícone e info
   //                   Row(
   //                     children: [
   //                       Container(
-  //                         width: 80.w,
-  //                         height: 80.w,
+  //                         width: 80,
+  //                         height: 80,
   //                         decoration: BoxDecoration(
   //                           color: rarityColor.withOpacity(0.1),
   //                           shape: BoxShape.circle,
   //                           border: Border.all(
   //                               color: rarityColor.withOpacity(0.3),
-  //                               width: 2.w),
+  //                               width: 2),
   //                         ),
   //                         child: Center(
   //                             child: Text(item.emoji,
-  //                                 style: TextStyle(fontSize: 40.sp))),
+  //                                 style: TextStyle(fontSize: 40))),
   //                       ),
-  //                       SizedBox(width: 16.w),
+  //                       SizedBox(width: 16),
   //                       Expanded(
   //                         child: Column(
   //                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1604,36 +1604,36 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                             Text(
   //                               item.name,
   //                               style: TextStyle(
-  //                                   fontSize: 22.sp,
+  //                                   fontSize: 22,
   //                                   fontWeight: FontWeight.w700,
   //                                   color: const Color(0xFF0F172A)),
   //                             ),
-  //                             SizedBox(height: 4.h),
+  //                             SizedBox(height: 4),
   //                             Container(
   //                               padding: EdgeInsets.symmetric(
-  //                                   horizontal: 12.w, vertical: 6.h),
+  //                                   horizontal: 12, vertical: 6),
   //                               decoration: BoxDecoration(
   //                                   color: rarityColor,
-  //                                   borderRadius: BorderRadius.circular(16.r)),
+  //                                   borderRadius: BorderRadius.circular(16)),
   //                               child: Text(
   //                                 item.rarity.displayName,
   //                                 style: TextStyle(
-  //                                     fontSize: 12.sp,
+  //                                     fontSize: 12,
   //                                     fontWeight: FontWeight.w700,
   //                                     color: Colors.white),
   //                               ),
   //                             ),
-  //                             SizedBox(height: 8.h),
+  //                             SizedBox(height: 8),
   //                             Row(
   //                               children: [
   //                                 Icon(Icons.inventory_2,
-  //                                     size: 16.sp,
+  //                                     size: 16,
   //                                     color: const Color(0xFF64748B)),
-  //                                 SizedBox(width: 6.w),
+  //                                 SizedBox(width: 6),
   //                                 Text(
   //                                   'Quantidade: ${inventoryItem.quantity}',
   //                                   style: TextStyle(
-  //                                       fontSize: 14.sp,
+  //                                       fontSize: 14,
   //                                       fontWeight: FontWeight.w600,
   //                                       color: const Color(0xFF64748B)),
   //                                 ),
@@ -1644,35 +1644,35 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       ),
   //                     ],
   //                   ),
-  //                   SizedBox(height: 24.h),
+  //                   SizedBox(height: 24),
 
   //                   // Descrição
   //                   Container(
   //                     width: double.infinity,
-  //                     padding: EdgeInsets.all(16.w),
+  //                     padding: EdgeInsets.all(16),
   //                     decoration: BoxDecoration(
   //                       color: const Color(0xFFF8FAFC),
-  //                       borderRadius: BorderRadius.circular(12.r),
+  //                       borderRadius: BorderRadius.circular(12),
   //                       border: Border.all(color: const Color(0xFFE2E8F0)),
   //                     ),
   //                     child: Text(
   //                       item.description,
   //                       style: TextStyle(
-  //                           fontSize: 14.sp,
+  //                           fontSize: 14,
   //                           color: const Color(0xFF64748B),
   //                           height: 1.5),
   //                     ),
   //                   ),
-  //                   SizedBox(height: 20.h),
+  //                   SizedBox(height: 20),
 
   //                   // Efeitos
   //                   if (item.effects.isNotEmpty) ...[
   //                     Container(
   //                       width: double.infinity,
-  //                       padding: EdgeInsets.all(16.w),
+  //                       padding: EdgeInsets.all(16),
   //                       decoration: BoxDecoration(
   //                         color: const Color(0xFFF0F9FF),
-  //                         borderRadius: BorderRadius.circular(12.r),
+  //                         borderRadius: BorderRadius.circular(12),
   //                         border: Border.all(
   //                             color: const Color(0xFF3B82F6).withOpacity(0.2)),
   //                       ),
@@ -1682,34 +1682,34 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                           Row(
   //                             children: [
   //                               Icon(Icons.auto_fix_high,
-  //                                   size: 20.sp,
+  //                                   size: 20,
   //                                   color: const Color(0xFF3B82F6)),
-  //                               SizedBox(width: 8.w),
+  //                               SizedBox(width: 8),
   //                               Text(
   //                                 'Efeitos do Item',
   //                                 style: TextStyle(
-  //                                     fontSize: 16.sp,
+  //                                     fontSize: 16,
   //                                     fontWeight: FontWeight.w700,
   //                                     color: const Color(0xFF0F172A)),
   //                               ),
   //                             ],
   //                           ),
-  //                           SizedBox(height: 12.h),
+  //                           SizedBox(height: 12),
   //                           ...item.effects.entries.map((effect) {
   //                             final effectData =
   //                                 MockDataService.getEffectData(effect.key);
   //                             return Padding(
-  //                               padding: EdgeInsets.only(bottom: 8.h),
+  //                               padding: EdgeInsets.only(bottom: 8),
   //                               child: Row(
   //                                 children: [
   //                                   Text(effectData['emoji'],
-  //                                       style: TextStyle(fontSize: 16.sp)),
-  //                                   SizedBox(width: 8.w),
+  //                                       style: TextStyle(fontSize: 16)),
+  //                                   SizedBox(width: 8),
   //                                   Expanded(
   //                                     child: Text(
   //                                       '${effectData['name']}: +${effect.value.toInt()}${effect.key == 'xp_multiplier' ? 'x' : '%'}',
   //                                       style: TextStyle(
-  //                                           fontSize: 14.sp,
+  //                                           fontSize: 14,
   //                                           color: const Color(0xFF0F172A)),
   //                                     ),
   //                                   ),
@@ -1720,16 +1720,16 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                         ],
   //                       ),
   //                     ),
-  //                     SizedBox(height: 20.h),
+  //                     SizedBox(height: 20),
   //                   ],
 
   //                   // Info adicional
   //                   Container(
   //                     width: double.infinity,
-  //                     padding: EdgeInsets.all(16.w),
+  //                     padding: EdgeInsets.all(16),
   //                     decoration: BoxDecoration(
   //                       color: const Color(0xFFFFFBEB),
-  //                       borderRadius: BorderRadius.circular(12.r),
+  //                       borderRadius: BorderRadius.circular(12),
   //                       border: Border.all(
   //                           color: const Color(0xFFF59E0B).withOpacity(0.2)),
   //                     ),
@@ -1739,11 +1739,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                         Text(
   //                           'Informações do Item',
   //                           style: TextStyle(
-  //                               fontSize: 14.sp,
+  //                               fontSize: 14,
   //                               fontWeight: FontWeight.w700,
   //                               color: const Color(0xFF0F172A)),
   //                         ),
-  //                         SizedBox(height: 8.h),
+  //                         SizedBox(height: 8),
   //                         _buildInfoRow('Categoria', item.category.displayName),
   //                         _buildInfoRow('Adquirido em',
   //                             _formatDate(inventoryItem.purchasedAt)),
@@ -1763,7 +1763,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //           // Botões de ação
   //           if (inventoryItem.isConsumable) ...[
   //             Container(
-  //               padding: EdgeInsets.all(24.w),
+  //               padding: EdgeInsets.all(24),
   //               decoration: BoxDecoration(
   //                 color: Colors.white,
   //                 boxShadow: [
@@ -1783,14 +1783,14 @@ class _InventoryPageState extends ConsumerState<InventoryPage>
   //                       },
   //                       style: ElevatedButton.styleFrom(
   //                         backgroundColor: const Color(0xFF3B82F6),
-  //                         padding: EdgeInsets.symmetric(vertical: 16.h),
+  //                         padding: EdgeInsets.symmetric(vertical: 16),
   //                         shape: RoundedRectangleBorder(
-  //                             borderRadius: BorderRadius.circular(12.r)),
+  //                             borderRadius: BorderRadius.circular(12)),
   //                       ),
   //                       child: Text(
   //                         'Usar Item',
   //                         style: TextStyle(
-  //                             fontSize: 16.sp,
+  //                             fontSize: 16,
   //                             fontWeight: FontWeight.w700,
   //                             color: Colors.white),
   //                       ),

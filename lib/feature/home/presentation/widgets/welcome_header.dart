@@ -1,6 +1,5 @@
 // lib/features/home/presentation/widgets/welcome_header.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/constants/app_constants.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 
@@ -28,7 +27,7 @@ class WelcomeHeader extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(AppConstants.largePadding.w),
+      padding: const EdgeInsets.all(AppConstants.largePadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -43,7 +42,7 @@ class WelcomeHeader extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
 
           // User name or welcome
           FadeTransition(

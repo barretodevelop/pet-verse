@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/providers/profile_provider.dart';
 import 'package:petverse/feature/auth/providers/authentication_provider.dart';
 
@@ -40,18 +39,18 @@ class ProfilePage extends ConsumerWidget {
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(
+        icon: const Icon(
           Icons.arrow_back,
-          color: const Color(0xFF0F172A),
-          size: 24.sp,
+          color: Color(0xFF0F172A),
+          size: 24,
         ),
       ),
-      title: Text(
+      title: const Text(
         'Meu Perfil',
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
       actions: [
@@ -63,10 +62,10 @@ class ProfilePage extends ConsumerWidget {
                 .refreshUserModel();
             ref.read(profileProvider.notifier).refreshProfile();
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.refresh,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
         IconButton(
@@ -74,10 +73,10 @@ class ProfilePage extends ConsumerWidget {
             HapticFeedback.lightImpact();
             // Navegar para configurações
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.settings,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
       ],
@@ -90,27 +89,27 @@ class ProfilePage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.person,
-              color: const Color(0xFF3B82F6),
-              size: 40.sp,
+              color: Color(0xFF3B82F6),
+              size: 40,
             ),
           )
               .animate(onPlay: (controller) => controller.repeat())
               .rotate(duration: 2000.ms),
-          SizedBox(height: 24.h),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'Carregando perfil...',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
         ],
@@ -123,26 +122,26 @@ class ProfilePage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
-            size: 64.sp,
-            color: const Color(0xFFEF4444),
+            size: 64,
+            color: Color(0xFFEF4444),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Erro ao carregar perfil',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Text(
             message,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -168,8 +167,8 @@ class ProfilePage extends ConsumerWidget {
     final xpProgress = profile.currentXP / profile.xpToNextLevel;
 
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(24.w),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -179,10 +178,10 @@ class ProfilePage extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: Color(profile.colorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -193,8 +192,8 @@ class ProfilePage extends ConsumerWidget {
               Stack(
                 children: [
                   Container(
-                    width: 80.w,
-                    height: 80.w,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -203,7 +202,7 @@ class ProfilePage extends ConsumerWidget {
                         ],
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3.w),
+                      border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
                           color: Color(profile.colorTheme).withOpacity(0.3),
@@ -218,8 +217,8 @@ class ProfilePage extends ConsumerWidget {
                             .split(' ')
                             .map((word) => word[0])
                             .join(),
-                        style: TextStyle(
-                          fontSize: 16.sp,
+                        style: const TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -227,11 +226,11 @@ class ProfilePage extends ConsumerWidget {
                     ),
                   ),
                   Positioned(
-                    bottom: -1.h,
-                    right: -1.w,
+                    bottom: -1,
+                    right: -1,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -239,13 +238,13 @@ class ProfilePage extends ConsumerWidget {
                             const Color(0xFFF59E0B).withOpacity(0.8),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(6.r),
-                        border: Border.all(color: Colors.white, width: 1.w),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white, width: 1),
                       ),
                       child: Text(
                         'Lv.${profile.level}',
-                        style: TextStyle(
-                          fontSize: 9.sp,
+                        style: const TextStyle(
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -254,44 +253,44 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ],
               ),
-              SizedBox(width: 20.w),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       profile.codename,
-                      style: TextStyle(
-                        fontSize: 22.sp,
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.emoji_events,
-                          color: const Color(0xFFF59E0B),
-                          size: 16.sp,
+                          color: Color(0xFFF59E0B),
+                          size: 16,
                         ),
-                        SizedBox(width: 4.w),
+                        const SizedBox(width: 4),
                         Text(
                           'Ranking #${profile.rankingPosition}',
-                          style: TextStyle(
-                            fontSize: 12.sp,
+                          style: const TextStyle(
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFFF59E0B),
+                            color: Color(0xFFF59E0B),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 4),
                     Text(
                       '${profile.daysActive} dias ativo • ${profile.totalPetsAdopted} pets salvos',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF64748B),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -300,7 +299,7 @@ class ProfilePage extends ConsumerWidget {
             ],
           ),
 
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
 
           // Barra de XP
           Column(
@@ -309,30 +308,30 @@ class ProfilePage extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Experiência',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   Text(
                     '${profile.currentXP} / ${profile.xpToNextLevel} XP',
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(profile.colorTheme),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 8.h),
+              const SizedBox(height: 8),
               Container(
-                height: 8.h,
+                height: 8,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -345,23 +344,23 @@ class ProfilePage extends ConsumerWidget {
                           Color(profile.colorTheme).withOpacity(0.7),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               Text(
                 '${(profile.xpToNextLevel - profile.currentXP)} XP para o próximo nível',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: const Color(0xFF64748B),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Color(0xFF64748B),
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Stats Rápidas
           Row(
@@ -369,18 +368,18 @@ class ProfilePage extends ConsumerWidget {
               Expanded(
                   child: _buildQuickStat('Pets Ativos', '${profile.activePets}',
                       const Color(0xFF3B82F6))),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                   child: _buildQuickStat('Taxa Sucesso',
                       '${profile.successRate}%', const Color(0xFF10B981))),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                   child: _buildQuickStat('Sequência',
                       '${profile.currentStreak}d', const Color(0xFFF59E0B))),
             ],
           ),
 
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Total XP e Data de Cadastro (Novo)
           Row(
@@ -393,7 +392,7 @@ class ProfilePage extends ConsumerWidget {
                   const Color(0xFF8B5CF6),
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildInfoItem(
                   'Membro desde',
@@ -411,13 +410,13 @@ class ProfilePage extends ConsumerWidget {
 
   Widget _buildQuickStat(String label, String value, Color color) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color.withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -425,16 +424,16 @@ class ProfilePage extends ConsumerWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               color: color,
             ),
           ),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -446,32 +445,32 @@ class ProfilePage extends ConsumerWidget {
   Widget _buildInfoItem(
       String label, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(8.w),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 16.sp),
-          SizedBox(width: 6.w),
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 6),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 12.sp,
+                  style: const TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 9.sp,
-                    color: const Color(0xFF64748B),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],

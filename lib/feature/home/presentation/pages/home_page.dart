@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/core/enums/enums.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
@@ -231,23 +230,23 @@ class _HomePageState extends ConsumerState<HomePage>
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: color.withOpacity(0.1),
       child: Row(
         children: [
           SizedBox(
-            width: 16.w,
-            height: 16.w,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(
-              strokeWidth: 2.w,
+              strokeWidth: 2,
               color: color,
             ),
           ),
-          SizedBox(width: 12.w),
+          const SizedBox(width: 12),
           Text(
             message,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: color,
               fontWeight: FontWeight.w500,
             ),
@@ -328,24 +327,24 @@ class _PetTabContent extends ConsumerWidget {
         children: [
           Icon(
             Icons.pets_outlined,
-            size: 80.sp,
+            size: 80,
             color: AppTheme.textLight,
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Estado Indefinido',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'O estado da aplicação não pôde ser determinado.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: AppTheme.textSecondary,
             ),
           ),
@@ -359,30 +358,30 @@ class _PetTabContent extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.warning_outlined,
-            size: 80.sp,
+            size: 80,
             color: Colors.orange,
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Estado Inconsistente',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14.sp,
+            style: const TextStyle(
+              fontSize: 14,
               color: AppTheme.textSecondary,
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           Consumer(
             builder: (context, ref, child) {
               return ElevatedButton(
@@ -415,23 +414,23 @@ class _PetStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(24.w),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            AppTheme.primary.withOpacity(0.02),
+            AppTheme.primary,
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.15),
+            color: Color.fromARGB(255, 89, 89, 92),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
           ),
         ],
       ),
@@ -444,66 +443,66 @@ class _PetStatusCard extends StatelessWidget {
               return Transform.translate(
                 offset: Offset(0, floatController.value * 8),
                 child: Container(
-                  width: 120.w,
-                  height: 120.w,
-                  decoration: BoxDecoration(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primary.withOpacity(0.2),
+                        color: Color.fromARGB(255, 89, 89, 92),
                         blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        offset: Offset(0, 10),
                       ),
                     ],
                   ),
                   child: Center(
                     child: Text(
                       pet.photo,
-                      style: TextStyle(fontSize: 80.sp),
+                      style: const TextStyle(fontSize: 80),
                     ),
                   ),
                 ),
               );
             },
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
 
           // Nome do pet
           Text(
             pet.name,
-            style: TextStyle(
-              fontSize: 22.sp,
+            style: const TextStyle(
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
             ),
           ),
 
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
 
           // Tipo e raça
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: AppTheme.accentCoral.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${pet.breed} • ${pet.type}',
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 color: AppTheme.accentCoral,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
 
-          SizedBox(height: 24.h),
+          const SizedBox(height: 24),
 
           // Status do pet
-          Text(
+          const Text(
             'Seu pet está bem cuidado! 🐾',
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               color: AppTheme.textSecondary,
             ),
             textAlign: TextAlign.center,
@@ -522,13 +521,13 @@ class _ActiveRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(20.w),
+      margin: const EdgeInsets.all(20),
       child: Column(
         children: [
           // Header da solicitação
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(24.w),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -538,34 +537,34 @@ class _ActiveRequestCard extends StatelessWidget {
                   Color(activeRequest.requesterColorTheme).withOpacity(0.05),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24.r),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color:
                     Color(activeRequest.requesterColorTheme).withOpacity(0.3),
-                width: 2.w,
+                width: 2,
               ),
             ),
             child: Column(
               children: [
                 Icon(
                   Icons.schedule,
-                  size: 60.sp,
+                  size: 60,
                   color: Color(activeRequest.requesterColorTheme),
                 ),
-                SizedBox(height: 16.h),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'Solicitação Ativa',
                   style: TextStyle(
-                    fontSize: 22.sp,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                const SizedBox(height: 8),
                 Text(
                   'Expira em ${activeRequest.daysRemaining.toStringAsFixed(1)} dias',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: activeRequest.isUrgent
                         ? Colors.red
@@ -576,7 +575,7 @@ class _ActiveRequestCard extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
 
           // Ações da solicitação
           Consumer(
@@ -596,7 +595,7 @@ class _ActiveRequestCard extends StatelessWidget {
                       label: const Text('Cancelar Solicitação'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),
                   ),
@@ -618,15 +617,15 @@ class _AdoptionOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(20.w),
+      margin: const EdgeInsets.all(20),
       child: Column(
         children: [
           // Header
           Container(
-            padding: EdgeInsets.all(24.w),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primary.withOpacity(0.1),
@@ -635,28 +634,28 @@ class _AdoptionOptionsWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
+            child: const Column(
               children: [
                 Icon(
                   Icons.pets_rounded,
-                  size: 80.sp,
+                  size: 80,
                   color: AppTheme.primary,
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 16),
                 Text(
                   'Adote um Pet',
                   style: TextStyle(
-                    fontSize: 22.sp,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 8),
                 Text(
                   'Encontre seu companheiro perfeito\ne transforme duas vidas para sempre',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     color: AppTheme.textSecondary,
                     height: 1.4,
                   ),
@@ -665,7 +664,7 @@ class _AdoptionOptionsWidget extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           const Spacer(),
           // Botões de ação
           Column(
@@ -680,11 +679,11 @@ class _AdoptionOptionsWidget extends StatelessWidget {
                   icon: const Icon(Icons.list),
                   label: const Text('Ver Pets Disponíveis'),
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
               ),
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -695,7 +694,7 @@ class _AdoptionOptionsWidget extends StatelessWidget {
                   icon: const Icon(Icons.add_circle_outline),
                   label: const Text('Criar uma Adoção'),
                   style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
               ),

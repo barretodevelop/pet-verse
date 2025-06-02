@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 
 class MoreOptionsTabPage extends StatelessWidget {
@@ -8,18 +7,18 @@ class MoreOptionsTabPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(20),
       child: Column(
         children: [
           Text(
             'Mais Opções',
             style: TextStyle(
-              fontSize: 22.sp,
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
             ),
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 20),
           Expanded(
             child: Center(
               child: Column(
@@ -27,24 +26,24 @@ class MoreOptionsTabPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.more_horiz,
-                    size: 80.sp,
+                    size: 80,
                     color: AppTheme.textSecondary,
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 16),
                   Text(
                     'Configurações e Mais',
                     style: TextStyle(
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 8),
                   Text(
                     'Perfil, configurações, suporte\ne outras funcionalidades',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
                   ),

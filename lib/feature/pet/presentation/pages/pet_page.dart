@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
 
 class PetPage extends StatefulWidget {
@@ -117,7 +116,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
             _buildStatsSection(),
             _buildCoGuardianSection(),
             _buildActionsSection(),
-            SizedBox(height: 20.h),
+            SizedBox(height: 20),
           ],
         ),
       ),
@@ -133,13 +132,13 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
         icon: Icon(
           Icons.arrow_back,
           color: const Color(0xFF0F172A),
-          size: 24.sp,
+          size: 24,
         ),
       ),
       title: Text(
         widget.pet.name,
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
           color: const Color(0xFF0F172A),
         ),
@@ -153,7 +152,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           icon: Icon(
             Icons.more_vert,
             color: const Color(0xFF64748B),
-            size: 24.sp,
+            size: 24,
           ),
         ),
       ],
@@ -162,8 +161,8 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
   Widget _buildWelcomeBanner() {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -171,10 +170,10 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
             const Color(0xFF059669).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF10B981).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -182,8 +181,8 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           Row(
             children: [
               Container(
-                width: 40.w,
-                height: 40.w,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withOpacity(0.2),
                   shape: BoxShape.circle,
@@ -191,13 +190,13 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                 child: Icon(
                   Icons.celebration,
                   color: const Color(0xFF10B981),
-                  size: 20.sp,
+                  size: 20,
                 ),
               )
                   .animate(controller: _celebrationController)
                   .rotate(end: 1)
                   .scale(end: const Offset(1.2, 1.2)),
-              SizedBox(width: 12.w),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +204,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                     Text(
                       'Bem-vindo à família!',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
                       ),
@@ -213,7 +212,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                     Text(
                       'Você e ${widget.adoption.codename} agora são co-guardiões de ${widget.pet.name}',
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         color: const Color(0xFF64748B),
                       ),
                     ),
@@ -229,11 +228,11 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
   Widget _buildPetDisplay() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(24.w),
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.1),
@@ -248,8 +247,8 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           Stack(
             children: [
               Container(
-                width: 150.w,
-                height: 150.w,
+                width: 150,
+                height: 150,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -262,13 +261,13 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Color(widget.adoption.colorTheme).withOpacity(0.3),
-                    width: 3.w,
+                    width: 3,
                   ),
                 ),
                 child: Center(
                   child: Text(
                     widget.pet.photo,
-                    style: TextStyle(fontSize: 60.sp),
+                    style: TextStyle(fontSize: 60),
                   ),
                 ),
               )
@@ -282,28 +281,28 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
               // Status indicator
               Positioned(
-                bottom: 10.h,
-                right: 10.w,
+                bottom: 10,
+                right: 10,
                 child: Container(
-                  width: 20.w,
-                  height: 20.w,
+                  width: 20,
+                  height: 20,
                   decoration: BoxDecoration(
                     color: _getPetMoodColor(),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.w),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
 
           // Pet Info
           Text(
             widget.pet.name,
             style: TextStyle(
-              fontSize: 24.sp,
+              fontSize: 24,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
@@ -312,24 +311,24 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           Text(
             '${widget.pet.type} • ${widget.pet.age}',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: const Color(0xFF64748B),
             ),
           ),
 
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
 
           // Mood Status
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: _getPetMoodColor().withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               _getPetMoodText(),
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: _getPetMoodColor(),
               ),
@@ -342,11 +341,11 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
   Widget _buildStatsSection() {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.08),
@@ -361,20 +360,20 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           Text(
             'Status do Pet',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           _buildStatBar(
               'Felicidade', happiness, const Color(0xFFF59E0B), Icons.mood),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           _buildStatBar(
               'Saúde', health, const Color(0xFF10B981), Icons.favorite),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           _buildStatBar('Energia', energy, const Color(0xFF3B82F6), Icons.bolt),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           _buildStatBar(
               'Fome', hunger, const Color(0xFFEF4444), Icons.restaurant),
         ],
@@ -385,14 +384,14 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
   Widget _buildStatBar(String label, int value, Color color, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 20.sp),
-        SizedBox(width: 8.w),
+        Icon(icon, color: color, size: 20),
+        SizedBox(width: 8),
         SizedBox(
-          width: 80.w,
+          width: 80,
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF374151),
             ),
@@ -402,30 +401,30 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           child: Stack(
             children: [
               Container(
-                height: 8.h,
+                height: 8,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
               FractionallySizedBox(
                 widthFactor: value / 100,
                 child: Container(
-                  height: 8.h,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.circular(4.r),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        SizedBox(width: 8.w),
+        SizedBox(width: 8),
         Text(
           '$value%',
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: color,
           ),
@@ -436,8 +435,8 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
   Widget _buildCoGuardianSection() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -445,23 +444,23 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
             Color(widget.adoption.colorTheme).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Color(widget.adoption.colorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 40.w,
-            height: 40.w,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Color(widget.adoption.colorTheme).withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
                 color: Color(widget.adoption.colorTheme),
-                width: 2.w,
+                width: 2,
               ),
             ),
             child: Center(
@@ -471,14 +470,14 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                     .map((word) => word[0])
                     .join(),
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Color(widget.adoption.colorTheme),
                 ),
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,7 +485,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                 Text(
                   'Co-Guardião: ${widget.adoption.codename}',
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF0F172A),
                   ),
@@ -494,7 +493,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
                 Text(
                   'Cuidando juntos de ${widget.pet.name}',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -504,7 +503,7 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           Icon(
             Icons.people,
             color: Color(widget.adoption.colorTheme),
-            size: 20.sp,
+            size: 20,
           ),
         ],
       ),
@@ -513,25 +512,25 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
 
   Widget _buildActionsSection() {
     return Container(
-      margin: EdgeInsets.all(20.w),
+      margin: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Cuidados',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            crossAxisSpacing: 12.w,
-            mainAxisSpacing: 12.h,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
             childAspectRatio: 1.2,
             children: [
               _buildActionCard('Alimentar', Icons.restaurant,
@@ -554,13 +553,13 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () => _onActionTap(action),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: color.withOpacity(0.2),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -574,8 +573,8 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 50.w,
-              height: 50.w,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -583,14 +582,14 @@ class _PetPageState extends State<PetPage> with TickerProviderStateMixin {
               child: Icon(
                 icon,
                 color: color,
-                size: 24.sp,
+                size: 24,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
               ),

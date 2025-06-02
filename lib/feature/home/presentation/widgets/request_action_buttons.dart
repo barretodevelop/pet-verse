@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/active_request_provider.dart';
@@ -27,14 +26,14 @@ class RequestActionButtons extends ConsumerWidget {
             label: const Text('Ver na Lista Pública'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(activeRequest.requesterColorTheme),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
         ),
-        SizedBox(height: 12.h),
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
@@ -45,9 +44,9 @@ class RequestActionButtons extends ConsumerWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFEF4444),
               side: const BorderSide(color: Color(0xFFEF4444)),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),

@@ -103,11 +103,11 @@ class _SplashPageState extends ConsumerState<SplashPage>
       builder: (context) => AlertDialog(
         title: Text(
           'Erro de Inicialização',
-          style: AppTheme.textTheme.headlineSmall,
+          style: AppTheme.headlineSmall,
         ),
         content: Text(
           'Ocorreu um erro ao inicializar o app:\n$error',
-          style: AppTheme.textTheme.bodyMedium,
+          style: AppTheme.bodyMedium,
         ),
         actions: [
           TextButton(

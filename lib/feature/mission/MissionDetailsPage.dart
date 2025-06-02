@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
 
 class MissionDetailsPage extends StatefulWidget {
@@ -60,7 +59,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                 _buildMissionDetails(),
                 _buildOtherInterestedSection(),
                 _buildActionButtons(),
-                SizedBox(height: 100.h), // Espaço para botão fixo
+                const SizedBox(height: 100), // Espaço para botão fixo
               ],
             ),
           ),
@@ -72,7 +71,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 200.h,
+      expandedHeight: 200,
       floating: false,
       pinned: true,
       backgroundColor: Color(widget.adoption.colorTheme),
@@ -91,15 +90,15 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 40.h),
+              const SizedBox(height: 40),
               // Avatar grande
               Container(
-                width: 80.w,
-                height: 80.w,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3.w),
+                  border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
@@ -108,10 +107,10 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                     ),
                   ],
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.pets_rounded,
                   color: Colors.white,
-                  size: 40.sp,
+                  size: 40,
                 ),
               )
                   .animate(
@@ -122,12 +121,12 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                     duration: 3000.ms,
                   ),
 
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
 
               Text(
                 widget.adoption.codename,
-                style: TextStyle(
-                  fontSize: 24.sp,
+                style: const TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -136,7 +135,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               Text(
                 'Nível ${widget.adoption.level} • ${widget.adoption.region}',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.white.withOpacity(0.9),
                   fontWeight: FontWeight.w500,
                 ),
@@ -148,16 +147,16 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: Container(
-          width: 36.w,
-          height: 36.w,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.arrow_back,
             color: Colors.white,
-            size: 20.sp,
+            size: 20,
           ),
         ),
       ),
@@ -169,8 +168,8 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
             });
           },
           icon: Container(
-            width: 36.w,
-            height: 36.w,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
@@ -178,7 +177,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
             child: Icon(
               _isSaved ? Icons.bookmark : Icons.bookmark_outline,
               color: Colors.white,
-              size: 20.sp,
+              size: 20,
             ),
           ),
         ),
@@ -188,11 +187,11 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildGuardianProfile() {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(20.w),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.08),
@@ -209,20 +208,20 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               Icon(
                 Icons.shield_outlined,
                 color: Color(widget.adoption.colorTheme),
-                size: 20.sp,
+                size: 20,
               ),
-              SizedBox(width: 8.w),
-              Text(
+              const SizedBox(width: 8),
+              const Text(
                 'Perfil do Guardian',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -251,55 +250,56 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Mensagem do Guardian:',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF374151),
+              color: Color(0xFF374151),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(12.w),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: const Color(0xFFE2E8F0),
-                width: 1.w,
+                width: 1,
               ),
             ),
             child: Text(
               widget.adoption.codedMessage,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF64748B),
                 height: 1.5,
               ),
             ),
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
+            spacing: 8,
+            runSpacing: 8,
             children: widget.adoption.personalityTags.map((tag) {
               return Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: Color(widget.adoption.colorTheme).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Color(widget.adoption.colorTheme).withOpacity(0.3),
-                    width: 1.w,
+                    width: 1,
                   ),
                 ),
                 child: Text(
                   tag,
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: Color(widget.adoption.colorTheme),
                   ),
@@ -317,8 +317,8 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
     return Column(
       children: [
         Container(
-          width: 40.w,
-          height: 40.w,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             shape: BoxShape.circle,
@@ -326,23 +326,23 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
           child: Icon(
             icon,
             color: color,
-            size: 20.sp,
+            size: 20,
           ),
         ),
-        SizedBox(height: 8.h),
+        const SizedBox(height: 8),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16.sp,
+          style: const TextStyle(
+            fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: const Color(0xFF64748B),
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF64748B),
           ),
           textAlign: TextAlign.center,
         ),
@@ -352,8 +352,8 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildCompatibilityCard() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -361,10 +361,10 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
             const Color(0xFF059669).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF10B981).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -372,36 +372,36 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
           Row(
             children: [
               Container(
-                width: 40.w,
-                height: 40.w,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.favorite,
-                  color: const Color(0xFF10B981),
-                  size: 20.sp,
+                  color: Color(0xFF10B981),
+                  size: 20,
                 ),
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Compatibilidade: $_matchScore%',
-                      style: TextStyle(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Excelente match para parceria!',
                       style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF10B981),
+                        fontSize: 12,
+                        color: Color(0xFF10B981),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -409,15 +409,15 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '+$_potentialXP XP',
-                  style: TextStyle(
-                    fontSize: 11.sp,
+                  style: const TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -425,25 +425,25 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           Column(
             children: _compatibilityReasons.map((reason) {
               return Padding(
-                padding: EdgeInsets.only(bottom: 6.h),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.check_circle,
-                      color: const Color(0xFF10B981),
-                      size: 16.sp,
+                      color: Color(0xFF10B981),
+                      size: 16,
                     ),
-                    SizedBox(width: 8.w),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         reason,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF374151),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF374151),
                         ),
                       ),
                     ),
@@ -462,23 +462,23 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildPetGallery() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Pets da Missão (${widget.adoption.pets.length})',
-            style: TextStyle(
-              fontSize: 18.sp,
+            style: const TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
 
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
 
           SizedBox(
-            height: 200.h,
+            height: 200,
             child: PageView.builder(
               controller: _petGalleryController,
               onPageChanged: (index) {
@@ -490,14 +490,14 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               itemBuilder: (context, index) {
                 final pet = widget.adoption.pets[index];
                 return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  padding: EdgeInsets.all(16.w),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Color(widget.adoption.colorTheme).withOpacity(0.2),
-                      width: 1.w,
+                      width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -510,8 +510,8 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                   child: Column(
                     children: [
                       Container(
-                        width: 80.w,
-                        height: 80.w,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
                           color: Color(widget.adoption.colorTheme)
                               .withOpacity(0.1),
@@ -520,27 +520,27 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                         child: Center(
                           child: Text(
                             pet.photo,
-                            style: TextStyle(fontSize: 40.sp),
+                            style: const TextStyle(fontSize: 40),
                           ),
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                      const SizedBox(height: 12),
                       Text(
                         pet.name,
-                        style: TextStyle(
-                          fontSize: 18.sp,
+                        style: const TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
+                          color: Color(0xFF0F172A),
                         ),
                       ),
                       Text(
                         '${pet.type} • ${pet.age}',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF64748B),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF64748B),
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                      const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -556,7 +556,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
             ),
           ),
 
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
 
           // Indicadores de página
           Row(
@@ -564,9 +564,9 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
             children: List.generate(
               widget.adoption.pets.length,
               (index) => Container(
-                width: 8.w,
-                height: 8.w,
-                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   color: _currentPetIndex == index
                       ? Color(widget.adoption.colorTheme)
@@ -590,14 +590,14 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
         Icon(
           icon,
           color: Color(widget.adoption.colorTheme),
-          size: 16.sp,
+          size: 16,
         ),
-        SizedBox(height: 4.h),
+        const SizedBox(height: 4),
         Text(
           trait,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: const Color(0xFF64748B),
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF64748B),
           ),
         ),
       ],
@@ -606,11 +606,11 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildMissionDetails() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF64748B).withOpacity(0.08),
@@ -627,20 +627,20 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               Icon(
                 Icons.access_time,
                 color: _getTimerColor(),
-                size: 20.sp,
+                size: 20,
               ),
-              SizedBox(width: 8.w),
-              Text(
+              const SizedBox(width: 8),
+              const Text(
                 'Detalhes da Missão',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -680,16 +680,16 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
         Text(
           value,
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: color,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: const Color(0xFF64748B),
+          style: const TextStyle(
+            fontSize: 11,
+            color: Color(0xFF64748B),
           ),
           textAlign: TextAlign.center,
         ),
@@ -699,54 +699,54 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildOtherInterestedSection() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Outros Interessados (${_otherInterested.length})',
-            style: TextStyle(
-              fontSize: 16.sp,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           SizedBox(
-            height: 60.h,
+            height: 60,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _otherInterested.length,
               itemBuilder: (context, index) {
                 final user = _otherInterested[index];
                 return Container(
-                  width: 120.w,
-                  margin: EdgeInsets.only(right: 12.w),
-                  padding: EdgeInsets.all(8.w),
+                  width: 120,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Color(user.colorTheme).withOpacity(0.2),
-                      width: 1.w,
+                      width: 1,
                     ),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 32.w,
-                        height: 32.w,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
                           color: Color(user.colorTheme),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.person,
                           color: Colors.white,
-                          size: 16.sp,
+                          size: 16,
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -754,19 +754,19 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                           children: [
                             Text(
                               user.codename,
-                              style: TextStyle(
-                                fontSize: 10.sp,
+                              style: const TextStyle(
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF0F172A),
+                                color: Color(0xFF0F172A),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               'Nível ${user.level}',
-                              style: TextStyle(
-                                fontSize: 9.sp,
-                                color: const Color(0xFF64748B),
+                              style: const TextStyle(
+                                fontSize: 9,
+                                color: Color(0xFF64748B),
                               ),
                             ),
                           ],
@@ -788,7 +788,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildActionButtons() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [
           Expanded(
@@ -797,30 +797,30 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                 // Share functionality
               },
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    width: 1,
                   ),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.share_outlined,
-                      color: const Color(0xFF64748B),
-                      size: 18.sp,
+                      color: Color(0xFF64748B),
+                      size: 18,
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 8),
                     Text(
                       'Compartilhar',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -828,7 +828,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          const SizedBox(width: 12),
           Expanded(
             child: GestureDetector(
               onTap: () {
@@ -837,17 +837,17 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                 });
               },
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isSaved
                       ? const Color(0xFF3B82F6).withOpacity(0.1)
                       : Colors.white,
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _isSaved
                         ? const Color(0xFF3B82F6)
                         : const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    width: 1,
                   ),
                 ),
                 child: Row(
@@ -858,13 +858,13 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                       color: _isSaved
                           ? const Color(0xFF3B82F6)
                           : const Color(0xFF64748B),
-                      size: 18.sp,
+                      size: 18,
                     ),
-                    SizedBox(width: 8.w),
+                    const SizedBox(width: 8),
                     Text(
                       _isSaved ? 'Salvo' : 'Salvar',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _isSaved
                             ? const Color(0xFF3B82F6)
@@ -886,7 +886,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildBottomActionBar() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -910,7 +910,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
           },
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 16.h),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: _isInterested
@@ -920,7 +920,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                         Color(widget.adoption.colorTheme).withOpacity(0.8)
                       ],
               ),
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
                   color: (_isInterested
@@ -938,15 +938,15 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
                 Icon(
                   _isInterested ? Icons.check_circle : Icons.favorite,
                   color: Colors.white,
-                  size: 24.sp,
+                  size: 24,
                 ),
-                SizedBox(width: 12.w),
+                const SizedBox(width: 12),
                 Text(
                   _isInterested
                       ? 'Interesse Demonstrado!'
                       : 'Quero Participar desta Missão',
-                  style: TextStyle(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -974,30 +974,30 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
         ),
         title: Row(
           children: [
             Container(
-              width: 40.w,
-              height: 40.w,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.check_circle,
-                color: const Color(0xFF10B981),
-                size: 24.sp,
+                color: Color(0xFF10B981),
+                size: 24,
               ),
             ),
-            SizedBox(width: 12.w),
-            Text(
+            const SizedBox(width: 12),
+            const Text(
               'Interesse Confirmado!',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ],
@@ -1006,37 +1006,37 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Você demonstrou interesse nesta missão de co-adoção!',
               style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+                fontSize: 14,
+                color: Color(0xFF64748B),
                 height: 1.5,
               ),
             ),
-            SizedBox(height: 16.h),
+            const SizedBox(height: 16),
             Container(
-              padding: EdgeInsets.all(12.w),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: const Color(0xFF3B82F6).withOpacity(0.2),
-                  width: 1.w,
+                  width: 1,
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Próximos passos:',
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF3B82F6),
+                      color: Color(0xFF3B82F6),
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  const SizedBox(height: 8),
                   _buildNextStep(
                       'O guardian será notificado', Icons.notifications),
                   _buildNextStep(
@@ -1051,12 +1051,12 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Entendi',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF3B82F6),
+                color: Color(0xFF3B82F6),
               ),
             ),
           ),
@@ -1072,21 +1072,21 @@ class _MissionDetailsPageState extends State<MissionDetailsPage>
 
   Widget _buildNextStep(String text, IconData icon) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 6.h),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
           Icon(
             icon,
             color: const Color(0xFF3B82F6),
-            size: 14.sp,
+            size: 14,
           ),
-          SizedBox(width: 8.w),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF374151),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF374151),
               ),
             ),
           ),

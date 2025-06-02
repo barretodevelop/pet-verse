@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Para HapticFeedback
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/mocks.dart';
 import 'package:petverse/feature/mission/MissionDetailsPage.dart';
 
@@ -53,29 +52,29 @@ class _AnonymousAdoptionsListPageState
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      title: Text(
+      title: const Text(
         'Missões Co-Parent',
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
       actions: [
         IconButton(
           onPressed: () {},
-          icon: Icon(
+          icon: const Icon(
             Icons.search,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
         IconButton(
           onPressed: () {},
-          icon: Icon(
+          icon: const Icon(
             Icons.tune,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
       ],
@@ -84,22 +83,22 @@ class _AnonymousAdoptionsListPageState
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Text(
+          const Text(
             'Adoções Anônimas Disponíveis',
             style: TextStyle(
-              fontSize: 16.sp,
-              color: const Color(0xFF64748B),
+              fontSize: 16,
+              color: Color(0xFF64748B),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildStatChip('${mockAdoptions.length}', 'missões ativas'),
-              SizedBox(width: 16.w),
+              const SizedBox(width: 16),
               _buildStatChip('47', 'salvadores online'),
             ],
           ),
@@ -110,13 +109,13 @@ class _AnonymousAdoptionsListPageState
 
   Widget _buildStatChip(String number, String label) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF3B82F6).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: const Color(0xFF3B82F6).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Row(
@@ -124,18 +123,18 @@ class _AnonymousAdoptionsListPageState
         children: [
           Text(
             number,
-            style: TextStyle(
-              fontSize: 16.sp,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF3B82F6),
+              color: Color(0xFF3B82F6),
             ),
           ),
-          SizedBox(width: 4.w),
+          const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: const Color(0xFF64748B),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF64748B),
             ),
           ),
         ],
@@ -145,8 +144,8 @@ class _AnonymousAdoptionsListPageState
 
   Widget _buildFilters() {
     return Container(
-      height: 40.h,
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
@@ -155,7 +154,7 @@ class _AnonymousAdoptionsListPageState
           final isSelected = selectedFilter == filter;
 
           return Padding(
-            padding: EdgeInsets.only(right: 12.w),
+            padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -163,15 +162,16 @@ class _AnonymousAdoptionsListPageState
                 });
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
                         ? const Color(0xFF3B82F6)
                         : const Color(0xFFE2E8F0),
-                    width: 1.w,
+                    width: 1,
                   ),
                   boxShadow: isSelected
                       ? [
@@ -186,7 +186,7 @@ class _AnonymousAdoptionsListPageState
                 child: Text(
                   filter,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected ? Colors.white : const Color(0xFF64748B),
                   ),
@@ -201,12 +201,12 @@ class _AnonymousAdoptionsListPageState
 
   Widget _buildAdoptionsList() {
     return ListView.builder(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       itemCount: mockAdoptions.length,
       itemBuilder: (context, index) {
         final adoption = mockAdoptions[index];
         return Padding(
-          padding: EdgeInsets.only(bottom: 16.h),
+          padding: const EdgeInsets.only(bottom: 16),
           child: _buildAdoptionCard(adoption, index),
         );
       },
@@ -218,13 +218,13 @@ class _AnonymousAdoptionsListPageState
     return GestureDetector(
       onTap: () => _navigateToDetails(adoption),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Color(adoption.colorTheme).withOpacity(0.2),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -243,8 +243,8 @@ class _AnonymousAdoptionsListPageState
                 Hero(
                   tag: 'avatar-${adoption.missionId}',
                   child: Container(
-                    width: 48.w,
-                    height: 48.w,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -261,15 +261,15 @@ class _AnonymousAdoptionsListPageState
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.pets_rounded,
                       color: Colors.white,
-                      size: 24.sp,
+                      size: 24,
                     ),
                   ),
                 ),
 
-                SizedBox(width: 12.w),
+                const SizedBox(width: 12),
 
                 // Info do guardian
                 Expanded(
@@ -280,25 +280,25 @@ class _AnonymousAdoptionsListPageState
                         children: [
                           Text(
                             adoption.codename,
-                            style: TextStyle(
-                              fontSize: 16.sp,
+                            style: const TextStyle(
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
+                              color: Color(0xFF0F172A),
                             ),
                           ),
                           if (adoption.isNew) ...[
-                            SizedBox(width: 8.w),
+                            const SizedBox(width: 8),
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 6.w, vertical: 2.h),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981),
-                                borderRadius: BorderRadius.circular(4.r),
+                                borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'NOVO',
                                 style: TextStyle(
-                                  fontSize: 8.sp,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
@@ -312,9 +312,9 @@ class _AnonymousAdoptionsListPageState
                       ),
                       Text(
                         'Nível ${adoption.level} • ${adoption.completedAdoptions} pets salvos',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF64748B),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
                         ),
                       ),
                     ],
@@ -326,28 +326,28 @@ class _AnonymousAdoptionsListPageState
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color:
                             _getStatusColor(adoption.status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Faltam ${adoption.timeLeftDays.toStringAsFixed(1)}d ',
                         style: TextStyle(
-                          fontSize: 11.sp,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: _getStatusColor(adoption.status),
                         ),
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 4),
                     Text(
                       adoption.region,
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: const Color(0xFF94A3B8),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF94A3B8),
                       ),
                     ),
                   ],
@@ -355,11 +355,11 @@ class _AnonymousAdoptionsListPageState
               ],
             ),
 
-            SizedBox(height: 16.h),
+            const SizedBox(height: 16),
 
             // Pets preview
             SizedBox(
-              height: 80.h,
+              height: 80,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 18 / 2),
                 separatorBuilder: (BuildContext context, int index) {
@@ -370,14 +370,14 @@ class _AnonymousAdoptionsListPageState
                 itemBuilder: (context, petIndex) {
                   final pet = adoption.pets[petIndex];
                   return Container(
-                    width: 80.w,
-                    margin: EdgeInsets.only(right: 8.w),
+                    width: 80,
+                    margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: const Color(0xFFE2E8F0),
-                        width: 1.w,
+                        width: 1,
                       ),
                     ),
                     child: Column(
@@ -385,22 +385,22 @@ class _AnonymousAdoptionsListPageState
                       children: [
                         Text(
                           pet.photo,
-                          style: TextStyle(fontSize: 24.sp),
+                          style: const TextStyle(fontSize: 24),
                         ),
-                        SizedBox(height: 4.h),
+                        const SizedBox(height: 4),
                         Text(
                           pet.name,
-                          style: TextStyle(
-                            fontSize: 10.sp,
+                          style: const TextStyle(
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
+                            color: Color(0xFF0F172A),
                           ),
                         ),
                         Text(
                           pet.age,
-                          style: TextStyle(
-                            fontSize: 9.sp,
-                            color: const Color(0xFF64748B),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Color(0xFF64748B),
                           ),
                         ),
                       ],
@@ -410,36 +410,37 @@ class _AnonymousAdoptionsListPageState
               ),
             ),
 
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
 
             // Mensagem codificada
             Text(
               adoption.codedMessage,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF64748B),
                 height: 1.4,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
 
-            SizedBox(height: 12.h),
+            const SizedBox(height: 12),
 
             // Tags de personalidade
             Wrap(
-              spacing: 6.w,
+              spacing: 6,
               children: adoption.personalityTags.map((tag) {
                 return Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Color(adoption.colorTheme).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     tag,
                     style: TextStyle(
-                      fontSize: 10.sp,
+                      fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: Color(adoption.colorTheme),
                     ),
@@ -448,7 +449,7 @@ class _AnonymousAdoptionsListPageState
               }).toList(),
             ),
 
-            SizedBox(height: 16.h),
+            const SizedBox(height: 16),
 
             // Footer com stats e CTA
             Row(
@@ -457,45 +458,45 @@ class _AnonymousAdoptionsListPageState
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.visibility_outlined,
-                        size: 16.sp,
-                        color: const Color(0xFF94A3B8),
+                        size: 16,
+                        color: Color(0xFF94A3B8),
                       ),
-                      SizedBox(width: 4.w),
+                      const SizedBox(width: 4),
                       Text(
                         '${adoption.views}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF64748B),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
                         ),
                       ),
-                      SizedBox(width: 12.w),
-                      Icon(
+                      const SizedBox(width: 12),
+                      const Icon(
                         Icons.favorite_outline,
-                        size: 16.sp,
-                        color: const Color(0xFF94A3B8),
+                        size: 16,
+                        color: Color(0xFF94A3B8),
                       ),
-                      SizedBox(width: 4.w),
+                      const SizedBox(width: 4),
                       Text(
                         '${adoption.interested}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: const Color(0xFF64748B),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
                         ),
                       ),
                       if (adoption.status == 'hot') ...[
-                        SizedBox(width: 12.w),
-                        Icon(
+                        const SizedBox(width: 12),
+                        const Icon(
                           Icons.local_fire_department,
-                          size: 16.sp,
-                          color: const Color(0xFFEF4444),
+                          size: 16,
+                          color: Color(0xFFEF4444),
                         ),
-                        Text(
+                        const Text(
                           'Popular',
                           style: TextStyle(
-                            fontSize: 12.sp,
-                            color: const Color(0xFFEF4444),
+                            fontSize: 12,
+                            color: Color(0xFFEF4444),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -509,7 +510,7 @@ class _AnonymousAdoptionsListPageState
                   onTap: () => _navigateToDetails(adoption),
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -517,7 +518,7 @@ class _AnonymousAdoptionsListPageState
                           Color(adoption.colorTheme).withOpacity(0.8),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20.r),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
                           color: Color(adoption.colorTheme).withOpacity(0.3),
@@ -526,22 +527,22 @@ class _AnonymousAdoptionsListPageState
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Ver Missão',
                           style: TextStyle(
-                            fontSize: 12.sp,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(width: 4.w),
+                        SizedBox(width: 4),
                         Icon(
                           Icons.arrow_forward_ios,
                           color: Colors.white,
-                          size: 10.sp,
+                          size: 10,
                         ),
                       ],
                     ),
@@ -604,8 +605,8 @@ class _AnonymousAdoptionsListPageState
 
   Widget _buildCreateMissionFAB() {
     return Container(
-      width: 56.w,
-      height: 56.w,
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
@@ -625,10 +626,10 @@ class _AnonymousAdoptionsListPageState
         },
         backgroundColor: Colors.transparent,
         elevation: 0,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: Colors.white,
-          size: 28.sp,
+          size: 28,
         ),
       ),
     ).animate(onPlay: (controller) => controller.repeat(reverse: true)).scale(

@@ -196,19 +196,23 @@ class AppTheme {
 
   static var errorColor = const Color.fromARGB(255, 104, 21, 34);
 
-  static var accentPeach;
+  static var accentPeach = const Color.fromARGB(255, 71, 67, 68);
 
-  static var accentCoral;
+  static var accentCoral = const Color.fromARGB(255, 146, 39, 55);
 
-  static var cardShadowButtom;
+  static List<BoxShadow> get cardShadowButtom => [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ];
+  // static var textTheme = const Color.fromARGB(255, 208, 204, 205);
 
-  static var textTheme;
+  static var textLight = const Color.fromARGB(255, 165, 153, 155);
+  static var captionText = const Color.fromARGB(255, 33, 32, 32);
 
-  static var textLight;
-
-  static var captionText;
-
-  static var accentGradient;
+  static var accentGradien = const Color.fromARGB(255, 101, 78, 82);
 
   // ============ TEMA LIGHT ============
 

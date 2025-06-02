@@ -1,7 +1,6 @@
 // lib/features/adoption/presentation/widgets/collaboration_steps.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
@@ -12,7 +11,7 @@ class CollaborationSteps extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.w),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -22,10 +21,10 @@ class CollaborationSteps extends StatelessWidget {
             AppTheme.accentCoral.withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: AppTheme.primary.withOpacity(0.1),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -34,12 +33,12 @@ class CollaborationSteps extends StatelessWidget {
           // Title
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.timeline,
                 color: AppTheme.primary,
-                size: 24.sp,
+                size: 24,
               ),
-              SizedBox(width: 12.w),
+              const SizedBox(width: 12),
               Text(
                 'Como funciona o processo',
                 style: AppTheme.headlineSmall.copyWith(
@@ -49,7 +48,7 @@ class CollaborationSteps extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: 24.h),
+          const SizedBox(height: 24),
 
           // Steps
           _buildStep(
@@ -107,8 +106,8 @@ class CollaborationSteps extends StatelessWidget {
           children: [
             // Number circle
             Container(
-              width: 40.w,
-              height: 40.w,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -141,9 +140,9 @@ class CollaborationSteps extends StatelessWidget {
             // Connecting line
             if (!isLast)
               Container(
-                width: 2.w,
-                height: 60.h,
-                margin: EdgeInsets.symmetric(vertical: 8.h),
+                width: 2,
+                height: 60,
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -160,12 +159,12 @@ class CollaborationSteps extends StatelessWidget {
           ],
         ),
 
-        SizedBox(width: 16.w),
+        const SizedBox(width: 16),
 
         // Step content
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(top: 4.h, bottom: isLast ? 0 : 24.h),
+            padding: EdgeInsets.only(top: 4, bottom: isLast ? 0 : 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -175,9 +174,9 @@ class CollaborationSteps extends StatelessWidget {
                     Icon(
                       icon,
                       color: color,
-                      size: 20.sp,
+                      size: 20,
                     ),
-                    SizedBox(width: 8.w),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         title,
@@ -190,7 +189,7 @@ class CollaborationSteps extends StatelessWidget {
                   ],
                 ),
 
-                SizedBox(height: 4.h),
+                const SizedBox(height: 4),
 
                 // Description
                 Text(

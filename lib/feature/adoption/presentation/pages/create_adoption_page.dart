@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
 import 'package:petverse/core/providers/unified_user_state_provider.dart';
@@ -202,18 +201,18 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(
+        icon: const Icon(
           Icons.arrow_back,
-          color: const Color(0xFF0F172A),
-          size: 24.sp,
+          color: Color(0xFF0F172A),
+          size: 24,
         ),
       ),
-      title: Text(
+      title: const Text(
         'Criar Nova Adoção',
         style: TextStyle(
-          fontSize: 20.sp,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF0F172A),
+          color: Color(0xFF0F172A),
         ),
       ),
       actions: [
@@ -222,10 +221,10 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
             ref.invalidate(availableCollaborativePetsProvider);
             ref.invalidate(initializeMockDataProvider);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.refresh,
-            color: const Color(0xFF64748B),
-            size: 24.sp,
+            color: Color(0xFF64748B),
+            size: 24,
           ),
         ),
       ],
@@ -278,33 +277,33 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.block,
-            size: 80.sp,
-            color: const Color(0xFFEF4444),
+            size: 80,
+            color: Color(0xFFEF4444),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Ação Bloqueada',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF64748B),
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
@@ -333,14 +332,14 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
               _buildSelectedPetsPreview(pets, selectedPets),
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (selectedPets.isEmpty) _buildHeader(),
-                    SizedBox(height: selectedPets.isEmpty ? 20.h : 0),
+                    SizedBox(height: selectedPets.isEmpty ? 20 : 0),
                     _buildPetsGrid(pets),
-                    SizedBox(height: 20.h),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -358,34 +357,34 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.warning_outlined,
-            size: 64.sp,
-            color: const Color(0xFFF59E0B),
+            size: 64,
+            color: Color(0xFFF59E0B),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Erro na Inicialização',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Não foi possível inicializar os dados do Firebase. '
               'Verifique sua conexão e tente novamente.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+                fontSize: 14,
+                color: Color(0xFF64748B),
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               ref.invalidate(initializeMockDataProvider);
@@ -404,16 +403,16 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.pets_rounded,
-              color: const Color(0xFF3B82F6),
-              size: 40.sp,
+              color: Color(0xFF3B82F6),
+              size: 40,
             ),
           )
               .animate(onPlay: (controller) => controller.repeat())
@@ -423,23 +422,23 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                 end: const Offset(1.2, 1.2),
                 duration: 1000.ms,
               ),
-          SizedBox(height: 24.h),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'Carregando Pets Disponíveis...',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
+          const SizedBox(height: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Conectando com o Firebase...',
               style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+                fontSize: 14,
+                color: Color(0xFF64748B),
               ),
               textAlign: TextAlign.center,
             ),
@@ -454,30 +453,30 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.pets_outlined,
-            size: 80.sp,
-            color: const Color(0xFF64748B),
+            size: 80,
+            color: Color(0xFF64748B),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Nenhum Pet Disponível',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'Não há pets disponíveis para adoção\ncolaborativa no momento.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF64748B),
+              fontSize: 14,
+              color: Color(0xFF64748B),
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               ref.invalidate(availableCollaborativePetsProvider);
@@ -494,33 +493,33 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
-            size: 80.sp,
-            color: const Color(0xFFEF4444),
+            size: 80,
+            color: Color(0xFFEF4444),
           ),
-          SizedBox(height: 16.h),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             'Erro ao Carregar',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF64748B),
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               ref.invalidate(availableCollaborativePetsProvider);
@@ -534,7 +533,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -542,44 +541,44 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
             const Color(0xFF1E40AF).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF3B82F6).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Icon(
                 Icons.info_outline,
-                color: const Color(0xFF3B82F6),
-                size: 24.sp,
+                color: Color(0xFF3B82F6),
+                size: 24,
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Como funciona?',
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 12),
           Text(
             '1. Escolha exatamente 3 pets que você gostaria de cuidar\n'
             '2. Sua adoção será publicada na lista por 5 dias\n'
             '3. Alguém verá sua adoção e escolherá 1 dos 3 pets\n'
             '4. Vocês começarão a cuidar do pet juntos!',
             style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF374151),
+              fontSize: 14,
+              color: Color(0xFF374151),
               height: 1.6,
             ),
           ),
@@ -596,27 +595,27 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       children: [
         Row(
           children: [
-            Expanded(
+            const Expanded(
               child: Text(
                 'Pets Disponíveis',
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ),
-            SizedBox(width: 8.w),
+            const SizedBox(width: 8),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 '${selectedPets.length}/3',
-                style: TextStyle(
-                  fontSize: 12.sp,
+                style: const TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -624,22 +623,22 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
             ),
           ],
         ),
-        SizedBox(height: 8.h),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'Selecione exatamente 3 pets para criar sua adoção',
           style: TextStyle(
-            fontSize: 14.sp,
-            color: const Color(0xFF64748B),
+            fontSize: 14,
+            color: Color(0xFF64748B),
           ),
         ),
-        SizedBox(height: 16.h),
+        const SizedBox(height: 16),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: 12.w,
-            mainAxisSpacing: 12.h,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
             childAspectRatio: 0.9,
           ),
           itemCount: pets.length,
@@ -661,19 +660,19 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       onTap: canSelect ? () => _togglePetSelection(pet) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.all(12.w),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF10B981).withOpacity(0.1)
               : Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF10B981)
                 : canSelect
                     ? const Color(0xFFE2E8F0)
                     : const Color(0xFFE2E8F0).withOpacity(0.5),
-            width: isSelected ? 2.w : 1.w,
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -691,8 +690,8 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
             Stack(
               children: [
                 Container(
-                  width: 60.w,
-                  height: 60.w,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6).withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -700,26 +699,26 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   child: Center(
                     child: Text(
                       pet.photo,
-                      style: TextStyle(fontSize: 28.sp),
+                      style: const TextStyle(fontSize: 28),
                     ),
                   ),
                 ),
                 if (isSelected)
                   Positioned(
-                    top: -2.h,
-                    right: -2.w,
+                    top: -2,
+                    right: -2,
                     child: Container(
-                      width: 20.w,
-                      height: 20.w,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2.w),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.check,
                         color: Colors.white,
-                        size: 10.sp,
+                        size: 10,
                       ),
                     )
                         .animate(
@@ -733,47 +732,47 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   ),
               ],
             ),
-            SizedBox(height: 8.h),
+            const SizedBox(height: 8),
             Text(
               pet.name,
-              style: TextStyle(
-                fontSize: 14.sp,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
               '${pet.type} • ${pet.age}',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF64748B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 6.h),
+            const SizedBox(height: 6),
             if (pet.traits.isNotEmpty)
               Flexible(
                 child: Wrap(
-                  spacing: 4.w,
-                  runSpacing: 2.h,
+                  spacing: 4,
+                  runSpacing: 2,
                   alignment: WrapAlignment.center,
                   children: pet.traits.take(2).map((trait) {
                     return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFF10B981).withOpacity(0.2)
                             : const Color(0xFF3B82F6).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         trait,
                         style: TextStyle(
-                          fontSize: 9.sp,
+                          fontSize: 9,
                           fontWeight: FontWeight.w500,
                           color: isSelected
                               ? const Color(0xFF10B981)
@@ -787,13 +786,13 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                 ),
               ),
             if (!canSelect && !isSelected)
-              Padding(
-                padding: EdgeInsets.only(top: 4.h),
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Limite atingido',
                   style: TextStyle(
-                    fontSize: 9.sp,
-                    color: const Color(0xFF94A3B8),
+                    fontSize: 9,
+                    color: Color(0xFF94A3B8),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -813,14 +812,14 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
         allPets.where((pet) => selectedPetIds.contains(pet.id)).toList();
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF10B981).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -833,52 +832,52 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.preview,
-                color: const Color(0xFF10B981),
-                size: 18.sp,
+                color: Color(0xFF10B981),
+                size: 18,
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Pets Selecionados',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
           Row(
             children: [
               ...selectedPets.map((pet) {
                 return Expanded(
                   child: Container(
                     margin: EdgeInsets.only(
-                        right: selectedPets.last == pet ? 0 : 8.w),
-                    padding: EdgeInsets.all(8.w),
+                        right: selectedPets.last == pet ? 0 : 8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
                       children: [
                         Text(
                           pet.photo,
-                          style: TextStyle(fontSize: 18.sp),
+                          style: const TextStyle(fontSize: 18),
                         ),
-                        SizedBox(height: 4.h),
+                        const SizedBox(height: 4),
                         Text(
                           pet.name,
-                          style: TextStyle(
-                            fontSize: 10.sp,
+                          style: const TextStyle(
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
+                            color: Color(0xFF0F172A),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -891,30 +890,30 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
               ...List.generate(3 - selectedPets.length, (index) {
                 return Expanded(
                   child: Container(
-                    margin: EdgeInsets.only(left: 8.w),
-                    padding: EdgeInsets.all(8.w),
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE2E8F0).withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: const Color(0xFFE2E8F0),
                         style: BorderStyle.solid,
-                        width: 1.w,
+                        width: 1,
                       ),
                     ),
-                    child: Column(
+                    child: const Column(
                       children: [
                         Icon(
                           Icons.add,
-                          color: const Color(0xFF94A3B8),
-                          size: 18.sp,
+                          color: Color(0xFF94A3B8),
+                          size: 18,
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 4),
                         Text(
                           'Vazio',
                           style: TextStyle(
-                            fontSize: 10.sp,
-                            color: const Color(0xFF94A3B8),
+                            fontSize: 10,
+                            color: Color(0xFF94A3B8),
                           ),
                         ),
                       ],
@@ -926,12 +925,12 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
           ),
           if (selectedPets.length < 3)
             Padding(
-              padding: EdgeInsets.only(top: 8.h),
+              padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'Selecione mais ${3 - selectedPets.length} pet(s)',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: const Color(0xFF64748B),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748B),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -947,7 +946,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
     final isInTransition = ref.watch(isInTransitionProvider);
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -969,7 +968,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   Text(
                     '${selectedPets.length} de 3 pets selecionados',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: canCreate
                           ? const Color(0xFF10B981)
@@ -979,20 +978,21 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   if (!canCreate)
                     Text(
                       'Selecione ${3 - selectedPets.length} pet(s) restante(s)',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF94A3B8),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF94A3B8),
                       ),
                     ),
                 ],
               ),
             ),
-            SizedBox(width: 16.w),
+            const SizedBox(width: 16),
             GestureDetector(
               onTap: canCreate && !isInTransition ? _createAdoption : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 decoration: BoxDecoration(
                   gradient: canCreate && !isInTransition
                       ? const LinearGradient(
@@ -1002,7 +1002,7 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   color: canCreate && !isInTransition
                       ? null
                       : const Color(0xFFE2E8F0),
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: canCreate && !isInTransition
                       ? [
                           BoxShadow(
@@ -1017,28 +1017,28 @@ class _CreateAdoptionPageState extends ConsumerState<CreateAdoptionPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isInTransition) ...[
-                      SizedBox(
-                        width: 16.w,
-                        height: 16.w,
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
                         child: CircularProgressIndicator(
                           color: Colors.white,
-                          strokeWidth: 2.w,
+                          strokeWidth: 2,
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      const SizedBox(width: 8),
                     ] else ...[
                       Icon(
                         Icons.add_circle_outline,
                         color:
                             canCreate ? Colors.white : const Color(0xFF94A3B8),
-                        size: 20.sp,
+                        size: 20,
                       ),
-                      SizedBox(width: 8.w),
+                      const SizedBox(width: 8),
                     ],
                     Text(
                       isInTransition ? 'Criando...' : 'Criar Adoção',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: canCreate && !isInTransition
                             ? Colors.white

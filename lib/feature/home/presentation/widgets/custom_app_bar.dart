@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/core/utils/app_utils.dart';
@@ -11,7 +10,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomHomeAppBar({super.key});
 
   @override
-  Size get preferredSize => Size(double.infinity, 110.h);
+  Size get preferredSize => const Size(double.infinity, 110);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +18,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = authState.userModel;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 45.h, 20.w, 8.h),
+      padding: const EdgeInsets.fromLTRB(20, 45, 20, 8),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -43,12 +42,12 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       context.push('/profile');
                     },
                     child: Container(
-                      width: 40.w,
-                      height: 40.w,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         gradient: AppTheme.primaryGradient,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2.w),
+                        border: Border.all(color: Colors.white, width: 2),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.primary.withOpacity(0.2),
@@ -63,37 +62,37 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                 user!.photoURL!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
+                                  return const Icon(
                                     Icons.person,
                                     color: Colors.white,
-                                    size: 20.sp,
+                                    size: 20,
                                   );
                                 },
                               ),
                             )
-                          : Icon(
+                          : const Icon(
                               Icons.person,
                               color: Colors.white,
-                              size: 20.sp,
+                              size: 20,
                             ),
                     ),
                   ),
                   Positioned(
-                    bottom: -1.h,
-                    right: -1.w,
+                    bottom: -1,
+                    right: -1,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 3, vertical: 1),
                       decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(6.r),
-                        border: Border.all(color: Colors.white, width: 1.w),
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white, width: 1),
                       ),
                       child: Text(
                         '${user?.level ?? 1}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 9.sp,
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -101,7 +100,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                 ],
               ),
-              SizedBox(width: 10.w),
+              const SizedBox(width: 10),
               // Saudação
               Expanded(
                 child: Column(
@@ -109,16 +108,16 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   children: [
                     Text(
                       'Olá, ${user?.displayName ?? 'Jogador'}',
-                      style: TextStyle(
-                        fontSize: 14.sp,
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Pronto para se divertir?',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         color: AppTheme.textSecondary,
                       ),
                     ),
@@ -133,7 +132,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     color: AppTheme.warning,
                     onTap: () => AppUtils.lightImpact(),
                   ),
-                  SizedBox(width: 8.w),
+                  const SizedBox(width: 8),
                   _HeaderActionButton(
                     icon: Icons.notifications_outlined,
                     color: AppTheme.primary,
@@ -143,7 +142,7 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 8),
           // Segunda linha - Recursos do usuário
           Row(
             children: [
@@ -153,21 +152,21 @@ class CustomHomeAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 value: '${user?.level ?? 1}',
                 color: const Color(0xFFEC4899),
               ),
-              SizedBox(width: 6.w),
+              const SizedBox(width: 6),
               ResourceChip(
                 icon: '🪙',
                 label: 'COINS',
                 value: '${user?.coins ?? 0}',
                 color: const Color(0xFFF59E0B),
               ),
-              SizedBox(width: 6.w),
+              const SizedBox(width: 6),
               ResourceChip(
                 icon: '💎',
                 label: 'GEMS',
                 value: '${user?.gems ?? 0}',
                 color: const Color(0xFF06B6D4),
               ),
-              SizedBox(width: 6.w),
+              const SizedBox(width: 6),
               ResourceChip(
                 icon: '🏪',
                 label: 'Loja',
@@ -202,20 +201,20 @@ class _HeaderActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42.w,
-        height: 42.w,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: color.withOpacity(0.2),
-            width: 2.w,
+            width: 2,
           ),
         ),
         child: Icon(
           icon,
           color: color,
-          size: 18.sp,
+          size: 18,
         ),
       ),
     );

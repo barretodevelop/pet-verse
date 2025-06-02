@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
+//
 
 // class ResourceChip extends StatefulWidget {
 //   final String icon;
@@ -101,8 +101,8 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     final defaultPadding = EdgeInsets.symmetric(
-//       horizontal: 12.w,
-//       vertical: 8.h,
+//       horizontal: 12,
+//       vertical: 8,
 //     );
 
 //     Widget child = AnimatedBuilder(
@@ -124,12 +124,12 @@
 //                     )
 //                   : null,
 //               color: widget.showGradient ? null : Colors.white,
-//               borderRadius: BorderRadius.circular(12.r),
+//               borderRadius: BorderRadius.circular(12),
 //               border: Border.all(
 //                 color: widget.isSelected
 //                     ? widget.color
 //                     : widget.color.withOpacity(0.15),
-//                 width: widget.isSelected ? 2.w : 1.w,
+//                 width: widget.isSelected ? 2 : 1,
 //               ),
 //               boxShadow: [
 //                 BoxShadow(
@@ -195,13 +195,13 @@
 //               widget.icon,
 //               style: widget.iconStyle ??
 //                   TextStyle(
-//                     fontSize: 14.sp,
+//                     fontSize: 14,
 //                     color: widget.color,
 //                   ),
 //             ),
 //           ),
 
-//           SizedBox(width: 6.w),
+//           SizedBox(width: 6),
 
 //           // Content
 //           Flexible(
@@ -217,7 +217,7 @@
 //                     style: widget.labelStyle ??
 //                         TextStyle(
 //                           color: widget.color.withOpacity(0.7),
-//                           fontSize: 9.sp,
+//                           fontSize: 9,
 //                           fontWeight: FontWeight.w500,
 //                           letterSpacing: 0.2,
 //                           height: 1.1,
@@ -225,7 +225,7 @@
 //                     maxLines: 1,
 //                     overflow: TextOverflow.ellipsis,
 //                   ),
-//                   SizedBox(height: 1.h),
+//                   SizedBox(height: 1),
 //                 ],
 
 //                 // Value
@@ -236,7 +236,7 @@
 //                         color: widget.isSelected
 //                             ? widget.color
 //                             : AppTheme.textPrimary,
-//                         fontSize: 12.sp,
+//                         fontSize: 12,
 //                         fontWeight: FontWeight.w700,
 //                         height: 1.2,
 //                       ),

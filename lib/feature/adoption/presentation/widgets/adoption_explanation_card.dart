@@ -1,6 +1,5 @@
 // lib/features/adoption/presentation/widgets/adoption_explanation_card.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 
 class AdoptionExplanationCard extends StatelessWidget {
@@ -10,10 +9,10 @@ class AdoptionExplanationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
             color: AppTheme.primary,
@@ -29,18 +28,18 @@ class AdoptionExplanationCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8.w),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.favorite,
                   color: Colors.white,
-                  size: 24.sp,
+                  size: 24,
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Como funciona?',
@@ -52,7 +51,7 @@ class AdoptionExplanationCard extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
 
           // Description
           Text(
@@ -64,15 +63,15 @@ class AdoptionExplanationCard extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
 
           // Benefits
           _buildBenefit('🤝', 'Responsabilidade compartilhada'),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           _buildBenefit('💰', 'Custos divididos'),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           _buildBenefit('❤️', 'Mais amor e atenção para o pet'),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           _buildBenefit('👥', 'Conexão entre pessoas'),
         ],
       ),
@@ -84,9 +83,9 @@ class AdoptionExplanationCard extends StatelessWidget {
       children: [
         Text(
           emoji,
-          style: TextStyle(fontSize: 16.sp),
+          style: TextStyle(fontSize: 16),
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: 12),
         Expanded(
           child: Text(
             text,

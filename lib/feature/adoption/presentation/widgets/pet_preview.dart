@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 import 'package:petverse/core/providers/firebase_adoption_provider.dart';
 
@@ -23,10 +22,10 @@ class PetPreviewWidget extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: Color(adoption.requesterColorTheme).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Color(adoption.requesterColorTheme).withOpacity(0.2),
-          width: 1.w,
+          width: 1,
         ),
       ),
       child: Column(
@@ -34,19 +33,19 @@ class PetPreviewWidget extends ConsumerWidget {
         children: [
           // Header
           Padding(
-            padding: EdgeInsets.all(12.w),
+            padding: const EdgeInsets.all(12),
             child: Row(
               children: [
                 Icon(
                   Icons.pets,
                   color: Color(adoption.requesterColorTheme),
-                  size: 16.sp,
+                  size: 16,
                 ),
-                SizedBox(width: 6.w),
+                const SizedBox(width: 6),
                 Text(
                   'Pets Disponíveis (${adoption.selectedPetIds.length})',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(adoption.requesterColorTheme),
                   ),
@@ -56,7 +55,7 @@ class PetPreviewWidget extends ConsumerWidget {
                   Icon(
                     Icons.touch_app,
                     color: Color(adoption.requesterColorTheme),
-                    size: 14.sp,
+                    size: 14,
                   ),
               ],
             ),
@@ -80,7 +79,7 @@ class PetPreviewWidget extends ConsumerWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(left: 12.w, right: 12.w, bottom: 12.w),
+      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
       child: Column(
         children: [
           // Grid dos pets
@@ -92,7 +91,7 @@ class PetPreviewWidget extends ConsumerWidget {
 
               return Expanded(
                 child: Container(
-                  margin: EdgeInsets.only(right: isLast ? 0 : 8.w),
+                  margin: EdgeInsets.only(right: isLast ? 0 : 8),
                   child: _buildPetCard(pet, adoption, index),
                 ),
               );
@@ -101,17 +100,17 @@ class PetPreviewWidget extends ConsumerWidget {
 
           // Dica de interação
           if (showInteraction) ...[
-            SizedBox(height: 8.h),
+            const SizedBox(height: 8),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Color(adoption.requesterColorTheme).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Toque em um pet para ver detalhes e adotar',
                 style: TextStyle(
-                  fontSize: 10.sp,
+                  fontSize: 10,
                   fontStyle: FontStyle.italic,
                   color: Color(adoption.requesterColorTheme),
                 ),
@@ -129,13 +128,13 @@ class PetPreviewWidget extends ConsumerWidget {
     return GestureDetector(
       onTap: showInteraction ? () => _handlePetTap(pet, adoption) : null,
       child: Container(
-        padding: EdgeInsets.all(8.w),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: Color(adoption.requesterColorTheme).withOpacity(0.3),
-            width: 1.w,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -152,8 +151,8 @@ class PetPreviewWidget extends ConsumerWidget {
             Stack(
               children: [
                 Container(
-                  width: 32.w,
-                  height: 32.w,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: Color(adoption.requesterColorTheme).withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -161,37 +160,37 @@ class PetPreviewWidget extends ConsumerWidget {
                   child: Center(
                     child: Text(
                       pet.photo,
-                      style: TextStyle(fontSize: 16.sp),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
 
                 // Badge de status
                 Positioned(
-                  top: -2.h,
-                  right: -2.w,
+                  top: -2,
+                  right: -2,
                   child: Container(
-                    width: 12.w,
-                    height: 12.w,
+                    width: 12,
+                    height: 12,
                     decoration: BoxDecoration(
                       color: _getPetStatusColor(pet),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.w),
+                      border: Border.all(color: Colors.white, width: 1),
                     ),
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
 
             // Nome do pet
             Text(
               pet.name,
-              style: TextStyle(
-                fontSize: 10.sp,
+              style: const TextStyle(
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -201,16 +200,16 @@ class PetPreviewWidget extends ConsumerWidget {
             // Tipo e nível de cuidado
             Text(
               '${pet.type} • ${pet.careLevel}',
-              style: TextStyle(
-                fontSize: 8.sp,
-                color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontSize: 8,
+                color: Color(0xFF64748B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
 
-            SizedBox(height: 4.h),
+            const SizedBox(height: 4),
 
             // Barras de status
             _buildStatusBars(pet),
@@ -230,20 +229,20 @@ class PetPreviewWidget extends ConsumerWidget {
         Row(
           children: [
             Container(
-              width: 4.w,
-              height: 4.w,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(
                 color: _getHealthColor(pet.health),
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(width: 2.w),
+            const SizedBox(width: 2),
             Expanded(
               child: Container(
-                height: 2.h,
+                height: 2,
                 decoration: BoxDecoration(
                   color: _getHealthColor(pet.health).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(1.r),
+                  borderRadius: BorderRadius.circular(1),
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -251,7 +250,7 @@ class PetPreviewWidget extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: _getHealthColor(pet.health),
-                      borderRadius: BorderRadius.circular(1.r),
+                      borderRadius: BorderRadius.circular(1),
                     ),
                   ),
                 ),
@@ -260,26 +259,26 @@ class PetPreviewWidget extends ConsumerWidget {
           ],
         ),
 
-        SizedBox(height: 2.h),
+        const SizedBox(height: 2),
 
         // Barra de felicidade
         Row(
           children: [
             Container(
-              width: 4.w,
-              height: 4.w,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(
                 color: _getHappinessColor(pet.happiness),
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(width: 2.w),
+            const SizedBox(width: 2),
             Expanded(
               child: Container(
-                height: 2.h,
+                height: 2,
                 decoration: BoxDecoration(
                   color: _getHappinessColor(pet.happiness).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(1.r),
+                  borderRadius: BorderRadius.circular(1),
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -287,7 +286,7 @@ class PetPreviewWidget extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: _getHappinessColor(pet.happiness),
-                      borderRadius: BorderRadius.circular(1.r),
+                      borderRadius: BorderRadius.circular(1),
                     ),
                   ),
                 ),
@@ -301,23 +300,23 @@ class PetPreviewWidget extends ConsumerWidget {
 
   Widget _buildLoadingState(CollaborativeAdoptionRequest adoption) {
     return Padding(
-      padding: EdgeInsets.all(20.w),
+      padding: const EdgeInsets.all(20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 16.w,
-            height: 16.w,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(
-              strokeWidth: 2.w,
+              strokeWidth: 2,
               color: Color(adoption.requesterColorTheme),
             ),
           ),
-          SizedBox(width: 8.w),
+          const SizedBox(width: 8),
           Text(
             'Carregando pets...',
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               color: Color(adoption.requesterColorTheme),
               fontStyle: FontStyle.italic,
             ),
@@ -328,23 +327,23 @@ class PetPreviewWidget extends ConsumerWidget {
   }
 
   Widget _buildErrorState(CollaborativeAdoptionRequest adoption) {
-    return Padding(
-      padding: EdgeInsets.all(12.w),
+    return const Padding(
+      padding: EdgeInsets.all(12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.error_outline,
-            color: const Color(0xFFEF4444),
-            size: 16.sp,
+            color: Color(0xFFEF4444),
+            size: 16,
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               'Erro ao carregar pets',
               style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFFEF4444),
+                fontSize: 12,
+                color: Color(0xFFEF4444),
               ),
               textAlign: TextAlign.center,
             ),
@@ -355,13 +354,13 @@ class PetPreviewWidget extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(CollaborativeAdoptionRequest adoption) {
-    return Padding(
-      padding: EdgeInsets.all(12.w),
+    return const Padding(
+      padding: EdgeInsets.all(12),
       child: Text(
         'Nenhum pet encontrado nesta adoção',
         style: TextStyle(
-          fontSize: 12.sp,
-          color: const Color(0xFF64748B),
+          fontSize: 12,
+          color: Color(0xFF64748B),
           fontStyle: FontStyle.italic,
         ),
         textAlign: TextAlign.center,

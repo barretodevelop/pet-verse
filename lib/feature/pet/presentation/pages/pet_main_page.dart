@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:petverse/core/constants/app_constants.dart';
@@ -53,10 +52,10 @@ class PetMainPage extends ConsumerWidget {
             children: [
               // Pet image
               Container(
-                width: 200.w,
-                height: 200.w,
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100.r),
+                  borderRadius: BorderRadius.circular(100),
                   image: DecorationImage(
                     image: NetworkImage(pet!.imageUrl),
                     fit: BoxFit.cover,
@@ -74,7 +73,7 @@ class PetMainPage extends ConsumerWidget {
                   .scale(duration: 800.ms, curve: Curves.elasticOut)
                   .fadeIn(),
 
-              SizedBox(height: 32.h),
+              SizedBox(height: 32),
 
               // Pet name
               Text(
@@ -88,7 +87,7 @@ class PetMainPage extends ConsumerWidget {
                   .fadeIn(duration: 600.ms, delay: 400.ms)
                   .slideY(begin: 0.3, end: 0),
 
-              SizedBox(height: 16.h),
+              SizedBox(height: 16),
 
               Text(
                 'Seu pet está aqui! Esta seria a tela principal\nonde você cuidaria dele.',
@@ -116,20 +115,20 @@ class PetMainPage extends ConsumerWidget {
         children: [
           Icon(
             Icons.pets,
-            size: 80.sp,
+            size: 80,
             color: AppTheme.textLight,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 24),
           Text(
             'Nenhum pet encontrado',
             style: AppTheme.headlineMedium,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           Text(
             'Você ainda não possui um pet.',
             style: AppTheme.bodyMedium,
           ),
-          SizedBox(height: 32.h),
+          SizedBox(height: 32),
           // ElevatedButton(
           //   onPressed: () => context.go('/need-adoption'),
           //   child: const Text('Adotar um Pet'),
@@ -145,14 +144,14 @@ class PetMainPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             child: Lottie.asset(
               AppConstants.loadingAnimation,
               fit: BoxFit.contain,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           Text(
             'Carregando seu pet...',
             style: AppTheme.bodyMedium,
@@ -169,21 +168,21 @@ class PetMainPage extends ConsumerWidget {
         children: [
           Icon(
             Icons.error_outline,
-            size: 64.sp,
+            size: 64,
             color: AppTheme.error,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           Text(
             'Erro ao carregar pet',
             style: AppTheme.headlineSmall,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           Text(
             error,
             style: AppTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/home'),
             child: const Text('Voltar ao Início'),

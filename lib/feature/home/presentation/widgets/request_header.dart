@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/model/firebase_pet_model.dart';
 
 class RequestHeader extends StatelessWidget {
@@ -12,7 +11,7 @@ class RequestHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -22,10 +21,10 @@ class RequestHeader extends StatelessWidget {
             Color(activeRequest.requesterColorTheme).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: Color(activeRequest.requesterColorTheme).withOpacity(0.3),
-          width: 2.w,
+          width: 2,
         ),
         boxShadow: [
           BoxShadow(
@@ -38,8 +37,8 @@ class RequestHeader extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 80.w,
-            height: 80.w,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -59,7 +58,7 @@ class RequestHeader extends StatelessWidget {
             ),
             child: Icon(
               Icons.schedule,
-              size: 40.sp,
+              size: 40,
               color: Colors.white,
             ),
           )
@@ -68,27 +67,27 @@ class RequestHeader extends StatelessWidget {
                   begin: const Offset(1.0, 1.0),
                   end: const Offset(1.1, 1.1),
                   duration: 2000.ms),
-          SizedBox(height: 20.h),
+          SizedBox(height: 20),
           Text(
             'Solicitação Ativa',
             style: TextStyle(
-              fontSize: 22.sp,
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           Text(
             'Expira em ${activeRequest.daysRemaining.toStringAsFixed(1)} dias',
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
               color: activeRequest.isUrgent
                   ? const Color(0xFFEF4444)
                   : Color(activeRequest.requesterColorTheme),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -110,12 +109,12 @@ class RequestHeader extends StatelessWidget {
   ) {
     return Column(
       children: [
-        Text(emoji, style: TextStyle(fontSize: 20.sp)),
-        SizedBox(height: 4.h),
+        Text(emoji, style: TextStyle(fontSize: 20)),
+        SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
           ),
@@ -123,7 +122,7 @@ class RequestHeader extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             color: const Color(0xFF64748B),
           ),
         ),

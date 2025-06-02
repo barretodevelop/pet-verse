@@ -1,6 +1,5 @@
 // lib/features/adoption/presentation/widgets/action_button_card.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 
 class ActionButtonCard extends StatefulWidget {
@@ -78,12 +77,12 @@ class _ActionButtonCardState extends State<ActionButtonCard>
             onTap: widget.onTap,
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.all(20.w),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: widget.isOutlined ? Colors.white : widget.color,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(16),
                 border: widget.isOutlined
-                    ? Border.all(color: widget.color, width: 2.w)
+                    ? Border.all(color: widget.color, width: 2)
                     : null,
                 boxShadow: [
                   BoxShadow(
@@ -97,21 +96,21 @@ class _ActionButtonCardState extends State<ActionButtonCard>
                 children: [
                   // Icon
                   Container(
-                    padding: EdgeInsets.all(12.w),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: widget.isOutlined
                           ? widget.color.withOpacity(0.1)
                           : Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       widget.icon,
                       color: widget.isOutlined ? widget.color : Colors.white,
-                      size: 24.sp,
+                      size: 24,
                     ),
                   ),
 
-                  SizedBox(width: 16.w),
+                  const SizedBox(width: 16),
 
                   // Text content
                   Expanded(
@@ -126,7 +125,7 @@ class _ActionButtonCardState extends State<ActionButtonCard>
                                 widget.isOutlined ? widget.color : Colors.white,
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        const SizedBox(height: 4),
                         Text(
                           widget.description,
                           style: AppTheme.bodySmall.copyWith(
@@ -145,7 +144,7 @@ class _ActionButtonCardState extends State<ActionButtonCard>
                     color: widget.isOutlined
                         ? widget.color
                         : Colors.white.withOpacity(0.7),
-                    size: 16.sp,
+                    size: 16,
                   ),
                 ],
               ),

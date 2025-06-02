@@ -1,7 +1,6 @@
 // lib/features/home/presentation/widgets/loading_shimmer.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -12,16 +11,17 @@ class LoadingShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding.w),
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
       child: Column(
         children: [
           // Card shimmer 1
           _buildShimmerCard(),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Card shimmer 2
           _buildShimmerCard(),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
 
           // Card shimmer 3
           _buildShimmerCard(),
@@ -33,10 +33,10 @@ class LoadingShimmer extends StatelessWidget {
   Widget _buildShimmerCard() {
     return Container(
       width: double.infinity,
-      height: 80.h,
+      height: 80,
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
             color: AppTheme.primary,
@@ -46,13 +46,13 @@ class LoadingShimmer extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(16.w),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             // Circle shimmer
             Container(
-              width: 48.w,
-              height: 48.w,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: AppTheme.textLight.withOpacity(0.3),
                 shape: BoxShape.circle,
@@ -62,7 +62,7 @@ class LoadingShimmer extends StatelessWidget {
                   color: Colors.white.withOpacity(0.8),
                 ),
 
-            SizedBox(width: 16.w),
+            const SizedBox(width: 16),
 
             // Text shimmers
             Expanded(
@@ -73,10 +73,10 @@ class LoadingShimmer extends StatelessWidget {
                   // Title shimmer
                   Container(
                     width: double.infinity,
-                    height: 16.h,
+                    height: 16,
                     decoration: BoxDecoration(
                       color: AppTheme.textLight.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   )
                       .animate(onPlay: (controller) => controller.repeat())
@@ -85,15 +85,15 @@ class LoadingShimmer extends StatelessWidget {
                         color: Colors.white.withOpacity(0.8),
                       ),
 
-                  SizedBox(height: 8.h),
+                  const SizedBox(height: 8),
 
                   // Subtitle shimmer
                   Container(
-                    width: 200.w,
-                    height: 12.h,
+                    width: 200,
+                    height: 12,
                     decoration: BoxDecoration(
                       color: AppTheme.textLight.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(6.r),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                   )
                       .animate(onPlay: (controller) => controller.repeat())

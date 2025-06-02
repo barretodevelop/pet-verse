@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/core/model/user_model.dart';
 import 'package:petverse/core/utils/app_utils.dart';
@@ -61,18 +60,18 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
   // CORREÇÃO: Remover o Expanded desnecessário
   Widget _buildAdoptPetCard() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
         child: Column(
           children: [
             // Card informativo - altura controlada
             Container(
               width: double.infinity,
-              constraints: BoxConstraints(
-                minHeight: 120.h,
-                maxHeight: 210.h,
+              constraints: const BoxConstraints(
+                minHeight: 120,
+                maxHeight: 210,
               ),
-              padding: EdgeInsets.all(20.w),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
@@ -84,10 +83,10 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                   ],
                   stops: [0.0, 0.6, 1.0],
                 ),
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: const Color(0xFFCBD5E1).withOpacity(0.3),
-                  width: 1.w,
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -109,8 +108,8 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                 children: [
                   // Ícone do pet - centralizado
                   Container(
-                    width: 80.w,
-                    height: 80.w,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
@@ -131,9 +130,9 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.pets_rounded,
-                      size: 30.sp,
+                      size: 30,
                       color: Colors.white,
                     ),
                   )
@@ -151,15 +150,15 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                         color: Colors.white.withOpacity(0.4),
                       ),
 
-                  SizedBox(height: 12.h),
+                  const SizedBox(height: 12),
 
                   // Título
-                  Text(
+                  const Text(
                     'Adote um Pet',
                     style: TextStyle(
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                       letterSpacing: -0.5,
                     ),
                   )
@@ -167,15 +166,15 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                       .fadeIn(duration: 800.ms)
                       .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic),
 
-                  SizedBox(height: 6.h),
+                  const SizedBox(height: 6),
 
                   // Descrição
-                  Text(
+                  const Text(
                     'Encontre seu companheiro perfeito\ne transforme duas vidas para sempre',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFF64748B),
+                      fontSize: 13,
+                      color: Color(0xFF64748B),
                       height: 1.4,
                       fontWeight: FontWeight.w400,
                     ),
@@ -190,7 +189,7 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                 .fadeIn(duration: 1000.ms)
                 .slideY(begin: -0.2, end: 0, curve: Curves.easeOutCubic),
 
-            SizedBox(height: 16.h),
+            const SizedBox(height: 16),
 
             // Botões - altura controlada
             ...List.generate(3, (index) {
@@ -245,13 +244,13 @@ class _AdoptionOptionsWidgetState extends ConsumerState<AdoptionOptionsWidget>
                     gradient: buttons[index]['gradient'] as Gradient,
                     delay: 700 + (index * 150),
                   ),
-                  if (index < 2) SizedBox(height: 10.h),
+                  if (index < 2) const SizedBox(height: 10),
                 ],
               );
             }),
 
             // Espaço final para evitar overlap com bottom navigator
-            SizedBox(height: 20.h),
+            const SizedBox(height: 20),
           ],
         ),
       ),

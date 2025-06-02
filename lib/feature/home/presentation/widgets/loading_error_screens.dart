@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 import 'package:petverse/core/utils/app_utils.dart';
@@ -17,18 +16,18 @@ class LoadingScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 60.w,
-              height: 60.w,
+              width: 60,
+              height: 60,
               child: CircularProgressIndicator(
                 color: AppTheme.primary,
-                strokeWidth: 3.w,
+                strokeWidth: 3,
               ),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 16),
             Text(
               'Carregando...',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
             ),
@@ -61,28 +60,28 @@ class ErrorScreen extends ConsumerWidget {
           children: [
             Icon(
               Icons.error_outline,
-              size: 64.sp,
+              size: 64,
               color: AppTheme.error,
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 16),
             Text(
               'Algo deu errado',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 8),
             Text(
               message,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 16),
             if (showLoginButton)
               ElevatedButton(
                 onPressed: () {

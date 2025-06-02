@@ -1,7 +1,6 @@
 // lib/features/home/presentation/widgets/entry_animation.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petverse/core/theme/app_theme.dart';
 
 // lib/features/home/presentation/widgets/entry_animation.dart
@@ -84,8 +83,8 @@ class _EntryAnimationState extends State<EntryAnimation>
               child: Transform.rotate(
                 angle: _rotateAnimation.value * 0.1, // Subtle rotation
                 child: Container(
-                  width: 80.w,
-                  height: 80.w,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -107,7 +106,7 @@ class _EntryAnimationState extends State<EntryAnimation>
                   child: Icon(
                     widget.icon,
                     color: Colors.white,
-                    size: 40.sp,
+                    size: 40,
                   ),
                 ),
               ),
@@ -115,7 +114,7 @@ class _EntryAnimationState extends State<EntryAnimation>
           },
         ),
 
-        SizedBox(height: 32.h),
+        const SizedBox(height: 32),
 
         // Message
         Text(
@@ -130,11 +129,11 @@ class _EntryAnimationState extends State<EntryAnimation>
             .fadeIn(duration: 600.ms, delay: 200.ms)
             .slideY(begin: 0.3, end: 0),
 
-        SizedBox(height: 24.h),
+        const SizedBox(height: 24),
 
         // Progress indicator
         SizedBox(
-          width: 200.w,
+          width: 200,
           child: LinearProgressIndicator(
             backgroundColor: widget.color.withOpacity(0.2),
             valueColor: AlwaysStoppedAnimation<Color>(widget.color),
