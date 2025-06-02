@@ -471,3 +471,7 @@ Funcionalidades Principais do Aplicativo:
 
 [Listar as funcionalidades essenciais do aplicativo. Ex: Cadastro e Login de Usuário(use dados mocado de uma classe principal onde ficara todos os dados mock da aplicao  ),  Notificações, ] porequanto quero ver o resulto do layout desse inicio crie splash --> primeiravez onbording --> senao home direto nessa home eu quero um appbar com o avatar d usuario actions butons pro perfil e alertas a tela de perfil deve permitir mudar o thema , na home crie aguns cards de alguns textos e botoes , a validacao inicial e o design quando acertamos as paleta de cores e o estilo comecamos o desenvolvimento.
  
+
+
+
+ 
