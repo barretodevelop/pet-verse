@@ -17,10 +17,11 @@ dependencies:
   cloud_firestore: ^4.13.6
   firebase_analytics: ^10.7.4
   firebase_crashlytics: ^3.4.9
-  firebase_messaging: ^14.7.10
+  # firebase_messaging: ^14.7.10
 
   # Google Sign In
   google_sign_in: ^6.2.1
+  # sign_in_with_apple: ^5.0.0 # Adicionado para login com Apple
 
   # State Management
   flutter_riverpod: ^2.4.9
@@ -34,6 +35,7 @@ dependencies:
   google_fonts: ^6.1.0
   lottie: ^2.7.0
   cached_network_image: ^3.3.0
+  flutter_svg: ^2.0.9 # Para ícones SVG, se necessário
 
   # Storage
   shared_preferences: ^2.2.2

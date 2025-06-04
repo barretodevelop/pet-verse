@@ -56,5 +56,15 @@ flutter {
 }
  dependencies {
     // Adicione esta linha para o desugaring das bibliotecas principais 
-     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // Import the Firebase BoM (Bill of Materials)
+    // This will manage the versions of Firebase libraries
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0")) // Use the latest stable version
+
+    // Add the dependencies for the Firebase products you want to use
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-auth-ktx") // For Firebase Authentication with Kotlin extensions
+    implementation("com.google.firebase:firebase-analytics-ktx") // For Firebase Analytics with Kotlin extensions
+    // implementation("com.google.firebase:firebase-firestore-ktx") // Add if you use Firestore
 }
