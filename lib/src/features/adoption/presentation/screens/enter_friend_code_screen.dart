@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/src/core/navigation/app_routes.dart';
+import 'package:petverse/src/core/utils/snackbar_utils.dart'; // Import snackbar utility
 import 'package:petverse/src/features/adoption/presentation/providers/adoption_providers.dart';
 
 class EnterFriendCodeScreen extends ConsumerStatefulWidget {
@@ -44,17 +45,15 @@ class _EnterFriendCodeScreenState extends ConsumerState<EnterFriendCodeScreen> {
                 pathParameters: {'requestId': adoptionRequest.id});
           } else if (previous is AsyncLoading && adoptionRequest == null) {
             // Search completed, but no request found
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text(
-                      'Nenhuma solicitação encontrada com este código ou ela não está mais pendente.')),
-            );
+            showAppSnackBar(context,
+                'Nenhuma solicitação encontrada com este código ou ela não está mais pendente.',
+                type: SnackBarType.info);
           }
         },
         error: (e, s) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao buscar solicitação: $e')),
-          );
+          showAppSnackBar(
+              context, 'Erro ao buscar solicitação: ${e.toString()}',
+              type: SnackBarType.error);
           // Optionally, clear the field on error too
           // _codeController.clear();
         },

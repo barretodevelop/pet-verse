@@ -182,4 +182,13 @@ class AdoptionRepository {
     // Executar a escrita em lote
     await batch.commit();
   }
+
+  // Rejeita uma solicitação de adoção pendente
+  Future<void> rejectAdoptionRequest(String requestId) async {
+    final requestRef = _firestore.collection('adoptionRequests').doc(requestId);
+    // Atualiza o status da solicitação para 'cancelled' ou 'rejected'
+    await requestRef.update({
+      'status': 'cancelled', // Ou 'rejected', defina um padrão
+    });
+  }
 }

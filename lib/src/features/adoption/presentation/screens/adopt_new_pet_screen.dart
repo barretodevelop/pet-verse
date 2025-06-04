@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/src/core/utils/snackbar_utils.dart'; // Import snackbar utility
 import 'package:petverse/src/features/adoption/presentation/providers/adoption_providers.dart'; // Importar o novo provider
 import 'package:petverse/src/features/adoption/presentation/providers/available_pets_provider.dart'; // Importa o provider
 import 'package:petverse/src/features/adoption/presentation/widgets/available_pet_card.dart'; // Importa o novo widget de card
@@ -31,11 +32,9 @@ class _AdoptNewPetScreenState extends ConsumerState<AdoptNewPetScreen> {
           _selectedPetIds.add(petId);
         } else {
           // Opcional: Mostrar uma mensagem de que o limite foi atingido
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Você pode selecionar no máximo $_maxSelectionCount pets.')),
-          );
+          showAppSnackBar(context,
+              'Você pode selecionar no máximo $_maxSelectionCount pets.',
+              type: SnackBarType.info);
         }
       }
     });
@@ -71,20 +70,18 @@ class _AdoptNewPetScreenState extends ConsumerState<AdoptNewPetScreen> {
               friendCode == null &&
               _isPublicAdoption) {
             // Sucesso para adoção pública
-            ScaffoldMessenger.of(context)
-                .showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Sua solicitação de adoção foi publicada!')),
-                )
-                .closed
-                .then((_) =>
-                    Navigator.of(context).pop()); // Volta para tela anterior
+            showAppSnackBar(context, 'Sua solicitação de adoção foi publicada!',
+                type: SnackBarType.success);
+            // Aguardar um pouco para o usuário ver a snackbar antes de popar
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (context.mounted) Navigator.of(context).pop();
+            });
             setState(() => _selectedPetIds.clear()); // Limpa a seleção
           }
         },
-        error: (e, s) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao criar solicitação: $e'))),
+        error: (e, s) => showAppSnackBar(
+            context, 'Erro ao criar solicitação: ${e.toString()}',
+            type: SnackBarType.error),
         loading: () {/* Opcional: mostrar indicador de carregamento global */},
       );
     });

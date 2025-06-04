@@ -20,13 +20,29 @@ class MyPetsScreen extends ConsumerWidget {
       body: adoptedPetsAsyncValue.when(
         data: (pets) {
           if (pets.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Você ainda não adotou nenhum pet.\nExplore o feed ou inicie uma adoção!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons
+                          .pets_outlined, // Ou um ícone mais específico se preferir
+                      size: 80,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.6),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Você ainda não adotou nenhum pet.\nExplore o feed ou inicie uma adoção!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ),
               ),
             );

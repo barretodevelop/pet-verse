@@ -101,3 +101,25 @@ class FindAdoptionByCodeNotifier extends AsyncNotifier<AdoptionRequest?> {
         () => adoptionRepository.getAdoptionRequestByFriendCode(friendCode));
   }
 }
+
+// Notifier para gerenciar o estado da operação de rejeição de adoção
+final adoptionRejectionNotifierProvider =
+    AsyncNotifierProvider<AdoptionRejectionNotifier, void>(() {
+  return AdoptionRejectionNotifier();
+});
+
+class AdoptionRejectionNotifier extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {
+    // Nada para carregar inicialmente
+  }
+
+  // Método para rejeitar a adoção
+  Future<void> reject(String requestId) async {
+    state = const AsyncLoading(); // Define o estado como carregando
+    final adoptionRepository = ref.read(adoptionRepositoryProvider);
+    state = await AsyncValue.guard(() =>
+        adoptionRepository.rejectAdoptionRequest(
+            requestId)); // Executa a operação e atualiza o estado
+  }
+}

@@ -20,8 +20,26 @@ class FeedScreen extends ConsumerWidget {
       body: availablePetsAsyncValue.when(
         data: (pets) {
           if (pets.isEmpty) {
-            return const Center(
-              child: Text('Nenhum pet disponível para adoção no momento.'),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search_off_outlined, // Ícone para "nada encontrado"
+                      size: 80,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.6),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Nenhum pet disponível para adoção no momento.'),
+                  ],
+                ),
+              ),
             );
           }
           return ListView.builder(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/src/core/navigation/app_routes.dart';
+import 'package:petverse/src/core/utils/snackbar_utils.dart'; // Import snackbar utility
 import 'package:petverse/src/features/adoption/presentation/providers/adoption_providers.dart';
 import 'package:petverse/src/features/adoption/presentation/widgets/confirm_adoption_button.dart';
 import 'package:petverse/src/features/adoption/presentation/widgets/pet_option_card.dart';
@@ -22,9 +23,8 @@ class PendingRequestDetailsScreen extends ConsumerWidget {
         (previous, next) {
       next.when(
         data: (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Adoção confirmada com sucesso!')),
-          );
+          showAppSnackBar(context, 'Adoção confirmada com sucesso!',
+              type: SnackBarType.success);
 
           // Invalida o provider que verifica se o usuário tem pet para forçar a re-busca
           // Isso garante que o router tenha o status mais recente para redirecionamento
@@ -34,9 +34,8 @@ class PendingRequestDetailsScreen extends ConsumerWidget {
           context.go(AppRoutes.home);
         },
         error: (e, s) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao confirmar adoção: $e')),
-          );
+          showAppSnackBar(context, 'Erro ao confirmar adoção: ${e.toString()}',
+              type: SnackBarType.error);
         },
         loading: () {
           // Opcional: Mostrar um indicador de carregamento global se necessário
