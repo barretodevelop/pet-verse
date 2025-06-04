@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart'; // Importar o pacote
+import 'package:go_router/go_router.dart'; // Importar GoRouter
+import 'package:petverse/src/core/navigation/app_routes.dart'; // Importar AppRoutes
 import 'package:petverse/src/features/adoption/presentation/providers/available_pets_provider.dart'; // Usaremos o mesmo provider da AdoptNewPetScreen
 import 'package:petverse/src/features/pets/presentation/widgets/pet_display_card.dart'; // Um novo card genérico para pets
 
@@ -42,19 +45,30 @@ class FeedScreen extends ConsumerWidget {
               ),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: pets.length,
-            itemBuilder: (context, index) {
-              final pet = pets[index];
-              return PetDisplayCard(
-                pet: pet,
-                onTap: () {
-                  // TODO: Navegar para uma tela de detalhes do pet
-                  debugPrint('Pet ${pet.name} clicado no Feed!');
-                },
-              );
-            },
+          return AnimationLimiter(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: pets.length,
+              itemBuilder: (context, index) {
+                final pet = pets[index];
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(milliseconds: 375),
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: PetDisplayCard(
+                        pet: pet,
+                        onTap: () {
+                          // Navegar para a tela de detalhes do pet, passando o objeto pet
+                          context.pushNamed(AppRoutes.petDetails, extra: pet);
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petverse/src/core/navigation/app_routes.dart';
-import 'package:petverse/src/core/utils/snackbar_utils.dart'; // Import the snackbar utility
+import 'package:petverse/src/core/utils/snackbar_utils.dart'; // Importar o utilitário de SnackBar
 import 'package:petverse/src/features/adoption/presentation/providers/adoption_providers.dart'; // For confirmation/rejection notifiers
 import 'package:petverse/src/features/auth/presentation/providers/user_data_provider.dart'; // For userHasPetProvider invalidation
 import 'package:petverse/src/features/pets/data/models/pet_model.dart';
@@ -34,6 +34,8 @@ class PetDetailsBottomSheet extends ConsumerWidget {
           context.go(AppRoutes.home); // Navigate to home
         },
         error: (e, s) {
+          // Dismiss the bottom sheet (optional, maybe keep it open to show error)
+          // Navigator.of(context).pop();
           showAppSnackBar(context, 'Erro ao confirmar adoção: ${e.toString()}',
               type: SnackBarType.error);
         },
@@ -42,22 +44,22 @@ class PetDetailsBottomSheet extends ConsumerWidget {
         },
       );
     });
-
     // Listen to rejection state
     ref.listen<AsyncValue<void>>(adoptionRejectionNotifierProvider,
         (previous, next) {
       next.when(
-          data: (_) {
-            // Rejeição bem-sucedida. O listener em PendingAdoptionsScreen
-            // irá fechar o bottom sheet e mostrar a snackbar.
-            // Não fazemos nada aqui para evitar duplicidade.
-          },
-          loading: () {
-            // Opcional: Lidar com o estado de carregamento da rejeição
-          },
-          error: (e, s) => showAppSnackBar(
-              context, 'Erro ao rejeitar solicitação: ${e.toString()}',
-              type: SnackBarType.error));
+        data: (_) {
+          // Rejection successful.
+          // The listener in PendingAdoptionsScreen will handle dismissing the sheet
+          // and showing the primary snackbar.
+        },
+        error: (e, s) => showAppSnackBar(
+            context, 'Erro ao rejeitar solicitação: ${e.toString()}',
+            type: SnackBarType.error),
+        loading: () {
+          // Loading state for rejection is handled by the button's progress indicator
+        },
+      );
     });
 
     final confirmationState = ref.watch(adoptionConfirmationNotifierProvider);
@@ -69,18 +71,22 @@ class PetDetailsBottomSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min, // Wrap content
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: CachedNetworkImage(
-              imageUrl: pet.imageUrl,
-              height: 200, // Adjust height
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator())),
-              errorWidget: (context, url, error) => const SizedBox(
-                  height: 200,
-                  child: Center(child: Icon(Icons.pets, size: 60))),
+          Hero(
+            // Adicionar Hero widget
+            tag: 'pet-image-${pet.id}-$requestId', // Mesma tag usada no card
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: CachedNetworkImage(
+                imageUrl: pet.imageUrl,
+                height: 200, // Adjust height
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const SizedBox(
+                    height: 200,
+                    child: Center(child: CircularProgressIndicator())),
+                errorWidget: (context, url, error) => const SizedBox(
+                    height: 200,
+                    child: Center(child: Icon(Icons.pets, size: 60))),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -105,12 +111,7 @@ class PetDetailsBottomSheet extends ConsumerWidget {
                         .confirm(requestId, pet.id);
                   },
             child: confirmationState.isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2.0, color: Colors.white),
-                  )
+                ? const CircularProgressIndicator()
                 : const Text('Aceitar Solicitação'),
           ),
           const SizedBox(height: 8),
@@ -125,12 +126,7 @@ class PetDetailsBottomSheet extends ConsumerWidget {
                         .reject(requestId);
                   },
             child: rejectionState.isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2.0), // Default color for outlined button
-                  )
+                ? const CircularProgressIndicator()
                 : const Text('Recusar Solicitação'),
           ),
         ],

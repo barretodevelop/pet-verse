@@ -36,6 +36,7 @@ dependencies:
   lottie: ^2.7.0
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.9 # Para ícones SVG, se necessário
+  flutter_staggered_animations: ^1.1.1
 
   # Storage
   shared_preferences: ^2.2.2

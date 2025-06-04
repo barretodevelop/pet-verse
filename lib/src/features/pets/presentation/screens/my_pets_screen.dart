@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/src/features/pets/presentation/providers/user_adopted_pets_provider.dart'; // Importa o provider de pets adotados
 import 'package:petverse/src/features/pets/presentation/widgets/adopted_pet_card.dart'; // Importa o widget do card de pet adotado
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart'; // Importar o pacote
 
 class MyPetsScreen extends ConsumerWidget {
   // Mudar para ConsumerWidget
@@ -47,13 +48,24 @@ class MyPetsScreen extends ConsumerWidget {
               ),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: pets.length,
-            itemBuilder: (context, index) {
-              final pet = pets[index];
-              return AdoptedPetCard(pet: pet);
-            },
+          return AnimationLimiter(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: pets.length,
+              itemBuilder: (context, index) {
+                final pet = pets[index];
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(milliseconds: 375),
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: AdoptedPetCard(pet: pet),
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

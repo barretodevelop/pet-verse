@@ -24,16 +24,20 @@ class PetDisplayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CachedNetworkImage(
-              imageUrl: pet.imageUrl,
-              height: 180, // Altura da imagem
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const SizedBox(
-                  height: 180,
-                  child: Center(child: CircularProgressIndicator())),
-              errorWidget: (context, url, error) => const SizedBox(
-                  height: 180,
-                  child: Center(child: Icon(Icons.pets, size: 50))),
+            Hero(
+              // Adicionar Hero widget
+              tag: 'feed-pet-image-${pet.id}', // Tag única para a animação
+              child: CachedNetworkImage(
+                imageUrl: pet.imageUrl,
+                height: 180, // Altura da imagem
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const SizedBox(
+                    height: 180,
+                    child: Center(child: CircularProgressIndicator())),
+                errorWidget: (context, url, error) => const SizedBox(
+                    height: 180,
+                    child: Center(child: Icon(Icons.pets, size: 50))),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petverse/src/features/adoption/data/models/adoption_request_model.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // Para a imagem do pet
 import 'package:petverse/src/features/pets/data/models/pet_model.dart';
 
 // A card to display a public adoption request in the list
@@ -54,19 +55,30 @@ class PublicAdoptionRequestCard extends StatelessWidget {
                             pet, request.id), // Call the onTap callback
                         child: Column(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.network(
-                                // Use Image.network for simplicity here, or CachedNetworkImage
-                                pet.imageUrl,
-                                width: 80, // Adjust size as needed
-                                height: 80,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const SizedBox(
-                                        width: 80,
-                                        height: 80,
-                                        child: Icon(Icons.pets)),
+                            Hero(
+                              // Adicionar Hero widget
+                              tag:
+                                  'pet-image-${pet.id}-${request.id}', // Tag única para a animação
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: CachedNetworkImage(
+                                  // Usar CachedNetworkImage
+                                  imageUrl: pet.imageUrl,
+                                  width: 80, // Adjust size as needed
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const SizedBox(
+                                      width: 80,
+                                      height: 80,
+                                      child: Center(
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2.0))),
+                                  errorWidget: (context, url, error) =>
+                                      const SizedBox(
+                                          width: 80,
+                                          height: 80,
+                                          child: Icon(Icons.pets, size: 40)),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 4),

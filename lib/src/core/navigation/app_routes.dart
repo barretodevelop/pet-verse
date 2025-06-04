@@ -18,4 +18,5 @@ class AppRoutes {
       '/adoption/code'; // Corrigido: Rota para inserir código de amigo
   static const String pendingRequestDetails =
       '/adoption/pending/:requestId'; // Nova rota para detalhes da solicitação
+  static const String petDetails = '/pet-details'; // Nova rota
 }

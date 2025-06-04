@@ -15,6 +15,8 @@ import 'package:petverse/src/features/auth/presentation/providers/auth_state_pro
 import 'package:petverse/src/features/auth/presentation/providers/user_data_provider.dart'; // Import the new provider
 import 'package:petverse/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:petverse/src/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:petverse/src/features/pets/data/models/pet_model.dart'; // Import Pet model
+import 'package:petverse/src/features/pets/presentation/screens/pet_details_screen.dart'; // Import PetDetailsScreen
 import 'package:petverse/src/features/settings/presentation/screens/settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -80,30 +82,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         // E tentando acessar Login, OU Splash (e userHasPet já carregou)
         if (onLogin || (onSplash && !userHasPetAV.isLoading)) {
           debugPrint(
-              '[GoRouter Redirect] Logado. Em Login/Splash (e userHasPet carregado). Redirecionando baseado em hasPet ($hasPet).');
-          return hasPet ? AppRoutes.home : AppRoutes.adoptionInitial;
+              '[GoRouter Redirect] Logado. Em Login/Splash (e userHasPet carregado). Redirecionando para Home.');
+          return AppRoutes.home; // Sempre redireciona para a Home aqui.
         }
 
-        // Se logado, NÃO tem pet (e userHasPet já carregou)
-        if (!hasPet && !userHasPetAV.isLoading) {
-          final allowedAdoptionFlowRoutes = [
-            AppRoutes.adoptionInitial,
-            AppRoutes.pendingAdoptions,
-            AppRoutes.adoptNewPet,
-            AppRoutes.enterFriendCode,
-            AppRoutes.pendingRequestDetails,
-          ];
-          // E não estiver em uma rota permitida do fluxo de adoção
-          if (!allowedAdoptionFlowRoutes.contains(currentLocation)) {
-            debugPrint(
-                '[GoRouter Redirect] Logado, sem pet (carregado), não no fluxo de adoção. Redirecionando para ${AppRoutes.adoptionInitial}. Vindo de: $currentLocation');
-            return AppRoutes.adoptionInitial;
-          }
+        // Se logado, TEM pet, e está tentando acessar a tela inicial de adoção,
+        // redirecione para a home.
+        if (hasPet &&
+            !userHasPetAV.isLoading &&
+            currentLocation == AppRoutes.adoptionInitial) {
+          debugPrint(
+              '[GoRouter Redirect] Logado, com pet, tentando acessar AdoptionInitial. Redirecionando para Home.');
+          return AppRoutes.home;
         }
-        // Se logado e TEM pet, e está tentando acessar uma rota do fluxo de adoção inicial,
-        // você pode querer redirecioná-lo para AppRoutes.home.
-        // Ex: if (hasPet && !userHasPetAV.isLoading && allowedAdoptionFlowRoutes.contains(currentLocation) && currentLocation != AppRoutes.pendingRequestDetails) { return AppRoutes.home; }
-        // Por enquanto, essa regra não está implementada para manter simples.
+
+        // Se o usuário está logado, NÃO tem pet, e está na HomeScreen (currentLocation == AppRoutes.home),
+        // a HomeScreen (definida em lib/screens/home_screen.dart) internamente já mostrará
+        // AdoptionInitialScreen na aba correta. Não precisamos de um redirecionamento explícito
+        // do GoRouter para AppRoutes.adoptionInitial aqui, pois isso tiraria o usuário da
+        // HomeScreen (com BottomNavigationBar).
       }
       // Nenhum redirecionamento necessário.
       debugPrint(
@@ -123,7 +120,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.home, // '/'
-        builder: (context, state) => HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.petDetails, // Nomear a rota para facilitar a navegação
+        path: AppRoutes.petDetails, // '/pet-details'
+        builder: (context, state) {
+          final pet = state.extra as Pet; // Receber o objeto Pet como extra
+          return PetDetailsScreen(pet: pet);
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,
