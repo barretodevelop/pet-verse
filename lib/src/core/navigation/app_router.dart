@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petverse/screens/home_screen.dart';
 import 'package:petverse/src/core/navigation/app_routes.dart';
 import 'package:petverse/src/features/adoption/presentation/screens/adopt_new_pet_screen.dart';
 import 'package:petverse/src/features/adoption/presentation/screens/adoption_initial_screen.dart';
@@ -11,9 +12,9 @@ import 'package:petverse/src/features/adoption/presentation/screens/enter_friend
 import 'package:petverse/src/features/adoption/presentation/screens/pending_adoptions_screen.dart';
 import 'package:petverse/src/features/adoption/presentation/screens/pending_request_details_screen.dart'; // Importe a nova tela
 import 'package:petverse/src/features/auth/presentation/providers/auth_state_provider.dart';
+import 'package:petverse/src/features/auth/presentation/providers/user_data_provider.dart'; // Import the new provider
 import 'package:petverse/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:petverse/src/features/onboarding/presentation/screens/splash_screen.dart';
-import 'package:petverse/src/features/pets/presentation/screens/home_screen.dart';
 import 'package:petverse/src/features/settings/presentation/screens/settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -22,57 +23,95 @@ final GlobalKey<NavigatorState> _rootNavigatorKey =
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
-
-  // TODO: Criar um provider ou serviço para verificar se o usuário logado tem um pet
-  // Por enquanto, vamos simular que o usuário não tem pet para testar o redirecionamento
-  const bool userHasPet =
-      false; // <-- SIMULAÇÃO: Mude para true quando tiver a lógica real
+  // Watch the userHasPetProvider. This will be an AsyncValue<bool>.
+  final userHasPetAsyncValue = ref.watch(userHasPetProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true, // Útil para depuração
-    // TODO: Refinar a lógica de redirecionamento para considerar o estado do pet
     redirect: (BuildContext context, GoRouterState state) {
-      final bool loggedIn = authState.status == AuthStatus.authenticated;
-      final bool loggingIn = state.matchedLocation == AppRoutes.login;
-      final bool splashing = state.matchedLocation == AppRoutes.splash;
+      final authStatus = authState.status;
+      final userHasPetAV =
+          userHasPetAsyncValue; // Alias para facilitar a leitura
 
-      // Se não estiver logado e não estiver na tela de login ou splash, vá para login.
-      if (!loggedIn && !loggingIn && !splashing) {
+      final bool loggedIn = authStatus == AuthStatus.authenticated;
+      final String currentLocation = state.matchedLocation;
+
+      final bool onLogin = currentLocation == AppRoutes.login;
+      final bool onSplash = currentLocation == AppRoutes.splash;
+
+      debugPrint(
+          '[GoRouter Redirect] Current: $currentLocation, LoggedIn: $loggedIn, UserHasPet Loading: ${userHasPetAV.isLoading}, UserHasPet Error: ${userHasPetAV.hasError}, UserHasPet Value: ${userHasPetAV.valueOrNull}');
+
+      // 1. Se userHasPetProvider está carregando e o usuário está logado,
+      //    e não estamos já na SplashScreen, redirecione para a SplashScreen.
+      //    Isso força o app a esperar que o status do pet seja carregado.
+      if (loggedIn && userHasPetAV.isLoading && !onSplash) {
+        debugPrint(
+            '[GoRouter Redirect] Usuário logado e userHasPet carregando. Redirecionando para Splash. Vindo de: $currentLocation');
+        return AppRoutes.splash;
+      }
+
+      // 2. Se userHasPetProvider teve um erro e o usuário está logado,
+      //    e não estamos na SplashScreen ou LoginScreen, redirecione para Login.
+      //    Isso pode ajudar a re-autenticar ou limpar um estado problemático.
+      //    Considere uma tela de erro dedicada para uma melhor UX.
+      if (loggedIn && userHasPetAV.hasError && !onSplash && !onLogin) {
+        debugPrint(
+            '[GoRouter Redirect] userHasPet teve erro. Redirecionando para Login. Vindo de: $currentLocation');
+        // Opcional: Deslogar o usuário aqui antes de redirecionar
+        // ref.read(authRepositoryProvider).signOut();
         return AppRoutes.login;
       }
 
-      // Se estiver logado...
-      if (loggedIn && loggingIn) {
-        // ...e tentando acessar a tela de login, redirecione com base se tem pet ou não.
-        return userHasPet ? AppRoutes.home : AppRoutes.adoptionInitial;
+      // A partir daqui, userHasPetAV não está mais carregando (ou o carregamento não impede a decisão)
+      final bool hasPet = userHasPetAV.asData?.value ?? false;
+
+      // Se não estiver logado e não estiver na tela de login ou splash, vá para login.
+      if (!loggedIn && !onLogin && !onSplash) {
+        debugPrint(
+            '[GoRouter Redirect] Não logado. Redirecionando para Login. Vindo de: $currentLocation');
+        return AppRoutes.login;
       }
 
-      // Se estiver logado e não tiver pet...
-      if (loggedIn && !userHasPet) {
-        // Lista de rotas permitidas dentro do fluxo de adoção inicial
-        // O usuário pode navegar entre estas telas mesmo sem ter um pet ainda.
-        final allowedAdoptionFlowRoutes = [
-          AppRoutes.adoptionInitial,
-          AppRoutes.pendingAdoptions,
-          AppRoutes.adoptNewPet,
-          AppRoutes.enterFriendCode,
-          AppRoutes.pendingRequestDetails, // Adicione a nova rota permitida
-          // Adicione aqui outras sub-rotas do fluxo de adoção, se houver.
-        ];
-
-        // ...e não estiver em uma das telas do fluxo de adoção, vá para a tela inicial de adoção.
-        if (!allowedAdoptionFlowRoutes.contains(state.matchedLocation)) {
-          return AppRoutes.adoptionInitial;
+      // Se estiver logado:
+      if (loggedIn) {
+        // E tentando acessar Login, OU Splash (e userHasPet já carregou)
+        if (onLogin || (onSplash && !userHasPetAV.isLoading)) {
+          debugPrint(
+              '[GoRouter Redirect] Logado. Em Login/Splash (e userHasPet carregado). Redirecionando baseado em hasPet ($hasPet).');
+          return hasPet ? AppRoutes.home : AppRoutes.adoptionInitial;
         }
-      }
 
+        // Se logado, NÃO tem pet (e userHasPet já carregou)
+        if (!hasPet && !userHasPetAV.isLoading) {
+          final allowedAdoptionFlowRoutes = [
+            AppRoutes.adoptionInitial,
+            AppRoutes.pendingAdoptions,
+            AppRoutes.adoptNewPet,
+            AppRoutes.enterFriendCode,
+            AppRoutes.pendingRequestDetails,
+          ];
+          // E não estiver em uma rota permitida do fluxo de adoção
+          if (!allowedAdoptionFlowRoutes.contains(currentLocation)) {
+            debugPrint(
+                '[GoRouter Redirect] Logado, sem pet (carregado), não no fluxo de adoção. Redirecionando para ${AppRoutes.adoptionInitial}. Vindo de: $currentLocation');
+            return AppRoutes.adoptionInitial;
+          }
+        }
+        // Se logado e TEM pet, e está tentando acessar uma rota do fluxo de adoção inicial,
+        // você pode querer redirecioná-lo para AppRoutes.home.
+        // Ex: if (hasPet && !userHasPetAV.isLoading && allowedAdoptionFlowRoutes.contains(currentLocation) && currentLocation != AppRoutes.pendingRequestDetails) { return AppRoutes.home; }
+        // Por enquanto, essa regra não está implementada para manter simples.
+      }
       // Nenhum redirecionamento necessário.
+      debugPrint(
+          '[GoRouter Redirect] Nenhuma condição de redirecionamento atendida para $currentLocation.');
       return null;
     },
     refreshListenable: GoRouterRefreshStream(fb_auth.FirebaseAuth.instance
-        .authStateChanges()), // Para reavaliar redirects
+        .authStateChanges()), // Simplificado: GoRouter irá reavaliar o redirect quando os providers observados mudarem.
     routes: <RouteBase>[
       GoRoute(
         path: AppRoutes.splash,
@@ -84,7 +123,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.home, // '/'
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => HomeScreen(),
       ),
       GoRoute(
         path: AppRoutes.settings,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petverse/src/core/navigation/app_routes.dart';
 import 'package:petverse/src/features/adoption/presentation/providers/adoption_providers.dart';
 import 'package:petverse/src/features/adoption/presentation/widgets/confirm_adoption_button.dart';
 import 'package:petverse/src/features/adoption/presentation/widgets/pet_option_card.dart';
+import 'package:petverse/src/features/auth/presentation/providers/user_data_provider.dart'; // Importar o userHasPetProvider
 
 class PendingRequestDetailsScreen extends ConsumerWidget {
   final String requestId; // Para receber o ID da rota
@@ -14,6 +17,33 @@ class PendingRequestDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Ouvir o estado do notifier de confirmação de adoção
+    ref.listen<AsyncValue<void>>(adoptionConfirmationNotifierProvider,
+        (previous, next) {
+      next.when(
+        data: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Adoção confirmada com sucesso!')),
+          );
+
+          // Invalida o provider que verifica se o usuário tem pet para forçar a re-busca
+          // Isso garante que o router tenha o status mais recente para redirecionamento
+          ref.invalidate(userHasPetProvider);
+
+          // Navega para a Home. O router agora usará o status atualizado de userHasPet.
+          context.go(AppRoutes.home);
+        },
+        error: (e, s) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao confirmar adoção: $e')),
+          );
+        },
+        loading: () {
+          // Opcional: Mostrar um indicador de carregamento global se necessário
+        },
+      );
+    });
+
     // Observa o provider que busca a solicitação pelo ID
     final requestAsyncValue = ref.watch(adoptionRequestByIdProvider(requestId));
 

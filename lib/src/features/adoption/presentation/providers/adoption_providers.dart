@@ -59,3 +59,45 @@ class AdoptionConfirmationNotifier extends AsyncNotifier<void> {
         requestId, selectedPetId)); // Executa a operação e atualiza o estado
   }
 }
+
+// Notifier para gerenciar o estado da operação de criação de solicitação de adoção
+// O estado AsyncValue<String?> conterá o friendCode em caso de sucesso, ou null.
+final createAdoptionRequestNotifierProvider =
+    AsyncNotifierProvider<CreateAdoptionRequestNotifier, String?>(() {
+  return CreateAdoptionRequestNotifier();
+});
+
+class CreateAdoptionRequestNotifier extends AsyncNotifier<String?> {
+  @override
+  Future<String?> build() async {
+    return null; // Nenhum código de amigo inicialmente
+  }
+
+  Future<void> createRequest(List<String> petOptionIds,
+      {required bool isPublic}) async {
+    state = const AsyncLoading();
+    final adoptionRepository = ref.read(adoptionRepositoryProvider);
+    state = await AsyncValue.guard(() => adoptionRepository
+        .createAdoptionRequest(petOptionIds, isPublic: isPublic));
+  }
+}
+
+// Notifier para gerenciar o estado da busca de uma solicitação de adoção por código de amigo
+final findAdoptionByCodeNotifierProvider =
+    AsyncNotifierProvider<FindAdoptionByCodeNotifier, AdoptionRequest?>(() {
+  return FindAdoptionByCodeNotifier();
+});
+
+class FindAdoptionByCodeNotifier extends AsyncNotifier<AdoptionRequest?> {
+  @override
+  Future<AdoptionRequest?> build() async {
+    return null; // Nenhuma solicitação encontrada inicialmente
+  }
+
+  Future<void> findRequest(String friendCode) async {
+    state = const AsyncLoading();
+    final adoptionRepository = ref.read(adoptionRepositoryProvider);
+    state = await AsyncValue.guard(
+        () => adoptionRepository.getAdoptionRequestByFriendCode(friendCode));
+  }
+}

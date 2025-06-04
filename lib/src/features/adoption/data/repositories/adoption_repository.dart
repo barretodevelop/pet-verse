@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/src/features/adoption/data/models/adoption_request_model.dart';
 import 'package:petverse/src/features/auth/data/repositories/auth_repository.dart';
 import 'package:petverse/src/features/pets/data/models/pet_model.dart'; // Corrigido: Import Pet model do local correto
+import 'package:uuid/uuid.dart'; // Importar o pacote uuid
 
 final adoptionRepositoryProvider = Provider<AdoptionRepository>((ref) {
   final authRepository =
@@ -21,11 +22,12 @@ class AdoptionRepository {
   AdoptionRepository(this._firestore, this._authRepository);
 
   // Busca todas as solicitações de adoção com status 'pending'
-  // Busca todas as solicitações de adoção com status 'pending'
+  // E que são públicas
   Stream<List<AdoptionRequest>> getPendingAdoptionRequests() {
     return _firestore
         .collection('adoptionRequests') // Nome da coleção no Firestore
         .where('status', isEqualTo: 'pending')
+        .where('isPublic', isEqualTo: true) // Apenas solicitações públicas
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
@@ -35,9 +37,6 @@ class AdoptionRepository {
     });
   }
 
-  // TODO: Adicionar métodos para criar solicitação, juntar-se a uma solicitação, etc.
-
-  // Busca uma solicitação de adoção específica pelo ID
   Future<AdoptionRequest?> getAdoptionRequestById(String requestId) async {
     final doc =
         await _firestore.collection('adoptionRequests').doc(requestId).get();
@@ -45,6 +44,23 @@ class AdoptionRepository {
       return AdoptionRequest.fromFirestore(doc);
     }
     return null; // Retorna null se o documento não for encontrado
+  }
+
+  // Busca uma solicitação de adoção pendente pelo código de amigo
+  Future<AdoptionRequest?> getAdoptionRequestByFriendCode(
+      String friendCode) async {
+    final querySnapshot = await _firestore
+        .collection('adoptionRequests')
+        .where('friendCode', isEqualTo: friendCode)
+        .where('status', isEqualTo: 'pending') // Apenas solicitações pendentes
+        .limit(
+            1) // Espera-se que o código de amigo seja único para solicitações pendentes
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return AdoptionRequest.fromFirestore(querySnapshot.docs.first);
+    }
+    return null; // Retorna null se nenhuma solicitação for encontrada
   }
 
   // Busca uma lista de pets pelos seus IDs
@@ -58,6 +74,47 @@ class AdoptionRepository {
         .map((doc) => Pet.fromFirestore(doc))
         .toList()
         .cast<Pet>();
+  }
+
+  // Busca todos os pets que NÃO foram adotados
+  Stream<List<Pet>> getAvailablePets() {
+    return _firestore
+        .collection('pets')
+        .where('isAdopted', isEqualTo: false) // Filtra por pets não adotados
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Pet.fromFirestore(doc)).toList();
+    });
+  }
+
+  // Cria uma nova solicitação de adoção
+  Future<String?> createAdoptionRequest(List<String> petOptionIds,
+      {required bool isPublic}) async {
+    final User? currentUser = _authRepository.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('Usuário não autenticado para criar solicitação.');
+    }
+    if (petOptionIds.length != 3) {
+      throw Exception('É necessário selecionar exatamente 3 pets.');
+    }
+
+    String? friendCode;
+    if (!isPublic) {
+      // Gerar um código de amigo simples e único (parte do UUID) somente se não for pública
+      friendCode = const Uuid().v4().substring(0, 8).toUpperCase();
+    }
+
+    final newRequestRef = _firestore.collection('adoptionRequests').doc();
+    await newRequestRef.set({
+      'id': newRequestRef.id, // Opcional, mas útil ter o ID no documento
+      'initiatorUserId': currentUser.uid,
+      'petOptionsIds': petOptionIds,
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+      'friendCode': friendCode, // Será null se isPublic for true
+      'isPublic': isPublic, // Novo campo para indicar visibilidade
+    });
+    return friendCode; // Retorna o código de amigo gerado (ou null se pública)
   }
 
   // Confirma a adoção de um pet para uma solicitação pendente

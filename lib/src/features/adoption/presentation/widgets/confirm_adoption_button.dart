@@ -12,19 +12,29 @@ class ConfirmAdoptionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Observa o ID do pet selecionado para esta solicitação para habilitar/desabilitar o botão
     final selectedPetId = ref.watch(selectedPetIdProvider(requestId));
+    // Observa o estado do notifier de confirmação para mostrar o estado de carregamento
+    final confirmationState = ref.watch(adoptionConfirmationNotifierProvider);
 
     return ElevatedButton(
-      onPressed: selectedPetId == null
-          ? null
-          : () {
-              // TODO: Implementar lógica de confirmação de adoção
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Confirmar adoção do pet $selectedPetId para solicitação $requestId')),
-              );
-            },
-      child: const Text('Confirmar Adoção'),
+      // Habilita o botão apenas se um pet estiver selecionado E não estiver carregando
+      onPressed: (selectedPetId != null && !confirmationState.isLoading)
+          ? () {
+              // Chama o método confirm do notifier
+              ref
+                  .read(adoptionConfirmationNotifierProvider.notifier)
+                  .confirm(requestId, selectedPetId);
+            }
+          : null,
+      child: confirmationState.isLoading
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white, // Ou a cor que se adequar ao seu tema
+                strokeWidth: 2.0,
+              ),
+            )
+          : const Text('Confirmar Adoção'),
     );
   }
 }
