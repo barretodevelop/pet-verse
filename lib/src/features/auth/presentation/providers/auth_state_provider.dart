@@ -1,3 +1,6 @@
+// lib/src/features/auth/presentation/providers/auth_state_provider.dart
+// CORREÇÃO - Provider de auth mais estável para evitar problemas de navegação
+
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
@@ -10,8 +13,8 @@ enum AuthStatus { unknown, authenticated, unauthenticated }
 
 class AuthState {
   final AuthStatus status;
-  final AppUser? user; // Nosso modelo AppUser
-  final fb_auth.User? firebaseUser; // O User do Firebase Auth
+  final AppUser? user;
+  final fb_auth.User? firebaseUser;
 
   AuthState({
     this.status = AuthStatus.unknown,
@@ -30,6 +33,9 @@ class AuthState {
       firebaseUser: firebaseUser ?? this.firebaseUser,
     );
   }
+
+  @override
+  String toString() => 'AuthState(status: $status, user: ${user?.username})';
 }
 
 final authStateProvider =
@@ -43,51 +49,105 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 class AuthStateNotifier extends StateNotifier<AuthState> {
   final Ref _ref;
-  late final StreamSubscription<fb_auth.User?> _authStateChangesSubscription;
+  StreamSubscription<fb_auth.User?>? _authStateChangesSubscription;
 
   AuthStateNotifier(this._ref) : super(AuthState()) {
-    final authRepository = _ref.read(authRepositoryProvider);
-    _authStateChangesSubscription =
-        authRepository.authStateChanges.listen((fbUser) {
-      debugPrint('Auth state changed: ${fbUser?.uid}');
+    _initializeAuthListener();
+  }
+
+  void _initializeAuthListener() {
+    try {
+      final authRepository = _ref.read(authRepositoryProvider);
+
+      _authStateChangesSubscription = authRepository.authStateChanges.listen(
+        (fbUser) {
+          _handleAuthStateChange(fbUser);
+        },
+        onError: (error) {
+          debugPrint('🚨 [AuthStateNotifier] Erro no listener: $error');
+          // Em caso de erro, definir como não autenticado
+          state = AuthState(status: AuthStatus.unauthenticated);
+        },
+      );
+
+      debugPrint('✅ [AuthStateNotifier] Listener de auth inicializado');
+    } catch (e) {
+      debugPrint('🚨 [AuthStateNotifier] Erro ao inicializar listener: $e');
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
+  }
+
+  void _handleAuthStateChange(fb_auth.User? fbUser) {
+    try {
+      debugPrint('🔄 [AuthStateNotifier] Auth mudou: ${fbUser?.uid ?? "null"}');
+
       if (fbUser == null) {
+        debugPrint('❌ [AuthStateNotifier] Usuário deslogado');
         state = AuthState(status: AuthStatus.unauthenticated);
       } else {
-        // TODO: Buscar/criar AppUser no Firestore aqui na FASE 1
+        debugPrint('✅ [AuthStateNotifier] Usuário logado: ${fbUser.uid}');
+
         final appUser = AppUser(
-            id: fbUser.uid,
-            username: fbUser.displayName ?? 'Usuário',
-            email: fbUser.email,
-            photoUrl: fbUser.photoURL);
+          id: fbUser.uid,
+          username: fbUser.displayName ?? 'Usuário',
+          email: fbUser.email,
+          photoUrl: fbUser.photoURL,
+        );
+
         state = AuthState(
-            status: AuthStatus.authenticated,
-            user: appUser,
-            firebaseUser: fbUser);
+          status: AuthStatus.authenticated,
+          user: appUser,
+          firebaseUser: fbUser,
+        );
       }
-    });
+    } catch (e) {
+      debugPrint(
+          '🚨 [AuthStateNotifier] Erro ao processar mudança de auth: $e');
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
   }
 
   Future<void> signInWithGoogle() async {
     try {
+      debugPrint('🚀 [AuthStateNotifier] Iniciando login com Google...');
+
       await _ref.read(authRepositoryProvider).signInWithGoogle();
-      // O listener _authStateChangesSubscription cuidará de atualizar o estado
-      // para authenticated se o login for bem-sucedido.
+
+      debugPrint(
+          '✅ [AuthStateNotifier] Login iniciado - aguardando resposta do listener');
+      // O listener _authStateChangesSubscription vai atualizar o estado automaticamente
     } catch (e) {
-      // O AuthState não muda, mas podemos querer mostrar um erro na UI.
-      // Isso pode ser tratado na LoginScreen observando um estado de erro.
-      debugPrint("Erro no signInWithGoogle (notifier): $e");
-      // Re-throw a exceção para que a UI possa capturá-la e mostrar uma mensagem.
+      debugPrint('🚨 [AuthStateNotifier] Erro no signInWithGoogle: $e');
+      // Re-throw para que a UI possa mostrar o erro
       rethrow;
     }
   }
 
   Future<void> signOut() async {
-    await _ref.read(authRepositoryProvider).signOut();
+    try {
+      debugPrint('🚪 [AuthStateNotifier] Fazendo logout...');
+
+      await _ref.read(authRepositoryProvider).signOut();
+
+      debugPrint('✅ [AuthStateNotifier] Logout realizado');
+      // O listener vai atualizar o estado automaticamente
+    } catch (e) {
+      debugPrint('🚨 [AuthStateNotifier] Erro no signOut: $e');
+      // Força estado de não autenticado mesmo em caso de erro
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
   }
 
   @override
   void dispose() {
-    _authStateChangesSubscription.cancel();
+    debugPrint('🗑️ [AuthStateNotifier] Disposing...');
+    _authStateChangesSubscription?.cancel();
     super.dispose();
   }
 }
+
+// Provider helper para verificar se está logado (simplificado)
+final isLoggedInProvider = Provider<bool>((ref) {
+  final authState = ref.watch(authStateProvider);
+  return authState.status == AuthStatus.authenticated;
+});
