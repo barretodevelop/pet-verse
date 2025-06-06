@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../network/secure_http_client.dart';
 import '../validation/input_validator.dart';
+import 'social_auth_service.dart';
 
 /// Estados de autenticação
 enum AuthState {
@@ -36,6 +37,7 @@ class AuthResult {
   final DateTime? expiresAt;
   final Map<String, dynamic>? userData;
   final String? error;
+  final AuthType? authType;
 
   const AuthResult({
     required this.success,
@@ -44,6 +46,7 @@ class AuthResult {
     this.expiresAt,
     this.userData,
     this.error,
+    this.authType,
   });
 
   factory AuthResult.success({
@@ -51,6 +54,7 @@ class AuthResult {
     String? refreshToken,
     DateTime? expiresAt,
     Map<String, dynamic>? userData,
+    AuthType? authType,
   }) {
     return AuthResult(
       success: true,
@@ -58,13 +62,15 @@ class AuthResult {
       refreshToken: refreshToken,
       expiresAt: expiresAt,
       userData: userData,
+      authType: authType,
     );
   }
 
-  factory AuthResult.failure(String error) {
+  factory AuthResult.failure(String error, {AuthType? authType}) {
     return AuthResult(
       success: false,
       error: error,
+      authType: authType,
     );
   }
 }
@@ -150,136 +156,191 @@ class AuthMiddleware {
 
   final SecureHttpClient _httpClient;
   final AppConfig _config;
+  final SocialAuthService _socialAuthService;
 
   AuthMiddleware({
     required SecureHttpClient httpClient,
     required AppConfig config,
+    required SocialAuthService socialAuthService,
   })  : _httpClient = httpClient,
-        _config = config;
+        _config = config,
+        _socialAuthService = socialAuthService;
 
   // ========================================
-  // MÉTODOS DE AUTENTICAÇÃO
+  // MÉTODOS DE AUTENTICAÇÃO SOCIAL
   // ========================================
 
-  /// Login com Google
+  /// Login com Google usando o SocialAuthService
   Future<AuthResult> loginWithGoogle({
-    required String idToken,
+    String? deviceId,
+    bool silentSignIn = false,
+  }) async {
+    try {
+      _logger.d('Starting Google authentication...');
+
+      // Usa o SocialAuthService para autenticação
+      final socialResult = await _socialAuthService.signInWithGoogle(
+        silentSignIn: silentSignIn,
+      );
+
+      if (!socialResult.success) {
+        return AuthResult.failure(
+          socialResult.error ?? 'Falha na autenticação Google',
+          authType: AuthType.google,
+        );
+      }
+
+      if (!socialResult.hasValidAuthData) {
+        return AuthResult.failure(
+          'Dados de autenticação incompletos',
+          authType: AuthType.google,
+        );
+      }
+
+      // Envia dados para o backend para validação e criação de sessão
+      final backendResult = await _authenticateWithBackend(
+        provider: 'google',
+        idToken: socialResult.idToken!,
+        accessToken: socialResult.accessToken,
+        email: socialResult.email,
+        displayName: socialResult.displayName,
+        photoUrl: socialResult.photoUrl,
+        deviceId: deviceId,
+      );
+
+      return backendResult.copyWith(authType: AuthType.google);
+    } catch (e, stackTrace) {
+      _logger.e('Google login failed', error: e, stackTrace: stackTrace);
+      return AuthResult.failure(
+        'Erro interno na autenticação Google: $e',
+        authType: AuthType.google,
+      );
+    }
+  }
+
+  /// Login com Apple usando o SocialAuthService
+  Future<AuthResult> loginWithApple({
     String? deviceId,
   }) async {
     try {
-      // Valida o token
-      final tokenValidation = InputValidator.validate(
-        idToken,
-        ValidationType.generic,
-        maxLength: 2048,
-      );
+      _logger.d('Starting Apple authentication...');
 
-      if (!tokenValidation.isValid) {
-        return AuthResult.failure('Token inválido');
+      // Usa o SocialAuthService para autenticação
+      final socialResult = await _socialAuthService.signInWithApple();
+
+      if (!socialResult.success) {
+        return AuthResult.failure(
+          socialResult.error ?? 'Falha na autenticação Apple',
+          authType: AuthType.apple,
+        );
       }
 
+      if (!socialResult.hasValidAuthData) {
+        return AuthResult.failure(
+          'Dados de autenticação incompletos',
+          authType: AuthType.apple,
+        );
+      }
+
+      // Envia dados para o backend para validação e criação de sessão
+      final backendResult = await _authenticateWithBackend(
+        provider: 'apple',
+        idToken: socialResult.identityToken!,
+        authorizationCode: socialResult.authorizationCode,
+        email: socialResult.email,
+        displayName: socialResult.displayName,
+        deviceId: deviceId,
+      );
+
+      return backendResult.copyWith(authType: AuthType.apple);
+    } catch (e, stackTrace) {
+      _logger.e('Apple login failed', error: e, stackTrace: stackTrace);
+      return AuthResult.failure(
+        'Erro interno na autenticação Apple: $e',
+        authType: AuthType.apple,
+      );
+    }
+  }
+
+  /// Autentica com o backend usando dados sociais
+  Future<AuthResult> _authenticateWithBackend({
+    required String provider,
+    String? idToken,
+    String? accessToken,
+    String? authorizationCode,
+    String? email,
+    String? displayName,
+    String? photoUrl,
+    String? deviceId,
+  }) async {
+    try {
       // Prepara dados para o backend
       final requestData = {
-        'idToken': tokenValidation.sanitizedValue,
-        'provider': 'google',
+        'provider': provider,
+        if (idToken != null) 'idToken': idToken,
+        if (accessToken != null) 'accessToken': accessToken,
+        if (authorizationCode != null) 'authorizationCode': authorizationCode,
+        if (email != null) 'email': email,
+        if (displayName != null) 'displayName': displayName,
+        if (photoUrl != null) 'photoUrl': photoUrl,
         if (deviceId != null) 'deviceId': deviceId,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'platform': _getPlatformInfo(),
       };
 
       // Adiciona assinatura para verificação
       final signature = _generateRequestSignature(requestData);
       requestData['signature'] = signature;
 
+      // Envia para o backend
       final response = await _httpClient.backendRequest<Map<String, dynamic>>(
-        '/auth/google',
+        '/api/v1/auth/social',
         method: 'POST',
         data: requestData,
       );
 
       return _processAuthResponse(response.data);
     } catch (e, stackTrace) {
-      _logger.e('Google login failed', error: e, stackTrace: stackTrace);
-      return AuthResult.failure('Falha no login com Google: $e');
+      _logger.e('Backend authentication failed',
+          error: e, stackTrace: stackTrace);
+      return AuthResult.failure('Falha na validação do servidor: $e');
     }
   }
 
-  /// Login com Apple
-  Future<AuthResult> loginWithApple({
-    required String authorizationCode,
-    required String identityToken,
-    String? deviceId,
-  }) async {
-    try {
-      // Valida tokens
-      final codeValidation = InputValidator.validate(
-        authorizationCode,
-        ValidationType.generic,
-        maxLength: 1024,
-      );
-
-      final tokenValidation = InputValidator.validate(
-        identityToken,
-        ValidationType.generic,
-        maxLength: 2048,
-      );
-
-      if (!codeValidation.isValid || !tokenValidation.isValid) {
-        return AuthResult.failure('Tokens inválidos');
-      }
-
-      final requestData = {
-        'authorizationCode': codeValidation.sanitizedValue,
-        'identityToken': tokenValidation.sanitizedValue,
-        'provider': 'apple',
-        if (deviceId != null) 'deviceId': deviceId,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      };
-
-      final signature = _generateRequestSignature(requestData);
-      requestData['signature'] = signature;
-
-      final response = await _httpClient.backendRequest<Map<String, dynamic>>(
-        '/auth/apple',
-        method: 'POST',
-        data: requestData,
-      );
-
-      return _processAuthResponse(response.data);
-    } catch (e, stackTrace) {
-      _logger.e('Apple login failed', error: e, stackTrace: stackTrace);
-      return AuthResult.failure('Falha no login com Apple: $e');
-    }
-  }
-
-  /// Login como convidado
+  /// Login como convidado (mantido da implementação anterior)
   Future<AuthResult> loginAsGuest({String? deviceId}) async {
     try {
       final guestId = _generateGuestId();
 
       final requestData = {
-        'guestId': guestId,
         'provider': 'guest',
+        'guestId': guestId,
         if (deviceId != null) 'deviceId': deviceId,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'platform': _getPlatformInfo(),
       };
 
       final signature = _generateRequestSignature(requestData);
       requestData['signature'] = signature;
 
       final response = await _httpClient.backendRequest<Map<String, dynamic>>(
-        '/auth/guest',
+        '/api/v1/auth/guest',
         method: 'POST',
         data: requestData,
       );
 
-      return _processAuthResponse(response.data);
+      final result = _processAuthResponse(response.data);
+      return result.copyWith(authType: AuthType.guest);
     } catch (e, stackTrace) {
       _logger.e('Guest login failed', error: e, stackTrace: stackTrace);
-      return AuthResult.failure('Falha no login como convidado: $e');
+      return AuthResult.failure(
+        'Falha no login como convidado: $e',
+        authType: AuthType.guest,
+      );
     }
   }
 
-  /// Login com email/senha
+  /// Login com email/senha (mantido da implementação anterior)
   Future<AuthResult> loginWithEmail({
     required String email,
     required String password,
@@ -290,38 +351,49 @@ class AuthMiddleware {
       final emailValidation =
           InputValidator.validate(email, ValidationType.email);
       if (!emailValidation.isValid) {
-        return AuthResult.failure('Email inválido');
+        return AuthResult.failure(
+          'Email inválido',
+          authType: AuthType.email,
+        );
       }
 
-      // Valida senha (básico - não logamos a senha)
+      // Valida senha
       if (password.length < 6) {
-        return AuthResult.failure('Senha deve ter pelo menos 6 caracteres');
+        return AuthResult.failure(
+          'Senha deve ter pelo menos 6 caracteres',
+          authType: AuthType.email,
+        );
       }
 
       // Hash da senha para envio seguro
       final passwordHash = _hashPassword(password);
 
       final requestData = {
+        'provider': 'email',
         'email': emailValidation.sanitizedValue,
         'passwordHash': passwordHash,
-        'provider': 'email',
         if (deviceId != null) 'deviceId': deviceId,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'platform': _getPlatformInfo(),
       };
 
       final signature = _generateRequestSignature(requestData);
       requestData['signature'] = signature;
 
       final response = await _httpClient.backendRequest<Map<String, dynamic>>(
-        '/auth/email',
+        '/api/v1/auth/email',
         method: 'POST',
         data: requestData,
       );
 
-      return _processAuthResponse(response.data);
+      final result = _processAuthResponse(response.data);
+      return result.copyWith(authType: AuthType.email);
     } catch (e, stackTrace) {
       _logger.e('Email login failed', error: e, stackTrace: stackTrace);
-      return AuthResult.failure('Falha no login com email: $e');
+      return AuthResult.failure(
+        'Falha no login com email: $e',
+        authType: AuthType.email,
+      );
     }
   }
 
@@ -357,6 +429,7 @@ class AuthMiddleware {
       final sessionData = {
         'expiresAt': authResult.expiresAt?.toIso8601String(),
         'loginTime': DateTime.now().toIso8601String(),
+        'authType': authResult.authType?.name,
         'deviceFingerprint': await _generateDeviceFingerprint(),
       };
 
@@ -364,7 +437,7 @@ class AuthMiddleware {
       final encryptedSession = _encryptData(sessionJson);
       await prefs.setString(_sessionKey, encryptedSession);
 
-      _logger.i('Auth data saved securely');
+      _logger.i('Auth data saved securely for ${authResult.authType?.name}');
     } catch (e, stackTrace) {
       _logger.e('Failed to save auth data', error: e, stackTrace: stackTrace);
     }
@@ -437,13 +510,14 @@ class AuthMiddleware {
       final requestData = {
         'refreshToken': refreshToken,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'platform': _getPlatformInfo(),
       };
 
       final signature = _generateRequestSignature(requestData);
       requestData['signature'] = signature;
 
       final response = await _httpClient.backendRequest<Map<String, dynamic>>(
-        '/auth/refresh',
+        '/api/v1/auth/refresh',
         method: 'POST',
         data: requestData,
       );
@@ -461,23 +535,26 @@ class AuthMiddleware {
     }
   }
 
-  /// Logout
+  /// Logout completo
   Future<void> logout() async {
     try {
       // Tenta invalidar token no servidor
       try {
         await _httpClient.backendRequest<void>(
-          '/auth/logout',
+          '/api/v1/auth/logout',
           method: 'POST',
         );
       } catch (e) {
         _logger.w('Failed to logout on server: $e');
       }
 
+      // Logout dos serviços sociais
+      await _socialAuthService.signOutAll();
+
       // Limpa dados locais sempre
       await clearAuthData();
 
-      _logger.i('User logged out');
+      _logger.i('User logged out completely');
     } catch (e, stackTrace) {
       _logger.e('Logout failed', error: e, stackTrace: stackTrace);
     }
@@ -524,11 +601,7 @@ class AuthMiddleware {
     final sortedKeys = data.keys.toList()..sort();
     final dataString = sortedKeys.map((key) => '$key=${data[key]}').join('&');
 
-    // Em produção, use uma chave secreta real
-    final secretKey = _config.isProduction
-        ? _config.getString('AUTH_SECRET_KEY', 'default-secret')
-        : 'dev-secret-key';
-
+    final secretKey = _config.getString('AUTH_SECRET_KEY') ?? 'default-secret';
     final bytes = utf8.encode('$dataString:$secretKey');
     final digest = sha256.convert(bytes);
 
@@ -546,8 +619,7 @@ class AuthMiddleware {
 
   /// Hash da senha
   String _hashPassword(String password) {
-    // Em produção, use bcrypt ou similar
-    const salt = 'petadote_salt_2024'; // Use salt único por usuário
+    const salt = 'petadote_salt_2024';
     final bytes = utf8.encode('$password:$salt');
     final digest = sha256.convert(bytes);
 
@@ -556,19 +628,15 @@ class AuthMiddleware {
 
   /// Encrypts data simples (em produção, use AES)
   String _encryptData(String data) {
-    // Implementação simplificada - em produção use AES
     final bytes = utf8.encode(data);
     final encoded = base64.encode(bytes);
-
     return encoded;
   }
 
   /// Decrypts data
   String _decryptData(String encryptedData) {
-    // Implementação simplificada
     final bytes = base64.decode(encryptedData);
     final decoded = utf8.decode(bytes);
-
     return decoded;
   }
 
@@ -585,7 +653,6 @@ class AuthMiddleware {
       }
 
       // Verifica fingerprint do dispositivo
-      // (implementação simplificada)
       final savedFingerprint = sessionData['deviceFingerprint'] as String?;
       if (savedFingerprint != null) {
         // Em um cenário real, verificaria se o fingerprint atual
@@ -601,14 +668,21 @@ class AuthMiddleware {
 
   /// Gera fingerprint do dispositivo
   Future<String> _generateDeviceFingerprint() async {
-    // Implementação simplificada
-    // Em produção, coletaria mais informações do dispositivo
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final data = 'device_$timestamp';
     final bytes = utf8.encode(data);
     final digest = sha256.convert(bytes);
 
     return digest.toString().substring(0, 32);
+  }
+
+  /// Obtém informações da plataforma
+  Map<String, dynamic> _getPlatformInfo() {
+    return {
+      'platform': _config.isProduction ? 'mobile' : 'debug',
+      'version': '1.0.0',
+      'build': DateTime.now().millisecondsSinceEpoch,
+    };
   }
 
   /// Obtém token atual
@@ -634,6 +708,32 @@ class AuthMiddleware {
 }
 
 // ========================================
+// EXTENSÕES
+// ========================================
+
+extension AuthResultExtensions on AuthResult {
+  AuthResult copyWith({
+    bool? success,
+    String? token,
+    String? refreshToken,
+    DateTime? expiresAt,
+    Map<String, dynamic>? userData,
+    String? error,
+    AuthType? authType,
+  }) {
+    return AuthResult(
+      success: success ?? this.success,
+      token: token ?? this.token,
+      refreshToken: refreshToken ?? this.refreshToken,
+      expiresAt: expiresAt ?? this.expiresAt,
+      userData: userData ?? this.userData,
+      error: error ?? this.error,
+      authType: authType ?? this.authType,
+    );
+  }
+}
+
+// ========================================
 // PROVIDER DO RIVERPOD
 // ========================================
 
@@ -641,10 +741,12 @@ class AuthMiddleware {
 final authMiddlewareProvider = Provider<AuthMiddleware>((ref) {
   final httpClient = ref.watch(secureHttpClientProvider);
   final config = ref.watch(appConfigProvider);
+  final socialAuthService = SocialAuthService.instance;
 
   return AuthMiddleware(
     httpClient: httpClient,
     config: config,
+    socialAuthService: socialAuthService,
   );
 });
 
@@ -685,13 +787,13 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   }
 
   /// Login com Google
-  Future<AuthResult> loginWithGoogle(String idToken, {String? deviceId}) async {
+  Future<AuthResult> loginWithGoogle({String? deviceId}) async {
     state = AuthState.authenticating;
 
     try {
       final result = await _middleware.loginWithGoogle(
-        idToken: idToken,
         deviceId: deviceId,
+        silentSignIn: false,
       );
 
       if (result.success) {
@@ -710,17 +812,11 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   }
 
   /// Login com Apple
-  Future<AuthResult> loginWithApple(
-    String authorizationCode,
-    String identityToken, {
-    String? deviceId,
-  }) async {
+  Future<AuthResult> loginWithApple({String? deviceId}) async {
     state = AuthState.authenticating;
 
     try {
       final result = await _middleware.loginWithApple(
-        authorizationCode: authorizationCode,
-        identityToken: identityToken,
         deviceId: deviceId,
       );
 
@@ -778,10 +874,8 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       final result = await _middleware.refreshToken();
 
       if (result.success) {
-        // Token atualizado com sucesso
         return true;
       } else {
-        // Token inválido, fazer logout
         state = AuthState.expired;
         await _middleware.clearAuthData();
         return false;

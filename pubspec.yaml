@@ -66,6 +66,7 @@ dependencies:
   # Validação e sanitização
   validators: ^3.0.0
   crypto: ^3.0.3
+ 
   
   # Rate limiting e cache
   rate_limiter: ^0.1.0+3
@@ -76,6 +77,7 @@ dependencies:
   
   # Utilitários
   equatable: ^2.0.5
+  sign_in_with_apple: ^7.0.1
 
 dev_dependencies:
   flutter_test:
