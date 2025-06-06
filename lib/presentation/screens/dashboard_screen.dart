@@ -76,7 +76,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               const SizedBox(height: 24),
 
               // Cards de estatísticas
-              _buildStatsGrid(isLightTheme, userCurrency, petsStats),
+              _buildStatsGrid(isLightTheme, userCurrency,
+                  petsStats as Map<String, dynamic>),
               const SizedBox(height: 24),
 
               // Status do pet atual

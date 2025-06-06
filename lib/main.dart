@@ -1,5 +1,4 @@
-// Entry point da aplicação
-// Função auxiliar para tratamento de erros não capturados
+// lib/main.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -11,12 +10,14 @@ import 'package:petverse/presentation/screens/home_screen.dart';
 import 'package:petverse/presentation/screens/login_screen.dart';
 import 'package:petverse/presentation/screens/splash_screen.dart';
 
-// Imports de segurança
+// Imports de segurança e Firebase
+import 'core/auth/social_auth_service.dart';
 import 'core/config/app_config.dart';
+import 'core/firebase/firebase_auth_service.dart';
+import 'core/firebase/firebase_config.dart';
 import 'core/network/rate_limiter.dart';
 import 'core/network/secure_http_client.dart';
 import 'core/validation/input_validator.dart';
-// runZonedGuarded<Future<void>>(Future<void> Function() body, void Function(Object error, StackTrace stack) onError) {}
 
 /// Enum para controlar o estado da aplicação
 enum AppState {
@@ -40,7 +41,7 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
 
       try {
-        // Inicialização segura
+        // Inicialização segura incluindo Firebase
         await _initializeApp();
 
         // Executa a aplicação
@@ -61,10 +62,10 @@ void main() async {
   );
 }
 
-/// Inicialização segura da aplicação
+/// Inicialização segura da aplicação incluindo Firebase
 Future<void> _initializeApp() async {
   final logger = Logger();
-  logger.i('Starting app initialization...');
+  logger.i('Starting app initialization with Firebase...');
 
   try {
     // 1. Configurações do sistema
@@ -75,13 +76,21 @@ Future<void> _initializeApp() async {
     await AppConfig.initialize();
     logger.d('App config initialized');
 
-    // 3. Inicializa rate limiting baseado no ambiente
+    // 3. Inicializa Firebase
+    await FirebaseConfig.initialize();
+    logger.d('Firebase core initialized');
+
+    // 4. Inicializa serviços Firebase
+    await _initializeFirebaseServices();
+    logger.d('Firebase services initialized');
+
+    // 5. Inicializa rate limiting baseado no ambiente
     RateLimiterFactory.createForEnvironment(
       AppConfig.instance.environment.name,
     );
     logger.d('Rate limiter configured');
 
-    // 4. Inicializa cliente HTTP seguro
+    // 6. Inicializa cliente HTTP seguro
     SecureHttpClient.initialize(
       retryPolicy: AppConfig.instance.isProduction
           ? RetryPolicy.conservative()
@@ -89,13 +98,35 @@ Future<void> _initializeApp() async {
     );
     logger.d('Secure HTTP client initialized');
 
-    // 5. Validações de segurança
+    // 7. Inicializa autenticação social
+    await SocialAuthService.initialize();
+    logger.d('Social auth service initialized');
+
+    // 8. Validações de segurança
     await _performSecurityChecks();
     logger.d('Security checks completed');
 
-    logger.i('App initialization completed successfully');
+    logger.i('App initialization completed successfully with Firebase');
   } catch (e, stackTrace) {
     logger.e('Failed to initialize app', error: e, stackTrace: stackTrace);
+    rethrow;
+  }
+}
+
+/// Inicializa serviços específicos do Firebase
+Future<void> _initializeFirebaseServices() async {
+  final logger = Logger();
+
+  try {
+    // Inicializa Firebase Auth Service
+    await FirebaseAuthService.initialize();
+    logger.d('Firebase Auth Service initialized');
+
+    // Outros serviços Firebase são inicializados como singletons quando necessário
+    logger.d('Firebase services ready');
+  } catch (e, stackTrace) {
+    logger.e('Firebase services initialization failed',
+        error: e, stackTrace: stackTrace);
     rethrow;
   }
 }
@@ -132,6 +163,11 @@ Future<void> _performSecurityChecks() async {
   // Verifica se as API keys estão configuradas
   if (config.isProduction && !config.hasAllRequiredApiKeys) {
     throw Exception('Missing required API keys in production environment');
+  }
+
+  // Verifica configuração do Firebase
+  if (!FirebaseConfig.isInitialized) {
+    throw Exception('Firebase not properly initialized');
   }
 
   // Testa conectividade básica se em produção
@@ -189,6 +225,7 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     WidgetsBinding.instance.removeObserver(this);
     // Cleanup dos recursos de segurança
     SecureHttpClient.instance.dispose();
+    FirebaseAuthService.instance.dispose();
     super.dispose();
   }
 
@@ -221,7 +258,7 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
       // Aguarda configurações finalizarem
       await Future.delayed(const Duration(seconds: 2));
 
-      // Verifica se o usuário já está logado
+      // Verifica se o usuário já está logado (Firebase)
       final isLoggedIn = await _checkUserLoginStatus();
 
       setState(() {
@@ -237,12 +274,26 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     }
   }
 
-  /// Verifica status de login do usuário
+  /// Verifica status de login do usuário usando Firebase
   Future<bool> _checkUserLoginStatus() async {
     try {
-      // Implementar verificação real de login
-      // Por enquanto, sempre retorna true para demonstração
-      return true;
+      final firebaseAuth = FirebaseAuthService.instance;
+      final currentUser = firebaseAuth.currentUser;
+
+      if (currentUser != null) {
+        // Verifica se o token ainda é válido
+        try {
+          await currentUser.getIdToken(true); // Force refresh
+          _logger.d('User authenticated: ${currentUser.uid}');
+          return true;
+        } catch (e) {
+          _logger.w('Token validation failed: $e');
+          await firebaseAuth.signOut();
+          return false;
+        }
+      }
+
+      return false;
     } catch (e) {
       _logger.w('Login status check failed: $e');
       return false;
@@ -270,14 +321,24 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
       _logger.w('App config not initialized on resume');
       _restartApp();
     }
+
+    // Verifica se Firebase ainda está funcionando
+    if (!FirebaseConfig.isInitialized) {
+      _logger.w('Firebase not initialized on resume');
+      _restartApp();
+    }
   }
 
   /// Manipula quando o app vai para o background
   void _handleAppPaused() {
     _logger.d('App paused');
 
-    // Limpa dados sensíveis da memória se necessário
-    // (implementar conforme necessário)
+    // Atualiza última atividade do usuário se autenticado
+    final currentUser = FirebaseAuthService.instance.currentUser;
+    if (currentUser != null) {
+      // Aqui poderia atualizar a última atividade no Firestore
+      _logger.d('Updating user last activity');
+    }
   }
 
   /// Manipula quando o app é finalizado
@@ -286,6 +347,7 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
 
     // Cleanup final
     SecureHttpClient.instance.dispose();
+    FirebaseAuthService.instance.dispose();
   }
 
   /// Reinicia a aplicação
@@ -486,7 +548,7 @@ class _AppWrapper extends ConsumerWidget {
 }
 
 // ========================================
-// CONFIGURAÇÕES ATUALIZADAS
+// CONFIGURAÇÕES ATUALIZADAS COM FIREBASE
 // ========================================
 
 /// Classe para configurações globais da aplicação (atualizada)
@@ -495,6 +557,11 @@ class AppConstants {
   static String get baseUrl => AppConfig.instance.backendBaseUrl;
   static String get geminiUrl => AppConfig.instance.geminiBaseUrl;
   static String get imagenUrl => AppConfig.instance.imagenBaseUrl;
+
+  // Configurações Firebase
+  static Map<String, dynamic> get firebaseConfig =>
+      FirebaseConfig.getConfigInfo();
+  static bool get isFirebaseInitialized => FirebaseConfig.isInitialized;
 
   // Configurações de tempo
   static const Duration splashDuration = Duration(seconds: 3);
@@ -601,5 +668,27 @@ class AppUtils {
   static void errorLog(String message,
       {Object? error, StackTrace? stackTrace}) {
     _logger.e('[PetAdote] $message', error: error, stackTrace: stackTrace);
+  }
+
+  /// Verifica conectividade com Firebase
+  static Future<bool> checkFirebaseConnectivity() async {
+    try {
+      if (!FirebaseConfig.isInitialized) {
+        return false;
+      }
+
+      final authService = FirebaseAuthService.instance;
+      final currentUser = authService.currentUser;
+
+      if (currentUser != null) {
+        // Tenta refreshar token para verificar conectividade
+        await currentUser.getIdToken(true);
+      }
+
+      return true;
+    } catch (e) {
+      _logger.w('Firebase connectivity check failed: $e');
+      return false;
+    }
   }
 }

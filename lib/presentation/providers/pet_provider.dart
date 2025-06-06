@@ -1,6 +1,10 @@
+// lib/presentation/providers/pet_provider.dart
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/core/firebase/firebase_analytics_service.dart';
+import 'package:petverse/core/firebase/firestore_service.dart';
+import 'package:petverse/core/providers/firebase_providers.dart';
 import 'package:petverse/data/models/adoption_request_status.dart';
 import 'package:petverse/data/models/pet.dart';
 
@@ -14,249 +18,449 @@ enum AdoptionFlowStates {
   hasPet,
 }
 
-/// StateNotifier para gerenciar pets disponíveis
-class AvailablePetsNotifier extends StateNotifier<List<Pet>> {
-  AvailablePetsNotifier() : super(_createInitialPets());
+/// StateNotifier para gerenciar pets disponíveis integrado com Firebase
+class AvailablePetsNotifier extends StateNotifier<AsyncValue<List<Pet>>> {
+  final FirestoreService _firestoreService;
+  final FirebaseAnalyticsService _analyticsService;
+  final Ref _ref;
 
-  /// Cria pets iniciais para o sistema
-  static List<Pet> _createInitialPets() {
-    return [
-      Pet(
-        id: 'p1',
-        name: 'Max',
-        imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐶',
-        type: 'Cachorro',
-        description: 'Um cão leal e brincalhão que adora correr no parque.',
-        generatedByUserId: null,
-      ),
-      Pet(
-        id: 'p2',
-        name: 'Mia',
-        imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐱',
-        type: 'Gato',
-        description: 'Uma gata curiosa e independente que adora explorar.',
-        generatedByUserId: null,
-      ),
-      Pet(
-        id: 'p3',
-        name: 'Pip',
-        imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐦',
-        type: 'Pássaro',
-        description: 'Um pássaro colorido que adora cantar melodias.',
-        generatedByUserId: null,
-      ),
-      Pet(
-        id: 'p4',
-        name: 'Coelhinho',
-        imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐰',
-        type: 'Coelho',
-        description: 'Um coelho muito fofo e saltitante que adora cenouras.',
-        generatedByUserId: null,
-      ),
-      Pet(
-        id: 'p5',
-        name: 'Nemo',
-        imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐠',
-        type: 'Peixe',
-        description: 'Um peixe pequeno, mas aventureiro dos oceanos.',
-        generatedByUserId: null,
-      ),
-    ];
+  AvailablePetsNotifier(
+    this._firestoreService,
+    this._analyticsService,
+    this._ref,
+  ) : super(const AsyncValue.loading()) {
+    loadPets();
   }
 
-  /// Adiciona um novo pet à lista
-  void addPet(Pet pet) {
-    state = [...state, pet];
+  /// Carrega pets disponíveis do Firebase
+  Future<void> loadPets() async {
+    try {
+      state = const AsyncValue.loading();
+
+      final result = await _firestoreService.getAvailablePets(limit: 50);
+
+      if (result.success) {
+        final pets = result.data ?? [];
+        state = AsyncValue.data(pets);
+
+        // Log analytics
+        await _analyticsService.logEvent(
+          AnalyticsEvent.userLogin, // placeholder
+          parameters: {
+            'action': 'pets_loaded',
+            'count': pets.length,
+          },
+        );
+      } else {
+        state = AsyncValue.error(
+          result.error ?? 'Erro ao carregar pets',
+          StackTrace.current,
+        );
+      }
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+
+      // Log error
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to load pets',
+      );
+    }
+  }
+
+  /// Adiciona um novo pet
+  Future<bool> addPet(Pet pet) async {
+    try {
+      final result = await _firestoreService.savePet(pet);
+
+      if (result.success) {
+        // Recarrega a lista
+        await loadPets();
+
+        // Log analytics
+        await _analyticsService.logPetGenerated(
+          petId: result.data ?? pet.id,
+          petType: pet.type,
+          userId: pet.generatedByUserId,
+          isUnique: pet.generatedByUserId != null,
+        );
+
+        return true;
+      }
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to add pet',
+      );
+      return false;
+    }
   }
 
   /// Marca um pet como adotado
-  void markPetAsAdopted(String petId) {
-    state = state.map((pet) {
-      return pet.id == petId ? pet.copyWith(isAdopted: true) : pet;
-    }).toList();
-  }
+  Future<bool> markPetAsAdopted(String petId, {String? adopterId}) async {
+    try {
+      final result = await _firestoreService.updatePetStatus(
+        petId,
+        isAdopted: true,
+      );
 
-  /// Remove um pet da lista (usado para pets deletados)
-  void removePet(String petId) {
-    state = state.where((pet) => pet.id != petId).toList();
-  }
+      if (result.success) {
+        // Atualiza estado local
+        state.whenData((pets) {
+          final updatedPets = pets.map((pet) {
+            return pet.id == petId ? pet.copyWith(isAdopted: true) : pet;
+          }).toList();
+          state = AsyncValue.data(updatedPets);
+        });
 
-  /// Libera um pet gerado por usuário (torna disponível para todos)
-  void releaseGeneratedPet(String userId, String petId) {
-    state = state.map((pet) {
-      if (pet.id == petId && pet.generatedByUserId == userId) {
-        return pet.copyWith(generatedByUserId: null);
+        // Log analytics
+        final pet = await _getPetById(petId);
+        if (pet != null) {
+          await _analyticsService.logPetAdopted(
+            petId: petId,
+            petType: pet.type,
+            adoptionType: 'individual',
+            userId: adopterId,
+          );
+        }
+
+        return true;
       }
-      return pet;
-    }).toList();
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to mark pet as adopted',
+      );
+      return false;
+    }
   }
 
-  /// Atualiza as estatísticas de um pet adotado
-  void updatePetStats(
+  /// Atualiza estatísticas de um pet
+  Future<bool> updatePetStats(
     String petId, {
     int? hunger,
     int? happiness,
     int? energy,
     int? level,
     int? xp,
-    int? xpToNextLevel,
-  }) {
-    state = state.map((pet) {
-      if (pet.id == petId) {
-        return pet.copyWith(
-          hunger: hunger,
-          happiness: happiness,
-          energy: energy,
-          level: level,
-          xp: xp,
-          xpToNextLevel: xpToNextLevel,
+  }) async {
+    try {
+      final result = await _firestoreService.updatePetStatus(
+        petId,
+        hunger: hunger,
+        happiness: happiness,
+        energy: energy,
+        level: level,
+        xp: xp,
+      );
+
+      if (result.success) {
+        // Atualiza estado local
+        state.whenData((pets) {
+          final updatedPets = pets.map((pet) {
+            if (pet.id == petId) {
+              return pet.copyWith(
+                hunger: hunger,
+                happiness: happiness,
+                energy: energy,
+                level: level,
+                xp: xp,
+              );
+            }
+            return pet;
+          }).toList();
+          state = AsyncValue.data(updatedPets);
+        });
+
+        return true;
+      }
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to update pet stats',
+      );
+      return false;
+    }
+  }
+
+  /// Alimenta um pet
+  Future<bool> feedPet(String petId, String? userId) async {
+    try {
+      final pet = await _getPetById(petId);
+      if (pet == null) return false;
+
+      final newHunger = (pet.hunger + 20).clamp(0, 100);
+      final newHappiness = (pet.happiness + 5).clamp(0, 100);
+
+      final success = await updatePetStats(
+        petId,
+        hunger: newHunger,
+        happiness: newHappiness,
+      );
+
+      if (success) {
+        // Log analytics
+        await _analyticsService.logPetAction(
+          action: 'fed',
+          petId: petId,
+          userId: userId,
+          cost: 10,
         );
       }
-      return pet;
-    }).toList();
+
+      return success;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to feed pet',
+      );
+      return false;
+    }
   }
 
-  /// Restaura pets iniciais (usado para reset)
-  void resetToInitialPets() {
-    state = _createInitialPets();
+  /// Brinca com um pet
+  Future<bool> playWithPet(String petId, String? userId) async {
+    try {
+      final pet = await _getPetById(petId);
+      if (pet == null) return false;
+
+      final newHunger = (pet.hunger - 10).clamp(0, 100);
+      final newHappiness = (pet.happiness + 25).clamp(0, 100);
+      final newEnergy = (pet.energy - 15).clamp(0, 100);
+      final newXp = pet.xp + 10;
+
+      final success = await updatePetStats(
+        petId,
+        hunger: newHunger,
+        happiness: newHappiness,
+        energy: newEnergy,
+        xp: newXp,
+      );
+
+      if (success) {
+        // Log analytics
+        await _analyticsService.logPetAction(
+          action: 'played',
+          petId: petId,
+          userId: userId,
+          cost: 5,
+        );
+      }
+
+      return success;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to play with pet',
+      );
+      return false;
+    }
   }
 
-  /// Carrega pets de uma fonte externa
-  void loadPets(List<Pet> pets) {
-    state = pets;
+  /// Obtém pet por ID
+  Future<Pet?> _getPetById(String petId) async {
+    return state.when(
+      data: (pets) => pets.firstWhere(
+        (pet) => pet.id == petId,
+        orElse: () => Pet(
+          id: '',
+          name: '',
+          imageUrl: '',
+          type: '',
+          description: '',
+        ),
+      ),
+      loading: () => null,
+      error: (_, __) => null,
+    );
   }
+
+  /// Refresh manual
+  Future<void> refresh() => loadPets();
 }
 
-/// StateNotifier para gerenciar solicitações de adoção ativas
-class AdoptionRequestsNotifier extends StateNotifier<List<AdoptionRequest>> {
-  AdoptionRequestsNotifier() : super(_createInitialRequests());
+/// StateNotifier para gerenciar solicitações de adoção integrado com Firebase
+class AdoptionRequestsNotifier
+    extends StateNotifier<AsyncValue<List<AdoptionRequest>>> {
+  final FirestoreService _firestoreService;
+  final FirebaseAnalyticsService _analyticsService;
 
-  /// Cria solicitações iniciais para demonstração
-  static List<AdoptionRequest> _createInitialRequests() {
-    return [
-      AdoptionRequest(
-        id: 'req1',
-        creatorUserId: 'user_demo_1',
-        petsInRequest: [
-          Pet(
-            id: 'p10',
-            name: 'Bolt',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=⚡',
-            type: 'Cachorro',
-            description: 'Veloz e cheio de energia para aventuras.',
-          ),
-          Pet(
-            id: 'p11',
-            name: 'Sombra',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=👻',
-            type: 'Gato',
-            description: 'Um gato misterioso e carinhoso.',
-          ),
-          Pet(
-            id: 'p12',
-            name: 'Fluffy',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🐑',
-            type: 'Ovelha',
-            description: 'Extremamente macia e tranquila.',
-          ),
-        ],
-        daysLeft: 3,
-      ),
-      AdoptionRequest(
-        id: 'req2',
-        creatorUserId: 'user_demo_2',
-        petsInRequest: [
-          Pet(
-            id: 'p13',
-            name: 'Robô',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🤖',
-            type: 'Robô-Pet',
-            description: 'Um companheiro tecnológico e inteligente.',
-          ),
-          Pet(
-            id: 'p14',
-            name: 'Fofura',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🌸',
-            type: 'Coelho',
-            description: 'Adora cenouras e abraços calorosos.',
-          ),
-          Pet(
-            id: 'p15',
-            name: 'Asa',
-            imageUrl: 'https://placehold.co/60x60/cccccc/000000?text=🦅',
-            type: 'Águia',
-            description: 'Corajosa e com visão aguçada.',
-          ),
-        ],
-        daysLeft: 5,
-      ),
-    ];
+  AdoptionRequestsNotifier(
+    this._firestoreService,
+    this._analyticsService,
+  ) : super(const AsyncValue.loading()) {
+    loadRequests();
+  }
+
+  /// Carrega solicitações ativas do Firebase
+  Future<void> loadRequests() async {
+    try {
+      state = const AsyncValue.loading();
+
+      final result = await _firestoreService.getActiveAdoptionRequests();
+
+      if (result.success) {
+        state = AsyncValue.data(result.data ?? []);
+      } else {
+        state = AsyncValue.error(
+          result.error ?? 'Erro ao carregar solicitações',
+          StackTrace.current,
+        );
+      }
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to load adoption requests',
+      );
+    }
   }
 
   /// Adiciona uma nova solicitação
-  void addRequest(AdoptionRequest request) {
-    state = [...state, request];
+  Future<bool> addRequest(AdoptionRequest request) async {
+    try {
+      final result = await _firestoreService.saveAdoptionRequest(request);
+
+      if (result.success) {
+        await loadRequests();
+
+        // Log analytics
+        await _analyticsService.logAdoptionRequest(
+          requestId: result.data ?? request.id,
+          action: 'created',
+          userId: request.creatorUserId,
+          petsCount: request.petsInRequest.length,
+        );
+
+        return true;
+      }
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to add adoption request',
+      );
+      return false;
+    }
   }
 
   /// Completa uma solicitação de adoção
-  void completeRequest(
-      String requestId, String joinerUserId, String chosenPetId) {
-    state = state.map((request) {
-      if (request.id == requestId) {
-        return request.complete(joinerUserId, chosenPetId);
-      }
-      return request;
-    }).toList();
-  }
+  Future<bool> completeRequest(
+    String requestId,
+    String joinerUserId,
+    String chosenPetId,
+  ) async {
+    try {
+      final result = await _firestoreService.updateAdoptionRequestStatus(
+        requestId,
+        AdoptionRequestStatus.completed,
+        joinerUserId: joinerUserId,
+        chosenPetId: chosenPetId,
+      );
 
-  /// Remove uma solicitação
-  void removeRequest(String requestId) {
-    state = state.where((request) => request.id != requestId).toList();
+      if (result.success) {
+        await loadRequests();
+
+        // Log analytics
+        await _analyticsService.logAdoptionRequest(
+          requestId: requestId,
+          action: 'completed',
+          userId: joinerUserId,
+        );
+
+        return true;
+      }
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to complete adoption request',
+      );
+      return false;
+    }
   }
 
   /// Cancela uma solicitação
-  void cancelRequest(String requestId) {
-    state = state.map((request) {
-      if (request.id == requestId) {
-        return request.cancel();
+  Future<bool> cancelRequest(String requestId, String userId) async {
+    try {
+      final result = await _firestoreService.updateAdoptionRequestStatus(
+        requestId,
+        AdoptionRequestStatus.cancelled,
+      );
+
+      if (result.success) {
+        await loadRequests();
+
+        // Log analytics
+        await _analyticsService.logAdoptionRequest(
+          requestId: requestId,
+          action: 'cancelled',
+          userId: userId,
+        );
+
+        return true;
       }
-      return request;
-    }).toList();
+
+      return false;
+    } catch (e, stackTrace) {
+      await _analyticsService.logError(
+        error: e,
+        stackTrace: stackTrace,
+        reason: 'Failed to cancel adoption request',
+      );
+      return false;
+    }
   }
 
-  /// Expira solicitações antigas automaticamente
-  void expireOldRequests() {
-    state = state.map((request) {
-      if (request.isExpired &&
-          request.status == AdoptionRequestStatus.pending) {
-        return request.expire();
-      }
-      return request;
-    }).toList();
-  }
-
-  /// Limpa todas as solicitações
-  void clear() {
-    state = [];
-  }
-
-  /// Carrega solicitações de uma fonte externa
-  void loadRequests(List<AdoptionRequest> requests) {
-    state = requests;
-  }
+  /// Refresh manual
+  Future<void> refresh() => loadRequests();
 }
 
-/// Provider para pets disponíveis
+// ========================================
+// PROVIDERS ATUALIZADOS COM FIREBASE
+// ========================================
+
+/// Provider para pets disponíveis usando Firebase
 final availablePetsProvider =
-    StateNotifierProvider<AvailablePetsNotifier, List<Pet>>((ref) {
-  return AvailablePetsNotifier();
+    StateNotifierProvider<AvailablePetsNotifier, AsyncValue<List<Pet>>>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  final analyticsService = FirebaseAnalyticsService.instance;
+
+  return AvailablePetsNotifier(
+    firestoreService,
+    analyticsService,
+    ref,
+  );
 });
 
-/// Provider para solicitações de adoção ativas
-final activeAdoptionRequestsProvider =
-    StateNotifierProvider<AdoptionRequestsNotifier, List<AdoptionRequest>>(
-        (ref) {
-  return AdoptionRequestsNotifier();
+/// Provider para solicitações de adoção usando Firebase
+final activeAdoptionRequestsProvider = StateNotifierProvider<
+    AdoptionRequestsNotifier, AsyncValue<List<AdoptionRequest>>>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  final analyticsService = FirebaseAnalyticsService.instance;
+
+  return AdoptionRequestsNotifier(
+    firestoreService,
+    analyticsService,
+  );
 });
 
 /// Provider para o estado do fluxo de adoção
@@ -299,9 +503,9 @@ final adoptionRequestInfoProvider =
           'fullPetsSelected': <Pet>[],
         });
 
-// =======================================
-// Modal State Providers
-// =======================================
+// ========================================
+// MODAL STATE PROVIDERS
+// ========================================
 
 /// Provider para controle do modal de detalhes do pet
 final petDetailsModalOpenProvider = StateProvider<bool>((ref) => false);
@@ -319,42 +523,67 @@ final requestInModalProvider =
 /// Provider para controle do modal de detalhes da própria solicitação
 final myRequestDetailsModalOpenProvider = StateProvider<bool>((ref) => false);
 
-// =======================================
-// Computed Providers
-// =======================================
+// ========================================
+// COMPUTED PROVIDERS ATUALIZADOS
+// ========================================
 
-/// Provider para pets disponíveis (não adotados)
-final availablePetsNotAdoptedProvider = Provider<List<Pet>>((ref) {
-  final pets = ref.watch(availablePetsProvider);
-  return pets.where((pet) => !pet.isAdopted).toList();
+/// Provider para pets disponíveis (não adotados) usando Firebase
+final availablePetsNotAdoptedProvider = Provider<AsyncValue<List<Pet>>>((ref) {
+  final petsAsync = ref.watch(availablePetsProvider);
+
+  return petsAsync.when(
+    data: (pets) => AsyncValue.data(
+      pets.where((pet) => !pet.isAdopted).toList(),
+    ),
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
 });
 
-/// Provider para pets do usuário atual
-final userPetsProvider = Provider<List<Pet>>((ref) {
-  final pets = ref.watch(availablePetsProvider);
-  // Aqui você poderia filtrar por usuário se tivesse o ID do usuário atual
-  return pets.where((pet) => pet.generatedByUserId != null).toList();
+/// Provider para pets do usuário atual usando Firebase
+final userPetsProvider = Provider<AsyncValue<List<Pet>>>((ref) {
+  final userId = ref.watch(firebaseCurrentUserProvider)?.uid;
+
+  if (userId == null) {
+    return const AsyncValue.data([]);
+  }
+
+  return ref.watch(userPetsFirebaseProvider(userId));
 });
 
 /// Provider para solicitações pendentes (que outros podem participar)
-final pendingAdoptionRequestsProvider = Provider<List<AdoptionRequest>>((ref) {
-  final requests = ref.watch(activeAdoptionRequestsProvider);
-  return requests
-      .where((request) =>
-          request.status == AdoptionRequestStatus.pending && request.isActive)
-      .toList();
+final pendingAdoptionRequestsProvider =
+    Provider<AsyncValue<List<AdoptionRequest>>>((ref) {
+  final requestsAsync = ref.watch(activeAdoptionRequestsProvider);
+
+  return requestsAsync.when(
+    data: (requests) => AsyncValue.data(
+      requests
+          .where((request) =>
+              request.status == AdoptionRequestStatus.pending &&
+              request.isActive)
+          .toList(),
+    ),
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
 });
 
 /// Provider para contagem de pets por tipo
-final petCountByTypeProvider = Provider<Map<String, int>>((ref) {
-  final pets = ref.watch(availablePetsProvider);
-  final countMap = <String, int>{};
+final petCountByTypeProvider = Provider<AsyncValue<Map<String, int>>>((ref) {
+  final petsAsync = ref.watch(availablePetsProvider);
 
-  for (final pet in pets) {
-    countMap[pet.type] = (countMap[pet.type] ?? 0) + 1;
-  }
-
-  return countMap;
+  return petsAsync.when(
+    data: (pets) {
+      final countMap = <String, int>{};
+      for (final pet in pets) {
+        countMap[pet.type] = (countMap[pet.type] ?? 0) + 1;
+      }
+      return AsyncValue.data(countMap);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
 });
 
 /// Provider para verificar se o usuário pode criar uma nova solicitação
@@ -373,22 +602,26 @@ final hasCriticalPetsProvider = Provider<bool>((ref) {
 });
 
 /// Provider para estatísticas gerais dos pets
-final petsStatsProvider = Provider<Map<String, dynamic>>((ref) {
-  final pets = ref.watch(availablePetsProvider);
+final petsStatsProvider = Provider<AsyncValue<Map<String, dynamic>>>((ref) {
+  final petsAsync = ref.watch(availablePetsProvider);
   final adoptedPet = ref.watch(currentAdoptedPetProvider);
 
-  return {
-    'totalPets': pets.length,
-    'adoptedPets': pets.where((p) => p.isAdopted).length,
-    'availablePets': pets.where((p) => !p.isAdopted).length,
-    'userHasPet': adoptedPet != null,
-    'averageLevel': adoptedPet?.level ?? 0,
-  };
+  return petsAsync.when(
+    data: (pets) => AsyncValue.data({
+      'totalPets': pets.length,
+      'adoptedPets': pets.where((p) => p.isAdopted).length,
+      'availablePets': pets.where((p) => !p.isAdopted).length,
+      'userHasPet': adoptedPet != null,
+      'averageLevel': adoptedPet?.level ?? 0,
+    }),
+    loading: () => const AsyncValue.loading(),
+    error: (error, stack) => AsyncValue.error(error, stack),
+  );
 });
 
-// =======================================
-// Utility Functions
-// =======================================
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
 
 /// Gera um ID único para pets
 String generatePetId() {
@@ -417,7 +650,10 @@ String generateAdoptionCode() {
   );
 }
 
-/// Extension para facilitar o uso dos providers de pets
+// ========================================
+// EXTENSIONS PARA FACILITAR O USO
+// ========================================
+
 extension PetProvidersExtensions on WidgetRef {
   /// Verifica se um pet pode ser selecionado
   bool canSelectPet(
@@ -427,8 +663,11 @@ extension PetProvidersExtensions on WidgetRef {
   }
 
   /// Adiciona ou remove um pet da seleção
-  void togglePetSelection(String petId,
-      StateController<List<String>> controller, int maxSelection) {
+  void togglePetSelection(
+    String petId,
+    StateController<List<String>> controller,
+    int maxSelection,
+  ) {
     final current = controller.state;
     if (current.contains(petId)) {
       controller.state = current.where((id) => id != petId).toList();
@@ -450,4 +689,38 @@ extension PetProvidersExtensions on WidgetRef {
 
   /// Retorna o pet atual ou null
   Pet? get currentPet => read(currentAdoptedPetProvider);
+
+  /// Refresh de pets usando Firebase
+  Future<void> refreshPets() async {
+    read(availablePetsProvider.notifier).refresh();
+  }
+
+  /// Refresh de solicitações usando Firebase
+  Future<void> refreshAdoptionRequests() async {
+    read(activeAdoptionRequestsProvider.notifier).refresh();
+  }
+
+  /// Alimenta pet e atualiza no Firebase
+  Future<bool> feedPet(String petId) async {
+    final userId = read(firebaseCurrentUserProvider)?.uid;
+    return read(availablePetsProvider.notifier).feedPet(petId, userId);
+  }
+
+  /// Brinca com pet e atualiza no Firebase
+  Future<bool> playWithPet(String petId) async {
+    final userId = read(firebaseCurrentUserProvider)?.uid;
+    return read(availablePetsProvider.notifier).playWithPet(petId, userId);
+  }
+
+  /// Adiciona pet no Firebase
+  Future<bool> addPet(Pet pet) async {
+    return read(availablePetsProvider.notifier).addPet(pet);
+  }
+
+  /// Marca pet como adotado no Firebase
+  Future<bool> markPetAsAdopted(String petId) async {
+    final userId = read(firebaseCurrentUserProvider)?.uid;
+    return read(availablePetsProvider.notifier)
+        .markPetAsAdopted(petId, adopterId: userId);
+  }
 }

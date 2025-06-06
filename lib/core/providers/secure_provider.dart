@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:petverse/core/security/security_monitor.dart';
 
 import '../config/app_config.dart';
 import '../network/rate_limiter.dart';
@@ -299,8 +300,9 @@ class SecurityMonitorNotifier extends StateNotifier<SecurityMonitorState> {
       if (!config.hasAllRequiredApiKeys) {
         issues.add(SecurityIssue(
           type: SecurityIssueType.missingApiKeys,
-          severity: SecuritySeverity.high,
+          severity: SecurityEventSeverity.critical,
           message: 'API keys missing',
+          description: '',
         ));
       }
 
@@ -311,8 +313,9 @@ class SecurityMonitorNotifier extends StateNotifier<SecurityMonitorState> {
       if (blockedEndpoints > 5) {
         issues.add(SecurityIssue(
           type: SecurityIssueType.rateLimitExceeded,
-          severity: SecuritySeverity.medium,
+          severity: SecurityEventSeverity.critical,
           message: '$blockedEndpoints endpoints blocked',
+          description: '',
         ));
       }
 
@@ -322,8 +325,9 @@ class SecurityMonitorNotifier extends StateNotifier<SecurityMonitorState> {
         if (!isConnected) {
           issues.add(SecurityIssue(
             type: SecurityIssueType.connectivityIssue,
-            severity: SecuritySeverity.low,
+            severity: SecurityEventSeverity.error,
             message: 'Network connectivity issues detected',
+            description: '',
           ));
         }
       } catch (e) {
@@ -363,6 +367,18 @@ class SecurityMonitorNotifier extends StateNotifier<SecurityMonitorState> {
         case SecuritySeverity.critical:
           level += 5;
           break;
+        case SecurityEventSeverity.info:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case SecurityEventSeverity.warning:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case SecurityEventSeverity.error:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case SecurityEventSeverity.critical:
+          // TODO: Handle this case.
+          throw UnimplementedError();
       }
     }
 
@@ -397,29 +413,81 @@ enum SecuritySeverity {
 }
 
 /// Problema de segurança
-class SecurityIssue {
+class SecurityIssueAlternative {
   final SecurityIssueType type;
   final SecuritySeverity severity;
   final String message;
   final DateTime timestamp;
   final Map<String, dynamic>? metadata;
 
-  const SecurityIssue({
+  const SecurityIssueAlternative._({
     required this.type,
     required this.severity,
     required this.message,
-    DateTime? timestamp,
+    required this.timestamp,
     this.metadata,
-  }) : timestamp = timestamp ?? DateTime.fromMillisecondsSinceEpoch(0);
+  });
 
-  SecurityIssue copyWith({
+  factory SecurityIssueAlternative({
+    required SecurityIssueType type,
+    required SecuritySeverity severity,
+    required String message,
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
+  }) {
+    return SecurityIssueAlternative._(
+      type: type,
+      severity: severity,
+      message: message,
+      timestamp: timestamp ?? DateTime.now(),
+      metadata: metadata,
+    );
+  }
+
+  factory SecurityIssueAlternative.info(String description) {
+    return SecurityIssueAlternative._(
+      type: SecurityIssueType.connectivityIssue,
+      severity: SecuritySeverity.low,
+      message: description,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  factory SecurityIssueAlternative.warning(String description) {
+    return SecurityIssueAlternative._(
+      type: SecurityIssueType.rateLimitExceeded,
+      severity: SecuritySeverity.medium,
+      message: description,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  factory SecurityIssueAlternative.error(String description) {
+    return SecurityIssueAlternative._(
+      type: SecurityIssueType.validationFailure,
+      severity: SecuritySeverity.high,
+      message: description,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  factory SecurityIssueAlternative.critical(String description) {
+    return SecurityIssueAlternative._(
+      type: SecurityIssueType.unauthorizedAccess,
+      severity: SecuritySeverity.critical,
+      message: description,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  SecurityIssueAlternative copyWith({
     SecurityIssueType? type,
     SecuritySeverity? severity,
     String? message,
     DateTime? timestamp,
     Map<String, dynamic>? metadata,
   }) {
-    return SecurityIssue(
+    return SecurityIssueAlternative(
       type: type ?? this.type,
       severity: severity ?? this.severity,
       message: message ?? this.message,

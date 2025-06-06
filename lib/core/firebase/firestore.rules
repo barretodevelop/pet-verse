@@ -1,0 +1,344 @@
+// firestore.rules
+// Regras de segurança do Firestore para PetAdote
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // FUNÇÕES AUXILIARES
+    // ========================================
+    
+    // Verifica se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Verifica se o usuário é o dono do documento
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Verifica se o conteúdo não excede o tamanho máximo
+    function isValidSize(content, maxSize) {
+      return content.size() <= maxSize;
+    }
+    
+    // Verifica se um campo é uma string válida
+    function isValidString(field, minLength, maxLength) {
+      return field is string && 
+             field.size() >= minLength && 
+             field.size() <= maxLength;
+    }
+    
+    // Verifica se um valor é um inteiro positivo
+    function isPositiveInt(value) {
+      return value is int && value >= 0;
+    }
+    
+    // Verifica se um timestamp é válido
+    function isValidTimestamp(timestamp) {
+      return timestamp is timestamp;
+    }
+    
+    // Verifica se o usuário pode modificar dados sensíveis
+    function canModifySensitiveData() {
+      return isAuthenticated() && 
+             request.auth.token.email_verified == true;
+    }
+    
+    // Verifica rate limiting básico (simplificado)
+    function isWithinRateLimit() {
+      return true; // Implementar lógica específica se necessário
+    }
+
+    // ========================================
+    // COLEÇÃO DE USUÁRIOS
+    // ========================================
+    
+    match /users/{userId} {
+      // Leitura: apenas o próprio usuário ou admin
+      allow read: if isOwner(userId);
+      
+      // Criação: apenas o próprio usuário
+      allow create: if isOwner(userId) && 
+                      isValidUserData(request.resource.data);
+      
+      // Atualização: apenas o próprio usuário
+      allow update: if isOwner(userId) && 
+                      isValidUserUpdate(resource.data, request.resource.data);
+      
+      // Não permite deletion
+      allow delete: if false;
+    }
+    
+    // Valida dados do usuário na criação
+    function isValidUserData(data) {
+      let requiredFields = ['id', 'email', 'authType', 'createdAt', 'lastLoginAt'];
+      let optionalFields = ['name', 'avatarUrl', 'metadata'];
+      let allFields = requiredFields.concat(optionalFields);
+      
+      return data.keys().hasAll(requiredFields) &&
+             data.keys().hasOnly(allFields.concat(['updatedAt'])) &&
+             isValidString(data.id, 1, 128) &&
+             isValidString(data.email, 5, 254) &&
+             isValidString(data.authType, 1, 20) &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.lastLoginAt) &&
+             (!('name' in data) || isValidString(data.name, 1, 100)) &&
+             (!('avatarUrl' in data) || isValidString(data.avatarUrl, 1, 500));
+    }
+    
+    // Valida atualizações do usuário
+    function isValidUserUpdate(existingData, newData) {
+      let immutableFields = ['id', 'email', 'authType', 'createdAt'];
+      let updatableFields = ['name', 'avatarUrl', 'metadata', 'lastLoginAt', 'lastActivityAt'];
+      
+      return !newData.diff(existingData).affectedKeys().hasAny(immutableFields) &&
+             (!('name' in newData) || isValidString(newData.name, 1, 100)) &&
+             (!('avatarUrl' in newData) || isValidString(newData.avatarUrl, 1, 500));
+    }
+
+    // ========================================
+    // COLEÇÃO DE PETS
+    // ========================================
+    
+    match /pets/{petId} {
+      // Leitura: todos os usuários autenticados
+      allow read: if isAuthenticated();
+      
+      // Criação: usuários autenticados com dados válidos
+      allow create: if isAuthenticated() && 
+                      isValidPetData(request.resource.data) &&
+                      isWithinRateLimit();
+      
+      // Atualização: apenas o criador ou sistema
+      allow update: if isAuthenticated() && 
+                      (isOwner(resource.data.generatedByUserId) || 
+                       isSystemUpdate(resource.data, request.resource.data));
+      
+      // Não permite deletion direta
+      allow delete: if false;
+    }
+    
+    // Valida dados do pet
+    function isValidPetData(data) {
+      let requiredFields = ['name', 'imageUrl', 'type', 'description', 'isAdopted'];
+      let optionalFields = ['generatedByUserId', 'hunger', 'happiness', 'energy', 'level', 'xp', 'xpToNextLevel'];
+      let allFields = requiredFields.concat(optionalFields);
+      
+      return data.keys().hasAll(requiredFields) &&
+             data.keys().hasOnly(allFields.concat(['createdAt', 'updatedAt'])) &&
+             isValidString(data.name, 2, 50) &&
+             isValidString(data.imageUrl, 10, 500) &&
+             isValidString(data.type, 2, 30) &&
+             isValidString(data.description, 10, 500) &&
+             data.isAdopted is bool &&
+             (!('generatedByUserId' in data) || data.generatedByUserId is string) &&
+             (!('hunger' in data) || (data.hunger is int && data.hunger >= 0 && data.hunger <= 100)) &&
+             (!('happiness' in data) || (data.happiness is int && data.happiness >= 0 && data.happiness <= 100)) &&
+             (!('energy' in data) || (data.energy is int && data.energy >= 0 && data.energy <= 100)) &&
+             (!('level' in data) || isPositiveInt(data.level)) &&
+             (!('xp' in data) || isPositiveInt(data.xp));
+    }
+    
+    // Verifica se é uma atualização do sistema (stats do pet)
+    function isSystemUpdate(existingData, newData) {
+      let systemFields = ['hunger', 'happiness', 'energy', 'level', 'xp', 'xpToNextLevel', 'isAdopted'];
+      let changedFields = newData.diff(existingData).affectedKeys();
+      
+      return changedFields.hasOnly(systemFields.concat(['updatedAt']));
+    }
+
+    // ========================================
+    // COLEÇÃO DE SOLICITAÇÕES DE ADOÇÃO
+    // ========================================
+    
+    match /adoption_requests/{requestId} {
+      // Leitura: todos os usuários autenticados
+      allow read: if isAuthenticated();
+      
+      // Criação: apenas usuários autenticados
+      allow create: if isAuthenticated() && 
+                      isValidAdoptionRequestData(request.resource.data) &&
+                      isOwner(request.resource.data.creatorUserId);
+      
+      // Atualização: apenas o criador ou participante
+      allow update: if isAuthenticated() && 
+                      (isOwner(resource.data.creatorUserId) || 
+                       canJoinAdoptionRequest(resource.data, request.resource.data));
+      
+      // Não permite deletion
+      allow delete: if false;
+    }
+    
+    // Valida dados da solicitação de adoção
+    function isValidAdoptionRequestData(data) {
+      let requiredFields = ['creatorUserId', 'petsInRequest', 'daysLeft', 'expiresAt', 'status'];
+      let optionalFields = ['joinerUserId', 'chosenPetId'];
+      let allFields = requiredFields.concat(optionalFields);
+      
+      return data.keys().hasAll(requiredFields) &&
+             data.keys().hasOnly(allFields.concat(['createdAt', 'updatedAt'])) &&
+             isValidString(data.creatorUserId, 1, 128) &&
+             data.petsInRequest is list &&
+             data.petsInRequest.size() >= 1 &&
+             data.petsInRequest.size() <= 3 &&
+             data.daysLeft is int &&
+             data.daysLeft >= 1 &&
+             data.daysLeft <= 30 &&
+             isValidTimestamp(data.expiresAt) &&
+             isValidString(data.status, 1, 20);
+    }
+    
+    // Verifica se pode participar da solicitação
+    function canJoinAdoptionRequest(existingData, newData) {
+      let allowedChanges = ['joinerUserId', 'chosenPetId', 'status'];
+      let changedFields = newData.diff(existingData).affectedKeys();
+      
+      return changedFields.hasOnly(allowedChanges.concat(['updatedAt'])) &&
+             existingData.status == 'pending' &&
+             (!('joinerUserId' in newData) || 
+              (newData.joinerUserId == request.auth.uid && 
+               existingData.creatorUserId != request.auth.uid));
+    }
+
+    // ========================================
+    // COLEÇÃO DE MOEDA DO USUÁRIO
+    // ========================================
+    
+    match /user_currency/{userId} {
+      // Leitura: apenas o próprio usuário
+      allow read: if isOwner(userId);
+      
+      // Criação: apenas o próprio usuário
+      allow create: if isOwner(userId) && 
+                      isValidCurrencyData(request.resource.data);
+      
+      // Atualização: apenas o próprio usuário ou sistema
+      allow update: if isOwner(userId) && 
+                      isValidCurrencyUpdate(resource.data, request.resource.data);
+      
+      // Não permite deletion
+      allow delete: if false;
+    }
+    
+    // Valida dados da moeda
+    function isValidCurrencyData(data) {
+      let requiredFields = ['currentUserId', 'coins', 'gems', 'xp', 'lastUpdated'];
+      
+      return data.keys().hasAll(requiredFields) &&
+             data.keys().hasOnly(requiredFields.concat(['updatedAt'])) &&
+             data.currentUserId == request.auth.uid &&
+             isPositiveInt(data.coins) &&
+             data.coins <= 999999999 &&
+             isPositiveInt(data.gems) &&
+             data.gems <= 999999 &&
+             isPositiveInt(data.xp) &&
+             data.xp <= 999999999 &&
+             isValidString(data.lastUpdated, 1, 50);
+    }
+    
+    // Valida atualizações da moeda
+    function isValidCurrencyUpdate(existingData, newData) {
+      let immutableFields = ['currentUserId'];
+      let updatableFields = ['coins', 'gems', 'xp', 'lastUpdated'];
+      
+      return !newData.diff(existingData).affectedKeys().hasAny(immutableFields) &&
+             isPositiveInt(newData.coins) &&
+             newData.coins <= 999999999 &&
+             isPositiveInt(newData.gems) &&
+             newData.gems <= 999999 &&
+             isPositiveInt(newData.xp) &&
+             newData.xp <= 999999999;
+    }
+
+    // ========================================
+    // COLEÇÃO DO SISTEMA (CONFIGURAÇÕES)
+    // ========================================
+    
+    match /system/{document} {
+      // Leitura: todos os usuários autenticados
+      allow read: if isAuthenticated();
+      
+      // Não permite escrita para usuários normais
+      allow write: if false;
+    }
+
+    // ========================================
+    // COLEÇÃO DE LOGS (SE NECESSÁRIO)
+    // ========================================
+    
+    match /logs/{logId} {
+      // Apenas leitura para debug (remover em produção)
+      allow read: if isAuthenticated() && debug.enable;
+      
+      // Permite apenas criação de logs
+      allow create: if isAuthenticated() && 
+                      isValidLogData(request.resource.data);
+      
+      // Não permite atualização ou deletion
+      allow update, delete: if false;
+    }
+    
+    // Valida dados do log
+    function isValidLogData(data) {
+      return data.keys().hasAll(['userId', 'action', 'timestamp']) &&
+             data.keys().hasOnly(['userId', 'action', 'timestamp', 'metadata']) &&
+             data.userId == request.auth.uid &&
+             isValidString(data.action, 1, 100) &&
+             isValidTimestamp(data.timestamp);
+    }
+
+    // ========================================
+    // REGRAS PADRÃO (FALLBACK)
+    // ========================================
+    
+    // Bloqueia acesso a qualquer coleção não especificada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ========================================
+// REGRAS PARA FIREBASE STORAGE
+// ========================================
+
+/*
+// storage.rules
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Regras para imagens de pets
+    match /pets/{petId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                     isValidImageFile(fileName) &&
+                     resource.size < 3 * 1024 * 1024; // 3MB max
+    }
+    
+    // Regras para avatares de usuários
+    match /avatars/{userId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     isValidImageFile(fileName) &&
+                     resource.size < 2 * 1024 * 1024; // 2MB max
+    }
+    
+    // Função para validar arquivos de imagem
+    function isValidImageFile(fileName) {
+      return fileName.matches('.*\\.(jpg|jpeg|png|webp)$');
+    }
+    
+    // Bloqueia acesso a outros paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+*/

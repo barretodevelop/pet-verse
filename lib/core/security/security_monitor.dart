@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:logger/logger.dart';
+import 'package:petverse/core/providers/secure_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/app_config.dart';
@@ -687,26 +688,40 @@ class SecurityIssue {
     required this.severity,
     required this.description,
     DateTime? timestamp,
+    required String message,
+    required SecurityIssueType type,
   }) : timestamp = timestamp ?? DateTime.now();
 
   factory SecurityIssue.info(String description) {
     return SecurityIssue(
-        severity: SecurityEventSeverity.info, description: description);
+        severity: SecurityEventSeverity.info,
+        description: description,
+        message: '',
+        type: SecurityIssueType.connectivityIssue);
   }
 
   factory SecurityIssue.warning(String description) {
     return SecurityIssue(
-        severity: SecurityEventSeverity.warning, description: description);
+        severity: SecurityEventSeverity.warning,
+        description: description,
+        message: '',
+        type: SecurityIssueType.connectivityIssue);
   }
 
   factory SecurityIssue.error(String description) {
     return SecurityIssue(
-        severity: SecurityEventSeverity.error, description: description);
+        severity: SecurityEventSeverity.error,
+        description: description,
+        message: '',
+        type: SecurityIssueType.connectivityIssue);
   }
 
   factory SecurityIssue.critical(String description) {
     return SecurityIssue(
-        severity: SecurityEventSeverity.critical, description: description);
+        severity: SecurityEventSeverity.critical,
+        description: description,
+        message: '',
+        type: SecurityIssueType.connectivityIssue);
   }
 }
 
