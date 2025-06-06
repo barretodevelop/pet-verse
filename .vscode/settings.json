@@ -1,12 +1,58 @@
 {
-  "dart.flutterSdkPath": null,
-  "dart.runPubGetOnPubspecChanges": true,
-  "[dart]": {
-    "editor.formatOnSave": true,
-    "editor.rulers": [80]
+  // 🧠 Melhora performance ignorando pastas grandes
+  "files.watcherExclude": {
+    "**/.dart_tool/**": true,
+    "**/build/**": true,
+    "**/node_modules/**": true
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit"
-  }
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/node_modules": true
+  },
+
+  // 🚫 Desativa auto format em arquivos grandes (pode causar lentidão)
+  "editor.formatOnSave": false,
+
+  // 🔥 Desativa hot reload automático para ter mais controle
+  "dart.flutterHotReloadOnSave": true,
+
+  // ✅ Usa o SDK atual configurado no projeto
+  "dart.sdkPath": ".fvm/flutter_sdk", // ou ajuste para o caminho do seu SDK local
+  "flutter.sdkPath": ".fvm/flutter_sdk",
+
+  // 🧹 Otimiza o IntelliSense
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+
+  // 🎯 Melhor autocompletar sem atrasos
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+
+  // 🚀 Ignora arquivos gerados na navegação
+  "files.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/*.g.dart": true,
+    "**/*.freezed.dart": true
+  },
+
+  // 📦 Ajuda a manter os pacotes atualizados
+  "pubspecAssist.showUpdateDependencyButton": true,
+
+  // 🧪 Ativa análise mais eficiente
+  "dart.analysisExcludedFolders": [
+    "build/",
+    ".dart_tool/",
+    "**/android/.gradle",
+    "**/ios/Pods"
+  ],
+
+  // 👁️ Melhora visualização de erros/warnings
+  "problems.decorations.enabled": true,
+
+  // 🧰 Git pode ser pesado, desative se não for usar aqui
+  "git.enabled": true
 }
