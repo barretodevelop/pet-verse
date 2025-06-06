@@ -24,9 +24,15 @@ class FirebaseConfig {
 
       // Configura Firebase baseado na plataforma
       // final options = _getFirebaseOptions();
-      // await Firebase.initializeApp(options: options);
 
-      await Firebase.initializeApp();
+      final apps = Firebase.apps;
+      if (apps.isEmpty) {
+        await Firebase.initializeApp(
+            // options: DefaultFirebaseOptions.currentPlatform,
+            );
+      }
+
+      // await Firebase.initializeApp();
 
       // Configurações de segurança
       await _configureFirebaseSecurity();

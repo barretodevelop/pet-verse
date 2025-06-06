@@ -1,42 +1,39 @@
+// ========================================
+// CUSTOM APP BAR ATUALIZADA (SIMPLIFICADA)
+// lib/core/widgets/custom_bar.dart (VERSÃO FINAL)
+// ========================================
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../presentation/providers/currency_provider.dart';
 import '../../presentation/providers/theme_provider.dart';
+import '../../presentation/widgets/user_profile_widget.dart';
 
-/// Widget customizado para a AppBar do aplicativo
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final VoidCallback onSettingsClick;
+  final VoidCallback? onSettingsClick;
   final VoidCallback? onNotificationsClick;
-  final String? userDisplayName;
-  final String? userAvatarUrl;
   final bool showBackButton;
   final String? title;
 
   const CustomAppBar({
     super.key,
-    required this.onSettingsClick,
+    this.onSettingsClick,
     this.onNotificationsClick,
-    this.userDisplayName,
-    this.userAvatarUrl,
     this.showBackButton = false,
     this.title,
+    required String userDisplayName,
   });
 
   @override
   Size get preferredSize => const Size.fromHeight(180);
-
-  void _showNotifications(BuildContext context) {}
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userCurrency = ref.watch(userCurrencyProvider);
     final formattedCurrency = ref.watch(formattedCurrencyProvider);
     final isLightTheme = ref.watch(isLightThemeProvider);
-
-    final displayName = userDisplayName ?? 'Usuário';
-    final avatarUrl =
-        userAvatarUrl ?? 'https://placehold.co/50x50/cccccc/ffffff?text=AV';
 
     return Container(
       height: 180,
@@ -59,88 +56,11 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   children: [
-                    // Avatar e saudação do usuário
-                    Expanded(
-                      child: Row(
-                        children: [
-                          // Avatar do usuário
-                          GestureDetector(
-                            // onTap: () => _showUserProfile(context),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 2,
-                                ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 22,
-                                backgroundImage: NetworkImage(avatarUrl),
-                                backgroundColor: Colors.white.withOpacity(0.2),
-                                onBackgroundImageError:
-                                    (exception, stackTrace) {
-                                  // Fallback se a imagem não carregar
-                                },
-                                child: userAvatarUrl == null
-                                    ? Text(
-                                        displayName.isNotEmpty
-                                            ? displayName[0].toUpperCase()
-                                            : 'U',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Saudação e informações do usuário
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _getGreeting(),
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  displayName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (title != null) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    title!,
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
+                    // Widget de perfil do usuário (simplificado)
+                    const Expanded(
+                      child: UserProfileWidget(
+                        showEmail: true,
+                        avatarRadius: 22,
                       ),
                     ),
 
@@ -157,7 +77,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                 color: Colors.white,
                                 size: 24,
                               ),
-                              // Badge de notificação (simulado)
+                              // Badge de notificação
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -196,7 +116,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             color: Colors.white,
                             size: 24,
                           ),
-                          onPressed: onSettingsClick,
+                          onPressed:
+                              onSettingsClick ?? () => _showSettings(context),
                           tooltip: 'Configurações',
                         ),
                       ],
@@ -226,20 +147,17 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   _buildCurrencyDisplay(
                     icon: '💰',
                     value: formattedCurrency.coins,
-                    color: const Color(0xFFFFD700), // Dourado
-                    // onTap: () => _showCurrencyDetails(context, 'coins', userCurrency.coins),
+                    color: const Color(0xFFFFD700),
                   ),
                   _buildCurrencyDisplay(
                     icon: '💎',
                     value: formattedCurrency.gems,
-                    color: const Color(0xFF40E0D0), // Turquesa
-                    // onTap: () => _showCurrencyDetails(context, 'gems', userCurrency.gems),
+                    color: const Color(0xFF40E0D0),
                   ),
                   _buildCurrencyDisplay(
                     icon: '⭐',
                     value: formattedCurrency.xp,
-                    color: const Color(0xFF32CD32), // Verde lima
-                    // onTap: () => _showLevelDetails(context, userCurrency),
+                    color: const Color(0xFF32CD32),
                   ),
                 ],
               ),
@@ -250,7 +168,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Widget para exibir informações de moeda
   Widget _buildCurrencyDisplay({
     required String icon,
     required String value,
@@ -268,10 +185,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              icon,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(icon, style: const TextStyle(fontSize: 16)),
             const SizedBox(width: 4),
             Text(
               value,
@@ -287,15 +201,91 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Retorna uma saudação baseada no horário atual
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Bom dia,';
-    } else if (hour < 18) {
-      return 'Boa tarde,';
-    } else {
-      return 'Boa noite,';
-    }
+  void _showNotifications(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Notificações'),
+        content: const Text('Nenhuma notificação nova'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Configurações',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.palette),
+              title: const Text('Tema'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implementar mudança de tema
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notificações'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implementar configurações de notificação
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 }
+
+// ========================================
+// PROVIDER PARA DETECTAR MUDANÇAS NO PERFIL
+// lib/core/providers/auth_providers.dart (ADICIONAR)
+// ========================================
+
+/// Provider que observa mudanças no perfil do usuário
+final userProfileChangesProvider = StreamProvider<Map<String, String?>>((ref) {
+  return FirebaseAuth.instance.authStateChanges().map((user) {
+    if (user == null) {
+      return {
+        'name': null,
+        'email': null,
+        'photoUrl': null,
+      };
+    }
+
+    return {
+      'name': user.displayName ?? user.email?.split('@').first ?? 'Usuário',
+      'email': user.email,
+      'photoUrl': user.photoURL,
+    };
+  });
+});

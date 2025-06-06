@@ -2,7 +2,8 @@ plugins {
     id("com.android.application") // Seu plugin de aplicação Android
     id("kotlin-android")          // Se você estiver usando Kotlin
     id("dev.flutter.flutter-gradle-plugin") // Se for um projeto Flutter
-    id("com.google.gms.google-services") // Aplica o plugin Google Services
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics") // Aplica o plugin Google Services
 }
 
 android {

@@ -81,7 +81,7 @@ Future<void> _initializeApp() async {
     await FirebaseConfig.initialize();
     logger.d('Firebase core initialized');
 
-    // 4. Inicializa serviços Firebase
+    // // 4. Inicializa serviços Firebase
     await _initializeFirebaseServices();
     logger.d('Firebase services initialized');
 
