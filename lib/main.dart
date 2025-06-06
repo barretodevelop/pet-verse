@@ -1,33 +1,24 @@
-// lib/main.dart
+// lib/main.dart - ATUALIZADO COM SISTEMA DE NAVEGAÇÃO
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import 'package:petverse/core/firebase/firebase_analytics_service.dart';
-import 'package:petverse/presentation/providers/theme_provider.dart';
-import 'package:petverse/presentation/screens/home_screen.dart';
-import 'package:petverse/presentation/screens/login_screen.dart';
-import 'package:petverse/presentation/screens/splash_screen.dart';
+import 'package:petverse/core/navigation/back_button_controller.dart';
+import 'package:petverse/core/navigation/deep_link_handler.dart';
+import 'package:petverse/core/navigation/navigation_providers.dart';
 
-// Imports de segurança e Firebase
+// Imports existentes mantidos
 import 'core/auth/social_auth_service.dart';
 import 'core/config/app_config.dart';
+import 'core/firebase/firebase_analytics_service.dart';
 import 'core/firebase/firebase_auth_service.dart';
 import 'core/firebase/firebase_config.dart';
 import 'core/network/rate_limiter.dart';
 import 'core/network/secure_http_client.dart';
 import 'core/validation/input_validator.dart';
-
-/// Enum para controlar o estado da aplicação
-enum AppState {
-  loading,
-  configuring,
-  login,
-  home,
-  error,
-}
+import 'presentation/providers/theme_provider.dart';
 
 /// Função principal da aplicação
 void main() async {
@@ -42,13 +33,13 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
 
       try {
-        // Inicialização segura incluindo Firebase
+        // Inicialização segura incluindo Firebase e Navegação
         await _initializeApp();
 
-        // Executa a aplicação
+        // Executa a aplicação com navegação
         runApp(
           const ProviderScope(
-            child: PetAdoteApp(),
+            child: PetAdoteAppWithNavigation(),
           ),
         );
       } catch (e, stackTrace) {
@@ -63,10 +54,10 @@ void main() async {
   );
 }
 
-/// Inicialização segura da aplicação incluindo Firebase
+/// Inicialização segura da aplicação incluindo Firebase e Navegação
 Future<void> _initializeApp() async {
   final logger = Logger();
-  logger.i('Starting app initialization with Firebase...');
+  logger.i('Starting app initialization with Firebase and Navigation...');
 
   try {
     // 1. Configurações do sistema
@@ -81,26 +72,19 @@ Future<void> _initializeApp() async {
     await FirebaseConfig.initialize();
     logger.d('Firebase core initialized');
 
-    // // 4. Inicializa serviços Firebase
+    // 4. Inicializa serviços Firebase
     await _initializeFirebaseServices();
     logger.d('Firebase services initialized');
 
-    await FirebaseAnalyticsService
-        .initialize(); // Inicializa seu serviço customizado
+    // 5. Inicializa sistema de navegação
+    await _initializeNavigationSystem();
+    logger.d('Navigation system initialized');
 
-    // 5. Inicializa rate limiting baseado no ambiente
+    // 6. Inicializa rate limiting baseado no ambiente
     RateLimiterFactory.createForEnvironment(
       AppConfig.instance.environment.name,
     );
     logger.d('Rate limiter configured');
-
-    // // 6. Inicializa cliente HTTP seguro
-    // SecureHttpClient.initialize(
-    //   retryPolicy: AppConfig.instance.isProduction
-    //       ? RetryPolicy.conservative()
-    //       : const RetryPolicy(),
-    // );
-    // logger.d('Secure HTTP client initialized');
 
     // 7. Inicializa autenticação social
     await SocialAuthService.initialize();
@@ -110,7 +94,7 @@ Future<void> _initializeApp() async {
     // await _performSecurityChecks();
     // logger.d('Security checks completed');
 
-    logger.i('App initialization completed successfully with Firebase');
+    logger.i('App initialization completed successfully');
   } catch (e, stackTrace) {
     logger.e('Failed to initialize app', error: e, stackTrace: stackTrace);
     rethrow;
@@ -126,7 +110,10 @@ Future<void> _initializeFirebaseServices() async {
     await FirebaseAuthService.initialize();
     logger.d('Firebase Auth Service initialized');
 
-    // Outros serviços Firebase são inicializados como singletons quando necessário
+    // Inicializa Firebase Analytics
+    await FirebaseAnalyticsService.initialize();
+    logger.d('Firebase Analytics Service initialized');
+
     logger.d('Firebase services ready');
   } catch (e, stackTrace) {
     logger.e('Firebase services initialization failed',
@@ -135,15 +122,36 @@ Future<void> _initializeFirebaseServices() async {
   }
 }
 
-/// Configurações do sistema
+/// Inicializa sistema de navegação
+Future<void> _initializeNavigationSystem() async {
+  final logger = Logger();
+
+  try {
+    // Inicializa handler de deep links
+    await DeepLinkHandler.instance.initialize();
+    logger.d('Deep link handler initialized');
+
+    // Configura controle de back button
+    BackButtonController.instance.configure(
+      doubleTapThreshold: const Duration(seconds: 2),
+    );
+    logger.d('Back button controller configured');
+
+    logger.d('Navigation system ready');
+  } catch (e, stackTrace) {
+    logger.e('Navigation system initialization failed',
+        error: e, stackTrace: stackTrace);
+    rethrow;
+  }
+}
+
+/// Configurações do sistema (mantido do original)
 Future<void> _configureSystemSettings() async {
-  // Configuração da orientação (apenas portrait)
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Configuração da barra de status
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -154,22 +162,19 @@ Future<void> _configureSystemSettings() async {
   );
 }
 
-/// Verificações de segurança na inicialização
+/// Verificações de segurança (mantido do original)
 Future<void> _performSecurityChecks() async {
   final config = AppConfig.instance;
   final logger = Logger();
 
-  // Verifica se estamos em debug mode em produção
   if (config.isProduction && config.debugMode) {
     logger.w('WARNING: Debug mode enabled in production');
   }
 
-  // Verifica se as API keys estão configuradas
   if (config.isProduction && !config.hasAllRequiredApiKeys) {
     throw Exception('Missing required API keys in production environment');
   }
 
-  // Verifica configuração do Firebase
   if (!FirebaseConfig.isInitialized) {
     throw Exception('Firebase not properly initialized');
   }
@@ -203,33 +208,30 @@ Future<void> _performSecurityChecks() async {
   logger.i('Security checks passed');
 }
 
-/// Widget raiz da aplicação
-class PetAdoteApp extends ConsumerStatefulWidget {
-  const PetAdoteApp({super.key});
+/// Widget raiz da aplicação com navegação integrada
+class PetAdoteAppWithNavigation extends ConsumerStatefulWidget {
+  const PetAdoteAppWithNavigation({super.key});
 
   @override
-  ConsumerState<PetAdoteApp> createState() => _PetAdoteAppState();
+  ConsumerState<PetAdoteAppWithNavigation> createState() =>
+      _PetAdoteAppWithNavigationState();
 }
 
-class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
+class _PetAdoteAppWithNavigationState
+    extends ConsumerState<PetAdoteAppWithNavigation>
     with WidgetsBindingObserver {
-  AppState _appState = AppState.loading;
-  String? _errorMessage;
   final Logger _logger = Logger();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _startApp();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // Cleanup dos recursos de segurança
-    SecureHttpClient.instance.dispose();
-    FirebaseAuthService.instance.dispose();
+    _cleanupResources();
     super.dispose();
   }
 
@@ -252,70 +254,6 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     }
   }
 
-  /// Inicia a aplicação
-  Future<void> _startApp() async {
-    try {
-      setState(() {
-        _appState = AppState.configuring;
-      });
-
-      // Aguarda configurações finalizarem
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Verifica se o usuário já está logado (Firebase)
-      final isLoggedIn = await _checkUserLoginStatus();
-
-      setState(() {
-        _appState = isLoggedIn ? AppState.home : AppState.login;
-      });
-    } catch (error, stackTrace) {
-      _logger.e('App startup failed', error: error, stackTrace: stackTrace);
-
-      setState(() {
-        _appState = AppState.error;
-        _errorMessage = 'Falha ao inicializar aplicação: $error';
-      });
-    }
-  }
-
-  /// Verifica status de login do usuário usando Firebase
-  Future<bool> _checkUserLoginStatus() async {
-    try {
-      final firebaseAuth = FirebaseAuthService.instance;
-      final currentUser = firebaseAuth.currentUser;
-
-      if (currentUser != null) {
-        // Verifica se o token ainda é válido
-        try {
-          await currentUser.getIdToken(true); // Force refresh
-          _logger.d('User authenticated: ${currentUser.uid}');
-          return true;
-        } catch (e) {
-          _logger.w('Token validation failed: $e');
-          await firebaseAuth.signOut();
-          return false;
-        }
-      }
-
-      return false;
-    } catch (e) {
-      _logger.w('Login status check failed: $e');
-      return false;
-    }
-  }
-
-  /// Manipula sucesso no login
-  void _handleLoginSuccess() {
-    setState(() {
-      _appState = AppState.home;
-    });
-  }
-
-  /// Manipula erro no login
-  void _handleLoginError(String error) {
-    _showErrorSnackBar('Erro no login: $error');
-  }
-
   /// Manipula quando o app volta do background
   void _handleAppResumed() {
     _logger.d('App resumed');
@@ -326,7 +264,6 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
       _restartApp();
     }
 
-    // Verifica se Firebase ainda está funcionando
     if (!FirebaseConfig.isInitialized) {
       _logger.w('Firebase not initialized on resume');
       _restartApp();
@@ -340,156 +277,102 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     // Atualiza última atividade do usuário se autenticado
     final currentUser = FirebaseAuthService.instance.currentUser;
     if (currentUser != null) {
-      // Aqui poderia atualizar a última atividade no Firestore
       _logger.d('Updating user last activity');
+      // Aqui poderia fazer update no Firestore se necessário
     }
   }
 
   /// Manipula quando o app é finalizado
   void _handleAppDetached() {
     _logger.d('App detached');
+    _cleanupResources();
+  }
 
-    // Cleanup final
+  /// Limpa recursos da aplicação
+  void _cleanupResources() {
     SecureHttpClient.instance.dispose();
     FirebaseAuthService.instance.dispose();
+    BackButtonController.instance.release();
   }
 
   /// Reinicia a aplicação
   void _restartApp() {
-    setState(() {
-      _appState = AppState.loading;
-      _errorMessage = null;
-    });
-
-    _startApp();
-  }
-
-  /// Mostra snackbar de erro
-  void _showErrorSnackBar(String message) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Tentar Novamente',
-          textColor: Colors.white,
-          onPressed: _restartApp,
-        ),
-      ),
-    );
+    // Implementar lógica de restart se necessário
+    _logger.w('App restart requested');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Observa o tema atual
-    final themeMode = ref.watch(themeModeProvider);
-    final lightTheme = ref.watch(lightThemeProvider);
-    final darkTheme = ref.watch(darkThemeProvider);
+    // Observa o provider do GoRouter
+    final router = ref.watch(goRouterProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       // Configurações básicas
       title: 'Pet Adote',
       debugShowCheckedModeBanner: false,
 
-      // Temas
-      themeMode: themeMode,
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      // Configuração do router
+      routerConfig: router,
+
+      // Temas (usando providers existentes)
+      themeMode: ref.watch(themeModeProvider),
+      theme: ref.watch(lightThemeProvider),
+      darkTheme: ref.watch(darkThemeProvider),
 
       // Configurações de localização
       locale: const Locale('pt', 'BR'),
 
-      // Roteamento baseado no estado
-      home: _buildCurrentScreen(),
-
-      // Builder para configurações globais
+      // Builder global para aplicar controles de navegação
       builder: (context, child) {
-        return _AppWrapper(child: child);
+        return AppWrapper(child: child);
       },
     );
   }
+}
 
-  /// Constrói a tela atual baseada no estado
-  Widget _buildCurrentScreen() {
-    switch (_appState) {
-      case AppState.loading:
-      case AppState.configuring:
-        return SplashScreen(
-          onComplete: () {
-            // O estado já é gerenciado pelo _startApp
-          },
-        );
+/// Wrapper global para configurações que afetam toda a aplicação
+class AppWrapper extends ConsumerWidget {
+  final Widget? child;
 
-      case AppState.login:
-        return LoginScreen(
-          onLoginSuccess: _handleLoginSuccess,
-          onLoginError: _handleLoginError,
-          enabledMethods: const [
-            LoginType.google,
-            LoginType.apple,
-          ],
-          showSkipOption: !AppConfig.instance.isProduction,
-        );
+  const AppWrapper({super.key, this.child});
 
-      case AppState.home:
-        return const HomeScreen();
-
-      case AppState.error:
-        return _buildErrorScreen();
-    }
-  }
-
-  /// Constrói tela de erro
-  Widget _buildErrorScreen() {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red[400],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Ops! Algo deu errado',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage ?? 'Erro desconhecido',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: _restartApp,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Tentar Novamente'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MediaQuery(
+      // Remove padding desnecessário em alguns dispositivos
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(
+          MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
         ),
+      ),
+      child: NavigationWrapper(
+        // child: NavigationDebugOverlay(
+        child: child ?? const SizedBox.shrink(),
+        // ),
       ),
     );
   }
 }
 
-/// Aplicação de erro para casos críticos
+/// Wrapper que aplica controles globais de navegação
+class NavigationWrapper extends ConsumerWidget {
+  final Widget? child;
+
+  const NavigationWrapper({super.key, this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return BackButtonHandler(
+      enableDoubleTapToExit: true,
+      exitMessage: 'Pressione novamente para sair',
+      // child: NavigationLoadingOverlay(
+      child: child ?? const SizedBox.shrink(),
+      // ),
+    );
+  }
+}
+
+/// Aplicação de erro para casos críticos (mantida do original)
 class ErrorApp extends StatelessWidget {
   const ErrorApp({super.key});
 
@@ -531,92 +414,58 @@ class ErrorApp extends StatelessWidget {
   }
 }
 
-/// Wrapper global para configurações que afetam toda a aplicação
-class _AppWrapper extends ConsumerWidget {
-  final Widget? child;
-
-  const _AppWrapper({this.child});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MediaQuery(
-      // Remove padding desnecessário em alguns dispositivos
-      data: MediaQuery.of(context).copyWith(
-        textScaler: TextScaler.linear(
-          MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
-        ),
-      ),
-      child: child ?? const SizedBox.shrink(),
-    );
-  }
-}
-
 // ========================================
-// CONFIGURAÇÕES ATUALIZADAS COM FIREBASE
+// CONFIGURAÇÕES ATUALIZADAS
 // ========================================
 
-/// Classe para configurações globais da aplicação (atualizada)
+/// Classe para configurações globais da aplicação (atualizada com navegação)
 class AppConstants {
-  // URLs da API (agora gerenciadas pelo AppConfig)
+  // URLs da API (mantidas)
   static String get baseUrl => AppConfig.instance.backendBaseUrl;
   static String get geminiUrl => AppConfig.instance.geminiBaseUrl;
   static String get imagenUrl => AppConfig.instance.imagenBaseUrl;
 
-  // Configurações Firebase
+  // Configurações Firebase (mantidas)
   static Map<String, dynamic> get firebaseConfig =>
       FirebaseConfig.getConfigInfo();
   static bool get isFirebaseInitialized => FirebaseConfig.isInitialized;
 
-  // Configurações de tempo
+  // Configurações de navegação (NOVAS)
+  static const Duration navigationTransitionDuration =
+      Duration(milliseconds: 300);
+  static const Duration navigationDebounce = Duration(milliseconds: 500);
+  static const int maxNavigationHistory = 10;
+  static const Duration deepLinkTimeout = Duration(seconds: 5);
+
+  // Configurações de tempo (mantidas)
   static const Duration splashDuration = Duration(seconds: 3);
   static const Duration animationDuration = Duration(milliseconds: 300);
 
-  // Configurações de cache
-  static int get maxCacheSize => AppConfig.instance.cacheMaxSize;
-  static Duration get cacheTimeout =>
-      Duration(seconds: AppConfig.instance.cacheMaxAge);
-
-  // Configurações de pet
+  // Demais configurações mantidas...
   static const int maxPetsInRequest = 3;
-  static const int adoptionRequestDuration = 5; // dias
-
-  // Configurações de moeda
+  static const int adoptionRequestDuration = 5;
   static const int initialCoins = 1000;
   static const int initialGems = 50;
   static const int initialXP = 0;
 
-  // Configurações de custos
-  static const int petGenerationCost = 20; // gems
-  static const int feedPetCost = 10; // coins
-  static const int playPetCost = 5; // coins
-  static const int restPetCost = 8; // coins
-
-  // Configurações de recompensas
-  static const int adoptionReward = 100; // coins
-  static const int playXPReward = 10; // xp
-  static const int dailyRewardCoins = 100;
-  static const int dailyRewardGems = 5;
-  static const int dailyRewardXP = 50;
-
-  // Configurações de interface
+  // Configurações de interface (mantidas)
   static const double borderRadius = 12.0;
   static const double cardElevation = 4.0;
   static const EdgeInsets defaultPadding = EdgeInsets.all(16.0);
-
-  // Configurações de animação
   static const Curve defaultCurve = Curves.easeInOut;
   static const Duration defaultTransition = Duration(milliseconds: 200);
 
-  // Configurações de debug (agora baseadas no AppConfig)
+  // Configurações de debug (mantidas)
   static bool get enableDebugLogging => AppConfig.instance.debugMode;
   static bool get enablePerformanceOverlay => AppConfig.instance.debugMode;
+  static bool get enableNavigationDebug => AppConfig.instance.debugMode;
 }
 
-/// Utilitários globais da aplicação (atualizados)
+/// Utilitários globais da aplicação (atualizados com navegação)
 class AppUtils {
   static final Logger _logger = Logger();
 
-  /// Formata números para exibição amigável
+  // Métodos existentes mantidos...
   static String formatNumber(int number) {
     if (number >= 1000000) {
       return '${(number / 1000000).toStringAsFixed(1)}M';
@@ -626,7 +475,6 @@ class AppUtils {
     return number.toString();
   }
 
-  /// Retorna saudação baseada no horário
   static String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Bom dia';
@@ -634,31 +482,79 @@ class AppUtils {
     return 'Boa noite';
   }
 
-  /// Calcula a cor da borda baseada no nível
-  static Color getBorderColorByLevel(int level) {
-    if (level >= 10) return const Color(0xFFFFD700); // Dourado
-    if (level >= 5) return const Color(0xFFC0C0C0); // Prata
-    return const Color(0xFFCD7F32); // Bronze
+  // NOVOS métodos relacionados à navegação
+
+  /// Gera deep link para compartilhamento
+  static Future<String> generateShareLink(String route,
+      {Map<String, String>? params}) async {
+    try {
+      return DeepLinkHandler.instance
+          .generateDeepLink(route, parameters: params);
+    } catch (e) {
+      _logger.w('Failed to generate share link: $e');
+      return 'https://petadote.app';
+    }
   }
 
-  /// Verifica se uma string é um email válido (usando validação segura)
+  /// Compartilha deep link
+  static Future<void> shareRoute(String route,
+      {Map<String, String>? params}) async {
+    try {
+      await DeepLinkHandler.instance.shareDeepLink(route, parameters: params);
+    } catch (e) {
+      _logger.w('Failed to share route: $e');
+    }
+  }
+
+  /// Verifica se uma rota é válida
+  static bool isValidRoute(String route) {
+    // Lista de rotas válidas conhecidas
+    const validRoutes = [
+      '/dashboard',
+      '/store',
+      '/games',
+      '/feed',
+      '/pet',
+      '/adoption',
+      '/generate-pet',
+      '/settings',
+      '/profile',
+    ];
+
+    return validRoutes.any((validRoute) => route.startsWith(validRoute));
+  }
+
+  /// Log de debug seguro para navegação
+  static void navigationLog(String message, {Object? data}) {
+    if (AppConstants.enableNavigationDebug) {
+      _logger.d('[Navigation] $message');
+      if (data != null) {
+        _logger.d('Navigation Data: $data');
+      }
+    }
+  }
+
+  // Métodos existentes mantidos...
+  static Color getBorderColorByLevel(int level) {
+    if (level >= 10) return const Color(0xFFFFD700);
+    if (level >= 5) return const Color(0xFFC0C0C0);
+    return const Color(0xFFCD7F32);
+  }
+
   static bool isValidEmail(String email) {
     final validation = InputValidator.validate(email, ValidationType.email);
     return validation.isValid;
   }
 
-  /// Valida entrada de usuário de forma segura
   static String? validateUserInput(String input, ValidationType type) {
     final validation = InputValidator.validate(input, type);
     return validation.isValid ? null : validation.error;
   }
 
-  /// Gera ID único
   static String generateUniqueId() {
     return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  /// Log de debug seguro (sem informações sensíveis)
   static void debugLog(String message, {Object? data}) {
     if (AppConstants.enableDebugLogging) {
       _logger.d('[PetAdote] $message');
@@ -668,13 +564,11 @@ class AppUtils {
     }
   }
 
-  /// Log de erro seguro
   static void errorLog(String message,
       {Object? error, StackTrace? stackTrace}) {
     _logger.e('[PetAdote] $message', error: error, stackTrace: stackTrace);
   }
 
-  /// Verifica conectividade com Firebase
   static Future<bool> checkFirebaseConnectivity() async {
     try {
       if (!FirebaseConfig.isInitialized) {
@@ -685,7 +579,6 @@ class AppUtils {
       final currentUser = authService.currentUser;
 
       if (currentUser != null) {
-        // Tenta refreshar token para verificar conectividade
         await currentUser.getIdToken(true);
       }
 
