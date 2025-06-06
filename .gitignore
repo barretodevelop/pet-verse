@@ -125,3 +125,56 @@ logs/
 
 # Very Good CLI
 .very_good
+
+
+
+
+# ========================================
+# .gitignore (Adicionar estas linhas)
+# ========================================
+
+# Environment files - NUNCA commitar
+.env
+.env.local
+.env.*.local
+.env.prod
+.env.staging
+
+# API Keys e certificados
+*.pem
+*.key
+*.p12
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# Logs e cache
+logs/
+*.log
+.cache/
+
+# Build artifacts
+/build/
+/android/app/build/
+/ios/build/
+
+# Coverage
+coverage/
+lcov.info
+
+# Dependencies
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

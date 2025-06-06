@@ -56,6 +56,27 @@ dependencies:
   # Dev & Testing
   cupertino_icons: ^1.0.2
 
+ # Configuração e ambiente
+  flutter_dotenv: ^5.1.0
+  
+  # Rede e HTTP
+  dio: ^5.3.2
+  retry: ^3.1.2
+  
+  # Validação e sanitização
+  validators: ^3.0.0
+  crypto: ^3.0.3
+  
+  # Rate limiting e cache
+  rate_limiter: ^0.1.0+3
+ 
+  
+  # Logging e monitoramento
+  logger: ^2.0.2+1
+  
+  # Utilitários
+  equatable: ^2.0.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

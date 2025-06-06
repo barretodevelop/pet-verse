@@ -1,32 +1,103 @@
 // Entry point da aplicação
+// Função auxiliar para tratamento de erros não capturados
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:petverse/presentation/providers/theme_provider.dart';
 import 'package:petverse/presentation/screens/home_screen.dart';
 import 'package:petverse/presentation/screens/login_screen.dart';
 import 'package:petverse/presentation/screens/splash_screen.dart';
 
+// Imports de segurança
+import 'core/config/app_config.dart';
+import 'core/network/rate_limiter.dart';
+import 'core/network/secure_http_client.dart';
+import 'core/validation/input_validator.dart';
+// runZonedGuarded<Future<void>>(Future<void> Function() body, void Function(Object error, StackTrace stack) onError) {}
+
 /// Enum para controlar o estado da aplicação
 enum AppState {
   loading,
+  configuring,
   login,
   home,
+  error,
 }
 
 /// Função principal da aplicação
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // Configuração de error handling global
+  FlutterError.onError = (details) {
+    Logger().e('Flutter Error',
+        error: details.exception, stackTrace: details.stack);
+  };
 
-  // Configurações do sistema
-  await _configureSystemSettings();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa a aplicação com Riverpod
-  runApp(
-    const ProviderScope(
-      child: PetAdoteApp(),
-    ),
+      try {
+        // Inicialização segura
+        await _initializeApp();
+
+        // Executa a aplicação
+        runApp(
+          const ProviderScope(
+            child: PetAdoteApp(),
+          ),
+        );
+      } catch (e, stackTrace) {
+        Logger()
+            .e('App initialization failed', error: e, stackTrace: stackTrace);
+        runApp(const ErrorApp());
+      }
+    },
+    (error, stack) {
+      Logger().e('Uncaught error', error: error, stackTrace: stack);
+    },
   );
+}
+
+/// Inicialização segura da aplicação
+Future<void> _initializeApp() async {
+  final logger = Logger();
+  logger.i('Starting app initialization...');
+
+  try {
+    // 1. Configurações do sistema
+    await _configureSystemSettings();
+    logger.d('System settings configured');
+
+    // 2. Carrega configurações de ambiente
+    await AppConfig.initialize();
+    logger.d('App config initialized');
+
+    // 3. Inicializa rate limiting baseado no ambiente
+    RateLimiterFactory.createForEnvironment(
+      AppConfig.instance.environment.name,
+    );
+    logger.d('Rate limiter configured');
+
+    // 4. Inicializa cliente HTTP seguro
+    SecureHttpClient.initialize(
+      retryPolicy: AppConfig.instance.isProduction
+          ? RetryPolicy.conservative()
+          : const RetryPolicy(),
+    );
+    logger.d('Secure HTTP client initialized');
+
+    // 5. Validações de segurança
+    await _performSecurityChecks();
+    logger.d('Security checks completed');
+
+    logger.i('App initialization completed successfully');
+  } catch (e, stackTrace) {
+    logger.e('Failed to initialize app', error: e, stackTrace: stackTrace);
+    rethrow;
+  }
 }
 
 /// Configurações do sistema
@@ -48,6 +119,50 @@ Future<void> _configureSystemSettings() async {
   );
 }
 
+/// Verificações de segurança na inicialização
+Future<void> _performSecurityChecks() async {
+  final config = AppConfig.instance;
+  final logger = Logger();
+
+  // Verifica se estamos em debug mode em produção
+  if (config.isProduction && config.debugMode) {
+    logger.w('WARNING: Debug mode enabled in production');
+  }
+
+  // Verifica se as API keys estão configuradas
+  if (config.isProduction && !config.hasAllRequiredApiKeys) {
+    throw Exception('Missing required API keys in production environment');
+  }
+
+  // Testa conectividade básica se em produção
+  if (config.isProduction) {
+    try {
+      final httpClient = SecureHttpClient.instance;
+      final isConnected = await httpClient.ping().timeout(
+            const Duration(seconds: 5),
+          );
+
+      if (!isConnected) {
+        logger.w('Network connectivity check failed');
+      }
+    } catch (e) {
+      logger.w('Network connectivity check error: $e');
+    }
+  }
+
+  // Valida sistema de validação
+  final testValidation = InputValidator.validate(
+    'test input',
+    ValidationType.generic,
+  );
+
+  if (!testValidation.isValid) {
+    throw Exception('Input validation system not working correctly');
+  }
+
+  logger.i('Security checks passed');
+}
+
 /// Widget raiz da aplicação
 class PetAdoteApp extends ConsumerStatefulWidget {
   const PetAdoteApp({super.key});
@@ -59,17 +174,21 @@ class PetAdoteApp extends ConsumerStatefulWidget {
 class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     with WidgetsBindingObserver {
   AppState _appState = AppState.loading;
+  String? _errorMessage;
+  final Logger _logger = Logger();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeApp();
+    _startApp();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Cleanup dos recursos de segurança
+    SecureHttpClient.instance.dispose();
     super.dispose();
   }
 
@@ -92,34 +211,42 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
     }
   }
 
-  /// Inicializa a aplicação
-  Future<void> _initializeApp() async {
+  /// Inicia a aplicação
+  Future<void> _startApp() async {
     try {
-      // Simula carregamento inicial
-      await Future.delayed(const Duration(seconds: 3));
+      setState(() {
+        _appState = AppState.configuring;
+      });
 
-      // Verifica se o usuário já está logado (simplificado)
+      // Aguarda configurações finalizarem
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Verifica se o usuário já está logado
       final isLoggedIn = await _checkUserLoginStatus();
 
       setState(() {
         _appState = isLoggedIn ? AppState.home : AppState.login;
       });
-    } catch (error) {
-      // Em caso de erro, vai para o login
-      setState(() {
-        _appState = AppState.login;
-      });
+    } catch (error, stackTrace) {
+      _logger.e('App startup failed', error: error, stackTrace: stackTrace);
 
-      // Log do erro em produção
-      debugPrint('Erro na inicialização: $error');
+      setState(() {
+        _appState = AppState.error;
+        _errorMessage = 'Falha ao inicializar aplicação: $error';
+      });
     }
   }
 
   /// Verifica status de login do usuário
   Future<bool> _checkUserLoginStatus() async {
-    // Em uma aplicação real, verificaria tokens, shared preferences, etc.
-    // Por enquanto, sempre retorna true para demonstração
-    return true;
+    try {
+      // Implementar verificação real de login
+      // Por enquanto, sempre retorna true para demonstração
+      return true;
+    } catch (e) {
+      _logger.w('Login status check failed: $e');
+      return false;
+    }
   }
 
   /// Manipula sucesso no login
@@ -136,21 +263,39 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
 
   /// Manipula quando o app volta do background
   void _handleAppResumed() {
-    // Atualiza dados se necessário
-    // Verifica notificações pendentes
-    debugPrint('App resumido');
+    _logger.d('App resumed');
+
+    // Verifica se as configurações ainda são válidas
+    if (!AppConfig.instance.isInitialized) {
+      _logger.w('App config not initialized on resume');
+      _restartApp();
+    }
   }
 
   /// Manipula quando o app vai para o background
   void _handleAppPaused() {
-    // Salva estado se necessário
-    debugPrint('App pausado');
+    _logger.d('App paused');
+
+    // Limpa dados sensíveis da memória se necessário
+    // (implementar conforme necessário)
   }
 
   /// Manipula quando o app é finalizado
   void _handleAppDetached() {
+    _logger.d('App detached');
+
     // Cleanup final
-    debugPrint('App finalizado');
+    SecureHttpClient.instance.dispose();
+  }
+
+  /// Reinicia a aplicação
+  void _restartApp() {
+    setState(() {
+      _appState = AppState.loading;
+      _errorMessage = null;
+    });
+
+    _startApp();
   }
 
   /// Mostra snackbar de erro
@@ -161,6 +306,11 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
         content: Text(message),
         backgroundColor: Colors.red[600],
         behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'Tentar Novamente',
+          textColor: Colors.white,
+          onPressed: _restartApp,
+        ),
       ),
     );
   }
@@ -199,10 +349,10 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
   Widget _buildCurrentScreen() {
     switch (_appState) {
       case AppState.loading:
+      case AppState.configuring:
         return SplashScreen(
           onComplete: () {
-            // O onComplete é chamado quando a splash termina
-            // mas o estado já é gerenciado pelo _initializeApp
+            // O estado já é gerenciado pelo _startApp
           },
         );
 
@@ -214,12 +364,104 @@ class _PetAdoteAppState extends ConsumerState<PetAdoteApp>
             LoginType.google,
             LoginType.apple,
           ],
-          showSkipOption: true,
+          showSkipOption: !AppConfig.instance.isProduction,
         );
 
       case AppState.home:
         return const HomeScreen();
+
+      case AppState.error:
+        return _buildErrorScreen();
     }
+  }
+
+  /// Constrói tela de erro
+  Widget _buildErrorScreen() {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Ops! Algo deu errado',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage ?? 'Erro desconhecido',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: _restartApp,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar Novamente'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Aplicação de erro para casos críticos
+class ErrorApp extends StatelessWidget {
+  const ErrorApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pet Adote - Error',
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[400],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Falha crítica na inicialização',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Por favor, reinstale o aplicativo.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -243,19 +485,25 @@ class _AppWrapper extends ConsumerWidget {
   }
 }
 
-/// Classe para configurações globais da aplicação
-class AppConfig {
-  // URLs da API (quando implementar backend)
-  static const String baseUrl = 'https://api.petadote.com';
-  static const String apiVersion = 'v1';
+// ========================================
+// CONFIGURAÇÕES ATUALIZADAS
+// ========================================
+
+/// Classe para configurações globais da aplicação (atualizada)
+class AppConstants {
+  // URLs da API (agora gerenciadas pelo AppConfig)
+  static String get baseUrl => AppConfig.instance.backendBaseUrl;
+  static String get geminiUrl => AppConfig.instance.geminiBaseUrl;
+  static String get imagenUrl => AppConfig.instance.imagenBaseUrl;
 
   // Configurações de tempo
   static const Duration splashDuration = Duration(seconds: 3);
   static const Duration animationDuration = Duration(milliseconds: 300);
 
   // Configurações de cache
-  static const int maxCacheSize = 100; // MB
-  static const Duration cacheTimeout = Duration(hours: 24);
+  static int get maxCacheSize => AppConfig.instance.cacheMaxSize;
+  static Duration get cacheTimeout =>
+      Duration(seconds: AppConfig.instance.cacheMaxAge);
 
   // Configurações de pet
   static const int maxPetsInRequest = 3;
@@ -288,13 +536,15 @@ class AppConfig {
   static const Curve defaultCurve = Curves.easeInOut;
   static const Duration defaultTransition = Duration(milliseconds: 200);
 
-  // Configurações de debug
-  static const bool enableDebugLogging = true;
-  static const bool enablePerformanceOverlay = false;
+  // Configurações de debug (agora baseadas no AppConfig)
+  static bool get enableDebugLogging => AppConfig.instance.debugMode;
+  static bool get enablePerformanceOverlay => AppConfig.instance.debugMode;
 }
 
-/// Utilitários globais da aplicação
+/// Utilitários globais da aplicação (atualizados)
 class AppUtils {
+  static final Logger _logger = Logger();
+
   /// Formata números para exibição amigável
   static String formatNumber(int number) {
     if (number >= 1000000) {
@@ -320,9 +570,16 @@ class AppUtils {
     return const Color(0xFFCD7F32); // Bronze
   }
 
-  /// Verifica se uma string é um email válido
+  /// Verifica se uma string é um email válido (usando validação segura)
   static bool isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+    final validation = InputValidator.validate(email, ValidationType.email);
+    return validation.isValid;
+  }
+
+  /// Valida entrada de usuário de forma segura
+  static String? validateUserInput(String input, ValidationType type) {
+    final validation = InputValidator.validate(input, type);
+    return validation.isValid ? null : validation.error;
   }
 
   /// Gera ID único
@@ -330,120 +587,19 @@ class AppUtils {
     return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  /// Log de debug (apenas em desenvolvimento)
-  static void debugLog(String message) {
-    if (AppConfig.enableDebugLogging) {
-      debugPrint('[PetAdote] $message');
+  /// Log de debug seguro (sem informações sensíveis)
+  static void debugLog(String message, {Object? data}) {
+    if (AppConstants.enableDebugLogging) {
+      _logger.d('[PetAdote] $message');
+      if (data != null) {
+        _logger.d('Data: $data');
+      }
     }
   }
-}
 
-/// Extensões úteis para o contexto
-extension AppContextExtensions on BuildContext {
-  /// Retorna o tema atual
-  ThemeData get theme => Theme.of(this);
-
-  /// Retorna as cores do tema atual
-  ColorScheme get colors => theme.colorScheme;
-
-  /// Retorna se o tema atual é claro
-  bool get isLightTheme => theme.brightness == Brightness.light;
-
-  /// Retorna o tamanho da tela
-  Size get screenSize => MediaQuery.of(this).size;
-
-  /// Retorna a largura da tela
-  double get screenWidth => screenSize.width;
-
-  /// Retorna a altura da tela
-  double get screenHeight => screenSize.height;
-
-  /// Mostra snackbar de sucesso
-  void showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green[600],
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  /// Log de erro seguro
+  static void errorLog(String message,
+      {Object? error, StackTrace? stackTrace}) {
+    _logger.e('[PetAdote] $message', error: error, stackTrace: stackTrace);
   }
-
-  /// Mostra snackbar de erro
-  void showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  /// Mostra snackbar de informação
-  void showInfoSnackBar(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue[600],
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-}
-
-/// Constantes de cores customizadas
-class AppColors {
-  // Cores primárias
-  static const Color primaryPurple = Color(0xFF8A05BE);
-  static const Color primaryIndigo = Color(0xFF4B0082);
-
-  // Cores secundárias
-  static const Color amber = Color(0xFFFFD700);
-  static const Color cyan = Color(0xFF40E0D0);
-  static const Color lime = Color(0xFF32CD32);
-
-  // Cores de status
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFF44336);
-  static const Color info = Color(0xFF2196F3);
-
-  // Cores de nível
-  static const Color bronze = Color(0xFFCD7F32);
-  static const Color silver = Color(0xFFC0C0C0);
-  static const Color gold = Color(0xFFFFD700);
-}
-
-/// Constantes de texto
-class AppStrings {
-  // Títulos principais
-  static const String appName = 'Pet Adote';
-  static const String appSlogan = 'Encontre seu companheiro perfeito';
-
-  // Mensagens de erro comuns
-  static const String errorGeneric = 'Algo deu errado. Tente novamente.';
-  static const String errorNetwork = 'Erro de conexão. Verifique sua internet.';
-  static const String errorLogin =
-      'Falha no login. Verifique suas credenciais.';
-
-  // Mensagens de sucesso
-  static const String successLogin = 'Login realizado com sucesso!';
-  static const String successAdoption = 'Parabéns! Pet adotado com sucesso!';
-  static const String successPetGenerated = 'Pet único gerado com sucesso!';
-
-  // Labels de navegação
-  static const String navDashboard = 'Dashboard';
-  static const String navStore = 'Loja';
-  static const String navPet = 'Pet';
-  static const String navGames = 'Games';
-  static const String navFeed = 'Feed';
-
-  // Actions
-  static const String actionCancel = 'Cancelar';
-  static const String actionConfirm = 'Confirmar';
-  static const String actionClose = 'Fechar';
-  static const String actionSave = 'Salvar';
-  static const String actionDelete = 'Excluir';
-  static const String actionEdit = 'Editar';
 }
