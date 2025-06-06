@@ -26,7 +26,7 @@ class AppConfig {
 
   late final AppEnvironment _environment;
   late final Map<String, String> _config;
-  late final bool _isInitialized;
+  bool _isInitialized = false;
 
   AppConfig._internal() : _isInitialized = false;
 

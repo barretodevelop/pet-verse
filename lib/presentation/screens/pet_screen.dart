@@ -189,9 +189,51 @@ class _PetScreenState extends ConsumerState<PetScreen>
   Widget _buildCreatingRequestView(
       bool isLightTheme, UserCurrency userCurrency) {
     final selectedPets = ref.watch(selectedPetsForMyRequestIdsProvider);
-    final availablePets = ref.watch(availablePetsNotAdoptedProvider);
+    final availablePetsAsync = ref.watch(availablePetsNotAdoptedProvider);
     final message = ref.watch(friendAdoptionMessageProvider);
     final isGenerating = ref.watch(generatingUniquePetProvider);
+
+    return availablePetsAsync.when(
+      data: (availablePets) => _buildCreatingRequestContent(
+        isLightTheme,
+        userCurrency,
+        selectedPets,
+        availablePets,
+        message,
+        isGenerating,
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Erro ao carregar pets: $error'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.refresh(availablePetsNotAdoptedProvider),
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreatingRequestContent(
+    bool isLightTheme,
+    UserCurrency userCurrency,
+    List<String> selectedPets,
+    List<Pet> availablePets,
+    String message,
+    bool isGenerating,
+  ) {
+    final filteredPets = availablePets
+        .where((pet) =>
+            pet.generatedByUserId == userCurrency.currentUserId ||
+            pet.generatedByUserId == null)
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -286,11 +328,7 @@ class _PetScreenState extends ConsumerState<PetScreen>
 
             // Grid de pets
             _buildPetsGrid(
-              availablePets
-                  .where((pet) =>
-                      pet.generatedByUserId == userCurrency.currentUserId ||
-                      pet.generatedByUserId == null)
-                  .toList(),
+              filteredPets,
               isLightTheme,
               PetDetailMode.createRequest,
             ),
@@ -365,10 +403,15 @@ class _PetScreenState extends ConsumerState<PetScreen>
             const SizedBox(height: 24),
 
             // Lista de solicitações
-            ...activeRequests
+            // ...activeRequests
+            //     .where((req) => req.creatorUserId != userCurrency.currentUserId)
+            //     .map((request) =>
+            //         _buildAdoptionRequestCard(request, isLightTheme)),
+
+            ...((activeRequests.valueOrNull ?? [])
                 .where((req) => req.creatorUserId != userCurrency.currentUserId)
                 .map((request) =>
-                    _buildAdoptionRequestCard(request, isLightTheme)),
+                    _buildAdoptionRequestCard(request, isLightTheme))),
 
             const SizedBox(height: 24),
             _buildCancelButton(),
@@ -385,8 +428,46 @@ class _PetScreenState extends ConsumerState<PetScreen>
     final friendCode = ref.watch(friendAdoptionCodeProvider);
     final message = ref.watch(friendAdoptionMessageProvider);
     final isGenerating = ref.watch(generatingUniquePetProvider);
-    final availablePets = ref.watch(availablePetsNotAdoptedProvider);
+    final availablePetsAsync = ref.watch(availablePetsNotAdoptedProvider);
 
+    return availablePetsAsync.when(
+      data: (availablePets) => _buildAdoptWithFriendContent(
+        isLightTheme,
+        userCurrency,
+        selectedPets,
+        friendCode,
+        message,
+        isGenerating,
+        availablePets,
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Erro ao carregar pets: $error'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.refresh(availablePetsNotAdoptedProvider),
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdoptWithFriendContent(
+    bool isLightTheme,
+    UserCurrency userCurrency,
+    List<String> selectedPets,
+    String friendCode,
+    String message,
+    bool isGenerating,
+    List<Pet> availablePets,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Container(
@@ -1249,32 +1330,60 @@ class _PetScreenState extends ConsumerState<PetScreen>
     }
   }
 
+  /// Busca um pet por ID com tratamento de erro
+  Pet? _findPetById(String petId, List<Pet> pets) {
+    try {
+      return pets.firstWhere((p) => p.id == petId);
+    } catch (e) {
+      // Pet não encontrado
+      return null;
+    }
+  }
+
   /// Manipula seleção para solicitação própria
   void _handleSelectPetForMyRequest(String petId) {
     final selectedPets = ref.read(selectedPetsForMyRequestIdsProvider);
     final notifier = ref.read(selectedPetsForMyRequestIdsProvider.notifier);
-    final availablePets = ref.read(availablePetsProvider);
 
-    final pet = availablePets.firstWhere((p) => p.id == petId);
+    final availablePetsAsync = ref.read(availablePetsProvider);
 
-    if (pet.isAdopted) {
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Este pet já foi adotado.';
-      return;
-    }
+    availablePetsAsync.when(
+      data: (availablePets) {
+        final pet = _findPetById(petId, availablePets);
+        if (pet == null) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet não encontrado.';
+          return;
+        }
 
-    if (selectedPets.contains(petId)) {
-      notifier.state = selectedPets.where((id) => id != petId).toList();
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Pet "${pet.name}" removido da seleção.';
-    } else if (selectedPets.length < 3) {
-      notifier.state = [...selectedPets, petId];
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Pet "${pet.name}" adicionado à seleção.';
-    } else {
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Você pode selecionar no máximo 3 pets.';
-    }
+        if (pet.isAdopted) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Este pet já foi adotado.';
+          return;
+        }
+
+        if (selectedPets.contains(petId)) {
+          notifier.state = selectedPets.where((id) => id != petId).toList();
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet "${pet.name}" removido da seleção.';
+        } else if (selectedPets.length < 3) {
+          notifier.state = [...selectedPets, petId];
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet "${pet.name}" adicionado à seleção.';
+        } else {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Você pode selecionar no máximo 3 pets.';
+        }
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro ao carregar pets: $error';
+      },
+    );
   }
 
   /// Manipula seleção para adoção com amigo
@@ -1282,50 +1391,86 @@ class _PetScreenState extends ConsumerState<PetScreen>
     final selectedPets = ref.read(selectedPetsForFriendAdoptionIdsProvider);
     final notifier =
         ref.read(selectedPetsForFriendAdoptionIdsProvider.notifier);
-    final availablePets = ref.read(availablePetsProvider);
 
-    final pet = availablePets.firstWhere((p) => p.id == petId);
+    final availablePetsAsync = ref.read(availablePetsProvider);
 
-    if (pet.isAdopted) {
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Este pet já foi adotado.';
-      return;
-    }
+    availablePetsAsync.when(
+      data: (availablePets) {
+        final pet = _findPetById(petId, availablePets);
+        if (pet == null) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet não encontrado.';
+          return;
+        }
 
-    if (selectedPets.contains(petId)) {
-      notifier.state = selectedPets.where((id) => id != petId).toList();
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Pet "${pet.name}" removido da seleção.';
-    } else if (selectedPets.length < 3) {
-      notifier.state = [...selectedPets, petId];
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Pet "${pet.name}" adicionado à seleção.';
-    } else {
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Você pode selecionar no máximo 3 pets.';
-    }
+        if (pet.isAdopted) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Este pet já foi adotado.';
+          return;
+        }
+
+        if (selectedPets.contains(petId)) {
+          notifier.state = selectedPets.where((id) => id != petId).toList();
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet "${pet.name}" removido da seleção.';
+        } else if (selectedPets.length < 3) {
+          notifier.state = [...selectedPets, petId];
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet "${pet.name}" adicionado à seleção.';
+        } else {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Você pode selecionar no máximo 3 pets.';
+        }
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro ao carregar pets: $error';
+      },
+    );
   }
 
   /// Adota um pet imediatamente
   void _handleAdoptPetImmediately(String petId) {
-    final availablePets = ref.read(availablePetsProvider);
-    final pet = availablePets.firstWhere((p) => p.id == petId);
+    final availablePetsAsync = ref.read(availablePetsProvider);
 
-    ref.read(availablePetsProvider.notifier).markPetAsAdopted(petId);
-    ref.read(currentAdoptedPetProvider.notifier).state = pet.copyWith(
-      hunger: 80,
-      happiness: 70,
-      energy: 90,
-      level: 1,
-      xp: 0,
-      xpToNextLevel: 100,
+    availablePetsAsync.when(
+      data: (availablePets) {
+        final pet = _findPetById(petId, availablePets);
+        if (pet == null) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet não encontrado.';
+          return;
+        }
+
+        ref.read(availablePetsProvider.notifier).markPetAsAdopted(petId);
+        ref.read(currentAdoptedPetProvider.notifier).state = pet.copyWith(
+          hunger: 80,
+          happiness: 70,
+          energy: 90,
+          level: 1,
+          xp: 0,
+          xpToNextLevel: 100,
+        );
+
+        ref.read(adoptionFlowStateProvider.notifier).state =
+            AdoptionFlowStates.hasPet;
+        ref.read(userCurrencyProvider.notifier).addCoins(adoptionRewardCoins);
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Parabéns! Você adotou o pet e recebeu $adoptionRewardCoins Coins!';
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro ao carregar pets: $error';
+      },
     );
-
-    ref.read(adoptionFlowStateProvider.notifier).state =
-        AdoptionFlowStates.hasPet;
-    ref.read(userCurrencyProvider.notifier).addCoins(adoptionRewardCoins);
-    ref.read(friendAdoptionMessageProvider.notifier).state =
-        'Parabéns! Você adotou o pet e recebeu $adoptionRewardCoins Coins!';
   }
 
   /// Gera um pet único
@@ -1370,34 +1515,55 @@ class _PetScreenState extends ConsumerState<PetScreen>
   /// Confirma solicitação de adoção
   void _confirmAdoptionRequest() {
     final selectedPets = ref.read(selectedPetsForMyRequestIdsProvider);
-    final availablePets = ref.read(availablePetsProvider);
+    final availablePetsAsync = ref.read(availablePetsProvider);
     final userCurrency = ref.read(userCurrencyProvider);
 
-    final requestId = generateRequestId();
-    final petsForRequest =
-        availablePets.where((pet) => selectedPets.contains(pet.id)).toList();
+    availablePetsAsync.when(
+      data: (availablePets) {
+        final requestId = generateRequestId();
+        final petsForRequest = selectedPets
+            .map((petId) => _findPetById(petId, availablePets))
+            .where((pet) => pet != null)
+            .cast<Pet>()
+            .toList();
 
-    ref.read(activeAdoptionRequestsProvider.notifier).addRequest(
-          AdoptionRequest(
-            id: requestId,
-            creatorUserId: userCurrency.currentUserId,
-            petsInRequest: petsForRequest,
-            daysLeft: 5,
-          ),
-        );
+        if (petsForRequest.length != selectedPets.length) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Alguns pets selecionados não foram encontrados.';
+          return;
+        }
 
-    ref.read(adoptionFlowStateProvider.notifier).state =
-        AdoptionFlowStates.requestActive;
-    ref.read(adoptionRequestInfoProvider.notifier).state = {
-      'views': 1,
-      'daysLeft': 5,
-      'petsSelected': selectedPets,
-      'fullPetsSelected': petsForRequest,
-    };
+        ref.read(activeAdoptionRequestsProvider.notifier).addRequest(
+              AdoptionRequest(
+                id: requestId,
+                creatorUserId: userCurrency.currentUserId,
+                petsInRequest: petsForRequest,
+                daysLeft: 5,
+              ),
+            );
 
-    // Limpa seleções
-    ref.read(selectedPetsForMyRequestIdsProvider.notifier).state = [];
-    ref.read(friendAdoptionMessageProvider.notifier).state = '';
+        ref.read(adoptionFlowStateProvider.notifier).state =
+            AdoptionFlowStates.requestActive;
+        ref.read(adoptionRequestInfoProvider.notifier).state = {
+          'views': 1,
+          'daysLeft': 5,
+          'petsSelected': selectedPets,
+          'fullPetsSelected': petsForRequest,
+        };
+
+        // Limpa seleções
+        ref.read(selectedPetsForMyRequestIdsProvider.notifier).state = [];
+        ref.read(friendAdoptionMessageProvider.notifier).state = '';
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro ao confirmar solicitação: $error';
+      },
+    );
   }
 
   /// Gera código para adoção com amigo
@@ -1419,37 +1585,58 @@ class _PetScreenState extends ConsumerState<PetScreen>
   /// Simula adoção com amigo
   void _simulateFriendAdoption() {
     final selectedPets = ref.read(selectedPetsForFriendAdoptionIdsProvider);
-    final availablePets = ref.read(availablePetsProvider);
+    final availablePetsAsync = ref.read(availablePetsProvider);
 
-    if (selectedPets.length == 3) {
-      final petsForFriend =
-          availablePets.where((pet) => selectedPets.contains(pet.id)).toList();
-      final chosenByFriend =
-          petsForFriend[Random().nextInt(petsForFriend.length)];
+    availablePetsAsync.when(
+      data: (availablePets) {
+        if (selectedPets.length == 3) {
+          final petsForFriend = selectedPets
+              .map((petId) => _findPetById(petId, availablePets))
+              .where((pet) => pet != null)
+              .cast<Pet>()
+              .toList();
 
-      ref
-          .read(availablePetsProvider.notifier)
-          .markPetAsAdopted(chosenByFriend.id);
-      ref.read(currentAdoptedPetProvider.notifier).state =
-          chosenByFriend.copyWith(
-        hunger: 80,
-        happiness: 70,
-        energy: 90,
-        level: 1,
-        xp: 0,
-        xpToNextLevel: 100,
-      );
+          if (petsForFriend.isNotEmpty) {
+            final chosenByFriend =
+                petsForFriend[Random().nextInt(petsForFriend.length)];
 
-      ref.read(adoptionFlowStateProvider.notifier).state =
-          AdoptionFlowStates.hasPet;
-      ref.read(userCurrencyProvider.notifier).addCoins(adoptionRewardCoins);
-      ref.read(friendAdoptionMessageProvider.notifier).state =
-          'Adoção conjunta com ${chosenByFriend.name} concluída!';
+            ref
+                .read(availablePetsProvider.notifier)
+                .markPetAsAdopted(chosenByFriend.id);
+            ref.read(currentAdoptedPetProvider.notifier).state =
+                chosenByFriend.copyWith(
+              hunger: 80,
+              happiness: 70,
+              energy: 90,
+              level: 1,
+              xp: 0,
+              xpToNextLevel: 100,
+            );
 
-      // Limpa estado
-      ref.read(selectedPetsForFriendAdoptionIdsProvider.notifier).state = [];
-      ref.read(friendAdoptionCodeProvider.notifier).state = '';
-    }
+            ref.read(adoptionFlowStateProvider.notifier).state =
+                AdoptionFlowStates.hasPet;
+            ref
+                .read(userCurrencyProvider.notifier)
+                .addCoins(adoptionRewardCoins);
+            ref.read(friendAdoptionMessageProvider.notifier).state =
+                'Adoção conjunta com ${chosenByFriend.name} concluída!';
+
+            // Limpa estado
+            ref.read(selectedPetsForFriendAdoptionIdsProvider.notifier).state =
+                [];
+            ref.read(friendAdoptionCodeProvider.notifier).state = '';
+          }
+        }
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro na simulação: $error';
+      },
+    );
   }
 
   /// Abre modal de participar em adoção
@@ -1470,28 +1657,46 @@ class _PetScreenState extends ConsumerState<PetScreen>
   /// Manipula participação em adoção conjunta
   void _handleJoinAdoption(String requestId, String chosenPetId) {
     final userCurrency = ref.read(userCurrencyProvider);
-    final availablePets = ref.read(availablePetsProvider);
+    final availablePetsAsync = ref.read(availablePetsProvider);
 
-    ref
-        .read(activeAdoptionRequestsProvider.notifier)
-        .completeRequest(requestId, userCurrency.currentUserId, chosenPetId);
-    ref.read(availablePetsProvider.notifier).markPetAsAdopted(chosenPetId);
+    availablePetsAsync.when(
+      data: (availablePets) {
+        final adoptedPet = _findPetById(chosenPetId, availablePets);
+        if (adoptedPet == null) {
+          ref.read(friendAdoptionMessageProvider.notifier).state =
+              'Pet selecionado não encontrado.';
+          return;
+        }
 
-    final adoptedPet = availablePets.firstWhere((p) => p.id == chosenPetId);
-    ref.read(currentAdoptedPetProvider.notifier).state = adoptedPet.copyWith(
-      hunger: 80,
-      happiness: 70,
-      energy: 90,
-      level: 1,
-      xp: 0,
-      xpToNextLevel: 100,
+        ref.read(activeAdoptionRequestsProvider.notifier).completeRequest(
+            requestId, userCurrency.currentUserId, chosenPetId);
+        ref.read(availablePetsProvider.notifier).markPetAsAdopted(chosenPetId);
+
+        ref.read(currentAdoptedPetProvider.notifier).state =
+            adoptedPet.copyWith(
+          hunger: 80,
+          happiness: 70,
+          energy: 90,
+          level: 1,
+          xp: 0,
+          xpToNextLevel: 100,
+        );
+
+        ref.read(adoptionFlowStateProvider.notifier).state =
+            AdoptionFlowStates.hasPet;
+        ref.read(userCurrencyProvider.notifier).addCoins(adoptionRewardCoins);
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Parabéns! Você adotou um pet em conjunto!';
+      },
+      loading: () {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Carregando dados dos pets...';
+      },
+      error: (error, stack) {
+        ref.read(friendAdoptionMessageProvider.notifier).state =
+            'Erro ao participar da adoção: $error';
+      },
     );
-
-    ref.read(adoptionFlowStateProvider.notifier).state =
-        AdoptionFlowStates.hasPet;
-    ref.read(userCurrencyProvider.notifier).addCoins(adoptionRewardCoins);
-    ref.read(friendAdoptionMessageProvider.notifier).state =
-        'Parabéns! Você adotou um pet em conjunto!';
   }
 
   /// Mostra detalhes da própria solicitação
@@ -1625,4 +1830,14 @@ class _PetScreenState extends ConsumerState<PetScreen>
     ];
     return descriptions[Random().nextInt(descriptions.length)];
   }
+}
+
+// Métodos auxiliares externos (que você pode ter em uma classe separada)
+String generateRequestId() {
+  return 'req-${DateTime.now().millisecondsSinceEpoch}';
+}
+
+String generateAdoptionCode() {
+  final random = Random();
+  return '${random.nextInt(9000) + 1000}';
 }

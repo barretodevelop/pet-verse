@@ -23,9 +23,10 @@ class FirebaseConfig {
       _logger.i('Initializing Firebase...');
 
       // Configura Firebase baseado na plataforma
-      final options = _getFirebaseOptions();
+      // final options = _getFirebaseOptions();
+      // await Firebase.initializeApp(options: options);
 
-      await Firebase.initializeApp(options: options);
+      await Firebase.initializeApp();
 
       // Configurações de segurança
       await _configureFirebaseSecurity();
@@ -45,28 +46,30 @@ class FirebaseConfig {
 
     if (kIsWeb) {
       return FirebaseOptions(
-        apiKey: config.getString('FIREBASE_WEB_API_KEY')!,
+        apiKey: config.getString('AIzaSyCbY7ze4P3bN2Nrnq0cmBVaCvFzzwoWkH8')!,
         authDomain: config.getString('FIREBASE_AUTH_DOMAIN')!,
-        projectId: config.getString('FIREBASE_PROJECT_ID')!,
+        projectId:
+            config.getString('1:428789571028:android:5f8950d04eb82e8c3c4a41')!,
         storageBucket: config.getString('FIREBASE_STORAGE_BUCKET')!,
         messagingSenderId: config.getString('FIREBASE_MESSAGING_SENDER_ID')!,
-        appId: config.getString('FIREBASE_WEB_APP_ID')!,
+        appId: config.getString('petverse-1dec7')!,
         measurementId: config.getString('FIREBASE_MEASUREMENT_ID'),
       );
     } else if (Platform.isAndroid) {
       return FirebaseOptions(
-        apiKey: config.getString('FIREBASE_ANDROID_API_KEY')!,
-        appId: config.getString('FIREBASE_ANDROID_APP_ID')!,
+        apiKey: config.getString('AIzaSyCbY7ze4P3bN2Nrnq0cmBVaCvFzzwoWkH8')!,
+        appId:
+            config.getString('1:428789571028:android:5f8950d04eb82e8c3c4a41')!,
         messagingSenderId: config.getString('FIREBASE_MESSAGING_SENDER_ID')!,
-        projectId: config.getString('FIREBASE_PROJECT_ID')!,
+        projectId: config.getString('petverse-1dec7')!,
         storageBucket: config.getString('FIREBASE_STORAGE_BUCKET')!,
       );
     } else if (Platform.isIOS) {
       return FirebaseOptions(
-        apiKey: config.getString('FIREBASE_IOS_API_KEY')!,
+        apiKey: config.getString('AIzaSyCbY7ze4P3bN2Nrnq0cmBVaCvFzzwoWkH8')!,
         appId: config.getString('FIREBASE_IOS_APP_ID')!,
         messagingSenderId: config.getString('FIREBASE_MESSAGING_SENDER_ID')!,
-        projectId: config.getString('FIREBASE_PROJECT_ID')!,
+        projectId: config.getString('petverse-1dec7')!,
         storageBucket: config.getString('FIREBASE_STORAGE_BUCKET')!,
         iosBundleId: config.getString('FIREBASE_IOS_BUNDLE_ID')!,
       );

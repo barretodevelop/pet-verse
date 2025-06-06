@@ -1,8 +1,8 @@
 // lib/core/firebase/firebase_storage_service.dart
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
@@ -16,7 +16,7 @@ class UploadResult {
   final String? filePath;
   final int? fileSizeBytes;
   final String? error;
-  final UploadTaskSnapshot? snapshot;
+  final TaskSnapshot? snapshot;
 
   const UploadResult({
     required this.success,
@@ -31,7 +31,7 @@ class UploadResult {
     required String downloadUrl,
     required String filePath,
     int? fileSizeBytes,
-    UploadTaskSnapshot? snapshot,
+    TaskSnapshot? snapshot,
   }) {
     return UploadResult(
       success: true,
@@ -61,7 +61,7 @@ class UploadProgress {
     required this.state,
   });
 
-  factory UploadProgress.fromSnapshot(UploadTaskSnapshot snapshot) {
+  factory UploadProgress.fromSnapshot(TaskSnapshot snapshot) {
     final bytesTransferred = snapshot.bytesTransferred;
     final totalBytes = snapshot.totalBytes;
     final percentage =
@@ -149,7 +149,7 @@ class FirebaseStorageService {
     required String fileName,
     required UploadConfig config,
     String? userId,
-    Stream<UploadProgress>? onProgress,
+    StreamController<UploadProgress>? onProgress,
   }) async {
     try {
       // 1. Validações básicas
@@ -223,7 +223,7 @@ class FirebaseStorageService {
     required String fileName,
     required UploadConfig config,
     String? userId,
-    Stream<UploadProgress>? onProgress,
+    StreamController<UploadProgress>? onProgress,
   }) async {
     try {
       // 1. Validações
@@ -372,7 +372,7 @@ class FirebaseStorageService {
     required File imageFile,
     required String petId,
     String? userId,
-    Stream<UploadProgress>? onProgress,
+    StreamController<UploadProgress>? onProgress,
   }) async {
     final fileName =
         'pet_${petId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -395,7 +395,7 @@ class FirebaseStorageService {
   Future<UploadResult> uploadUserAvatar({
     required File imageFile,
     required String userId,
-    Stream<UploadProgress>? onProgress,
+    StreamController<UploadProgress>? onProgress,
   }) async {
     final fileName =
         'avatar_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';

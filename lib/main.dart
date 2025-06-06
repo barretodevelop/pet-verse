@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:petverse/core/firebase/firebase_analytics_service.dart';
 import 'package:petverse/presentation/providers/theme_provider.dart';
 import 'package:petverse/presentation/screens/home_screen.dart';
 import 'package:petverse/presentation/screens/login_screen.dart';
@@ -84,27 +85,30 @@ Future<void> _initializeApp() async {
     await _initializeFirebaseServices();
     logger.d('Firebase services initialized');
 
+    await FirebaseAnalyticsService
+        .initialize(); // Inicializa seu serviço customizado
+
     // 5. Inicializa rate limiting baseado no ambiente
     RateLimiterFactory.createForEnvironment(
       AppConfig.instance.environment.name,
     );
     logger.d('Rate limiter configured');
 
-    // 6. Inicializa cliente HTTP seguro
-    SecureHttpClient.initialize(
-      retryPolicy: AppConfig.instance.isProduction
-          ? RetryPolicy.conservative()
-          : const RetryPolicy(),
-    );
-    logger.d('Secure HTTP client initialized');
+    // // 6. Inicializa cliente HTTP seguro
+    // SecureHttpClient.initialize(
+    //   retryPolicy: AppConfig.instance.isProduction
+    //       ? RetryPolicy.conservative()
+    //       : const RetryPolicy(),
+    // );
+    // logger.d('Secure HTTP client initialized');
 
     // 7. Inicializa autenticação social
     await SocialAuthService.initialize();
     logger.d('Social auth service initialized');
 
-    // 8. Validações de segurança
-    await _performSecurityChecks();
-    logger.d('Security checks completed');
+    // // 8. Validações de segurança
+    // await _performSecurityChecks();
+    // logger.d('Security checks completed');
 
     logger.i('App initialization completed successfully with Firebase');
   } catch (e, stackTrace) {

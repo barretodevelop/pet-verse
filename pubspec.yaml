@@ -112,7 +112,11 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/lottie/
-    - assets/pets/
+    - assets/pets/ 
+    - .env.dev
+    - .env.prod
+    - .env.example
+
  
 
 # scripts:
