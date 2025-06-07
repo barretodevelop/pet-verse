@@ -1,8 +1,13 @@
+// lib/presentation/screens/settings_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/core/service/settings_service.dart';
 import 'package:petverse/data/models/user_currency.dart';
 import 'package:petverse/presentation/providers/currency_provider.dart';
+import 'package:petverse/presentation/providers/settings_provider.dart';
 import 'package:petverse/presentation/providers/theme_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Seções disponíveis nas configurações
 enum SettingsSection {
@@ -17,7 +22,7 @@ enum SettingsSection {
   final IconData icon;
 }
 
-/// Tela de configurações completa e moderna
+/// Tela de configurações completa e moderna com Firebase
 class SettingsScreen extends ConsumerStatefulWidget {
   final VoidCallback onBack;
   final Function(String section)? onSectionTap;
@@ -37,13 +42,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-
-  // Estados das configurações
-  bool _notificationsEnabled = true;
-  bool _soundEnabled = true;
-  bool _vibrationEnabled = true;
-  bool _analyticsEnabled = false;
-  bool _crashReportsEnabled = true;
 
   @override
   void initState() {
@@ -85,6 +83,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   Widget build(BuildContext context) {
     final isLightTheme = ref.watch(isLightThemeProvider);
     final userCurrency = ref.watch(userCurrencyProvider);
+    final userSettings = ref.watch(userSettingsStreamProvider);
+    final settingsActions = ref.watch(settingsActionsProvider);
 
     return Scaffold(
       backgroundColor: isLightTheme ? Colors.grey[50] : Colors.grey[900],
@@ -96,7 +96,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: _buildBody(isLightTheme, userCurrency),
+              child: userSettings.when(
+                data: (settings) => _buildBody(isLightTheme, userCurrency, settings),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) => Center(
+                  child: Text('Erro ao carregar configurações: $error'),
+                ),
+              ),
             ),
           );
         },
@@ -140,146 +146,197 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   /// Constrói o corpo principal
-  Widget _buildBody(bool isLightTheme, UserCurrency userCurrency) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Perfil do usuário
-          _buildUserProfile(isLightTheme, userCurrency),
-          const SizedBox(height: 24),
+  Widget _buildBody(bool isLightTheme, UserCurrency userCurrency, UserSettings settings) {
+    final settingsActions = ref.watch(settingsActionsProvider);
 
-          // Seções de configurações
-          _buildSettingsSection(
-            'Aparência',
-            Icons.palette_outlined,
-            [
-              _buildThemeSelector(isLightTheme),
+    // Mostra loading ou erro se houver
+    if (settingsActions is AsyncLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Perfil do usuário
+              _buildUserProfile(isLightTheme, userCurrency, settings),
+              const SizedBox(height: 24),
+
+              // Seções de configurações
+              _buildSettingsSection(
+                'Aparência',
+                Icons.palette_outlined,
+                [
+                  _buildThemeSelector(isLightTheme, settings.themeMode),
+                ],
+                isLightTheme,
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildSettingsSection(
+                'Notificações',
+                Icons.notifications_outlined,
+                [
+                  _buildSwitchTile(
+                    'Notificações Push',
+                    'Receber notificações sobre pets e adoções',
+                    settings.notificationsEnabled,
+                    (value) => _updateNotificationSettings(enabled: value),
+                    isLightTheme,
+                  ),
+                  _buildSwitchTile(
+                    'Sons',
+                    'Reproduzir sons para notificações',
+                    settings.soundEnabled,
+                    (value) => _updateNotificationSettings(sound: value),
+                    isLightTheme,
+                    enabled: settings.notificationsEnabled,
+                  ),
+                  _buildSwitchTile(
+                    'Vibração',
+                    'Vibrar no recebimento de notificações',
+                    settings.vibrationEnabled,
+                    (value) => _updateNotificationSettings(vibration: value),
+                    isLightTheme,
+                    enabled: settings.notificationsEnabled,
+                  ),
+                ],
+                isLightTheme,
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildSettingsSection(
+                'Privacidade',
+                Icons.privacy_tip_outlined,
+                [
+                  _buildSwitchTile(
+                    'Análises',
+                    'Ajudar a melhorar o app compartilhando dados anônimos',
+                    settings.analyticsEnabled,
+                    (value) => _updatePrivacySettings(analytics: value),
+                    isLightTheme,
+                  ),
+                  _buildSwitchTile(
+                    'Relatórios de Erro',
+                    'Enviar relatórios de erro automaticamente',
+                    settings.crashReportsEnabled,
+                    (value) => _updatePrivacySettings(crashReports: value),
+                    isLightTheme,
+                  ),
+                  _buildTapTile(
+                    'Política de Privacidade',
+                    'Leia nossa política de privacidade',
+                    Icons.open_in_new,
+                    () => _openPrivacyPolicy(),
+                    isLightTheme,
+                  ),
+                ],
+                isLightTheme,
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildSettingsSection(
+                'Conta',
+                Icons.account_circle_outlined,
+                [
+                  _buildTapTile(
+                    'Exportar Dados',
+                    'Baixar uma cópia dos seus dados',
+                    Icons.download,
+                    () => _exportUserData(),
+                    isLightTheme,
+                  ),
+                  _buildTapTile(
+                    'Sair da Conta',
+                    'Fazer logout do aplicativo',
+                    Icons.logout,
+                    () => _showLogoutDialog(),
+                    isLightTheme,
+                    isDestructive: true,
+                  ),
+                  _buildTapTile(
+                    'Excluir Conta',
+                    'Excluir permanentemente sua conta',
+                    Icons.delete_forever,
+                    () => _showDeleteAccountDialog(),
+                    isLightTheme,
+                    isDestructive: true,
+                  ),
+                ],
+                isLightTheme,
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildSettingsSection(
+                'Sobre',
+                Icons.info_outline,
+                [
+                  _buildInfoTile('Versão', '1.0.0', isLightTheme),
+                  _buildTapTile(
+                    'Termos de Uso',
+                    'Leia os termos de uso do aplicativo',
+                    Icons.description,
+                    () => _openTermsOfService(),
+                    isLightTheme,
+                  ),
+                  _buildTapTile(
+                    'Avalie o App',
+                    'Deixe sua avaliação na loja de apps',
+                    Icons.star_outline,
+                    () => _rateApp(),
+                    isLightTheme,
+                  ),
+                ],
+                isLightTheme,
+              ),
+
+              const SizedBox(height: 32),
             ],
-            isLightTheme,
           ),
+        ),
 
-          const SizedBox(height: 16),
-
-          _buildSettingsSection(
-            'Notificações',
-            Icons.notifications_outlined,
-            [
-              _buildSwitchTile(
-                'Notificações Push',
-                'Receber notificações sobre pets e adoções',
-                _notificationsEnabled,
-                (value) => setState(() => _notificationsEnabled = value),
-                isLightTheme,
+        // Mensagem de erro se houver
+        if (settingsActions is AsyncError)
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.red[600],
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        settingsActions.error.toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              _buildSwitchTile(
-                'Sons',
-                'Reproduzir sons para notificações',
-                _soundEnabled,
-                (value) => setState(() => _soundEnabled = value),
-                isLightTheme,
-              ),
-              _buildSwitchTile(
-                'Vibração',
-                'Vibrar no recebimento de notificações',
-                _vibrationEnabled,
-                (value) => setState(() => _vibrationEnabled = value),
-                isLightTheme,
-              ),
-            ],
-            isLightTheme,
+            ),
           ),
-
-          const SizedBox(height: 16),
-
-          _buildSettingsSection(
-            'Privacidade',
-            Icons.privacy_tip_outlined,
-            [
-              _buildSwitchTile(
-                'Análises',
-                'Ajudar a melhorar o app compartilhando dados anônimos',
-                _analyticsEnabled,
-                (value) => setState(() => _analyticsEnabled = value),
-                isLightTheme,
-              ),
-              _buildSwitchTile(
-                'Relatórios de Erro',
-                'Enviar relatórios de erro automaticamente',
-                _crashReportsEnabled,
-                (value) => setState(() => _crashReportsEnabled = value),
-                isLightTheme,
-              ),
-              _buildTapTile(
-                'Política de Privacidade',
-                'Leia nossa política de privacidade',
-                Icons.open_in_new,
-                () => _openPrivacyPolicy(),
-                isLightTheme,
-              ),
-            ],
-            isLightTheme,
-          ),
-
-          const SizedBox(height: 16),
-
-          _buildSettingsSection(
-            'Conta',
-            Icons.account_circle_outlined,
-            [
-              _buildTapTile(
-                'Exportar Dados',
-                'Baixar uma cópia dos seus dados',
-                Icons.download,
-                () => _exportUserData(),
-                isLightTheme,
-              ),
-              _buildTapTile(
-                'Excluir Conta',
-                'Excluir permanentemente sua conta',
-                Icons.delete_forever,
-                () => _showDeleteAccountDialog(),
-                isLightTheme,
-                isDestructive: true,
-              ),
-            ],
-            isLightTheme,
-          ),
-
-          const SizedBox(height: 16),
-
-          _buildSettingsSection(
-            'Sobre',
-            Icons.info_outline,
-            [
-              _buildInfoTile('Versão', '1.0.0', isLightTheme),
-              _buildTapTile(
-                'Termos de Uso',
-                'Leia os termos de uso do aplicativo',
-                Icons.description,
-                () => _openTermsOfService(),
-                isLightTheme,
-              ),
-              _buildTapTile(
-                'Avalie o App',
-                'Deixe sua avaliação na loja de apps',
-                Icons.star_outline,
-                () => _rateApp(),
-                isLightTheme,
-              ),
-            ],
-            isLightTheme,
-          ),
-
-          const SizedBox(height: 32),
-        ],
-      ),
+      ],
     );
   }
 
   /// Constrói o perfil do usuário
-  Widget _buildUserProfile(bool isLightTheme, UserCurrency userCurrency) {
+  Widget _buildUserProfile(bool isLightTheme, UserCurrency userCurrency, UserSettings settings) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -308,14 +365,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: settings.profileImageUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      settings.profileImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 32,
+                  ),
           ),
 
           const SizedBox(width: 16),
@@ -325,9 +394,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Usuário Pet Lover',
-                  style: TextStyle(
+                Text(
+                  settings.displayName,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -347,7 +416,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
           // Botão de editar perfil
           IconButton(
-            onPressed: () => _editProfile(),
+            onPressed: () => _editProfile(settings),
             icon: const Icon(
               Icons.edit,
               color: Colors.white,
@@ -417,10 +486,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   /// Constrói o seletor de tema
-  Widget _buildThemeSelector(bool isLightTheme) {
-    final themeNotifier = ref.read(themeModeProvider.notifier);
-    final currentTheme = ref.watch(themeModeProvider);
-
+  Widget _buildThemeSelector(bool isLightTheme, ThemeMode currentTheme) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -442,7 +508,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   'Claro',
                   Icons.light_mode,
                   currentTheme == ThemeMode.light,
-                  () => themeNotifier.setTheme(ThemeMode.light),
+                  () => _updateTheme(ThemeMode.light),
                   isLightTheme,
                 ),
               ),
@@ -452,7 +518,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   'Escuro',
                   Icons.dark_mode,
                   currentTheme == ThemeMode.dark,
-                  () => themeNotifier.setTheme(ThemeMode.dark),
+                  () => _updateTheme(ThemeMode.dark),
                   isLightTheme,
                 ),
               ),
@@ -462,7 +528,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   'Sistema',
                   Icons.brightness_auto,
                   currentTheme == ThemeMode.system,
-                  () => themeNotifier.setTheme(ThemeMode.system),
+                  () => _updateTheme(ThemeMode.system),
                   isLightTheme,
                 ),
               ),
@@ -530,8 +596,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     String subtitle,
     bool value,
     Function(bool) onChanged,
-    bool isLightTheme,
-  ) {
+    bool isLightTheme, {
+    bool enabled = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -545,7 +612,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: isLightTheme ? Colors.grey[800] : Colors.grey[100],
+                    color: enabled
+                        ? (isLightTheme ? Colors.grey[800] : Colors.grey[100])
+                        : (isLightTheme ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -553,7 +622,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   subtitle,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isLightTheme ? Colors.grey[600] : Colors.grey[400],
+                    color: enabled
+                        ? (isLightTheme ? Colors.grey[600] : Colors.grey[400])
+                        : (isLightTheme ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ),
               ],
@@ -561,7 +632,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
           Switch.adaptive(
             value: value,
-            onChanged: onChanged,
+            onChanged: enabled ? onChanged : null,
             activeColor: Colors.purple[600],
           ),
         ],
@@ -595,9 +666,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       fontWeight: FontWeight.w500,
                       color: isDestructive
                           ? Colors.red[600]
-                          : (isLightTheme
-                              ? Colors.grey[800]
-                              : Colors.grey[100]),
+                          : (isLightTheme ? Colors.grey[800] : Colors.grey[100]),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -652,20 +721,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   // Métodos de ação
-  void _editProfile() {
-    // Implementar edição de perfil
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Funcionalidade em desenvolvimento')),
+
+  /// Atualiza o tema
+  void _updateTheme(ThemeMode themeMode) {
+    ref.read(settingsActionsProvider.notifier).updateTheme(themeMode);
+  }
+
+  /// Atualiza configurações de notificação
+  void _updateNotificationSettings({bool? enabled, bool? sound, bool? vibration}) {
+    ref.read(settingsActionsProvider.notifier).updateNotifications(
+          enabled: enabled,
+          sound: sound,
+          vibration: vibration,
+        );
+  }
+
+  /// Atualiza configurações de privacidade
+  void _updatePrivacySettings({bool? analytics, bool? crashReports}) {
+    ref.read(settingsActionsProvider.notifier).updatePrivacy(
+          analytics: analytics,
+          crashReports: crashReports,
+        );
+  }
+
+  /// Edita o perfil
+  void _editProfile(UserSettings currentSettings) {
+    showDialog(
+      context: context,
+      builder: (context) => _EditProfileDialog(
+        currentName: currentSettings.displayName,
+        onSave: (newName) {
+          ref.read(settingsActionsProvider.notifier).updateProfile(
+                displayName: newName,
+              );
+        },
+      ),
     );
   }
 
+  /// Mostra diálogo de logout
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sair da Conta'),
+        content: const Text('Tem certeza que deseja sair da sua conta?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await ref.read(settingsActionsProvider.notifier).logout();
+              // Navegar para tela de login será feito pelo sistema de navegação
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Mostra diálogo de ajuda
   void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Ajuda'),
-        content: const Text(
-            'Para suporte, entre em contato conosco pelo email: suporte@petadote.com'),
+        content:
+            const Text('Para suporte, entre em contato conosco pelo email: suporte@petadote.com'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -676,44 +803,187 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     );
   }
 
-  void _openPrivacyPolicy() {
-    // Implementar abertura da política de privacidade
+  /// Abre política de privacidade
+  void _openPrivacyPolicy() async {
+    final url = Uri.parse('https://petadote.com/privacy');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
   }
 
-  void _exportUserData() {
-    // Implementar exportação de dados
+  /// Exporta dados do usuário
+  void _exportUserData() async {
+    await ref.read(settingsActionsProvider.notifier).exportUserData(context);
   }
 
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir Conta'),
-        content: const Text(
-            'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
+  /// Mostra diálogo de exclusão de conta
+  void _showDeleteAccountDialog() async {
+    // Verifica se pode deletar
+    final canDelete = await ref.read(canDeleteAccountProvider.future);
+
+    if (!canDelete && mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Não é possível excluir'),
+          content: const Text(
+            'Você não pode excluir sua conta enquanto tiver pets adotados ou solicitações de adoção ativas.',
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Implementar exclusão de conta
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Excluir'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Excluir Conta'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ATENÇÃO: Esta ação é irreversível!',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Ao excluir sua conta:\n'
+                '• Todos os seus dados serão permanentemente apagados\n'
+                '• Você perderá acesso a todos os seus pets\n'
+                '• Suas moedas e progresso serão perdidos\n'
+                '• Esta ação NÃO pode ser desfeita',
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+
+                // Confirma novamente
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Última confirmação'),
+                    content: const Text(
+                      'Digite "EXCLUIR" para confirmar a exclusão da conta:',
+                    ),
+                    actions: [
+                      TextField(
+                        onSubmitted: (value) {
+                          Navigator.of(context).pop(value == 'EXCLUIR');
+                        },
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  final deleted = await ref.read(settingsActionsProvider.notifier).deleteAccount();
+
+                  if (deleted) {
+                    // Navegar para tela de login será feito pelo sistema
+                  }
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Excluir Permanentemente'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  /// Abre termos de uso
+  void _openTermsOfService() async {
+    final url = Uri.parse('https://petadote.com/terms');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
+  }
+
+  /// Avalia o app
+  void _rateApp() async {
+    // Implementar redirecionamento para loja de apps
+    final url = Uri.parse('https://play.google.com/store/apps/details?id=com.petadote');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
+  }
+}
+
+/// Diálogo para editar perfil
+class _EditProfileDialog extends StatefulWidget {
+  final String currentName;
+  final Function(String) onSave;
+
+  const _EditProfileDialog({
+    required this.currentName,
+    required this.onSave,
+  });
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar Perfil'),
+      content: TextField(
+        controller: _nameController,
+        decoration: const InputDecoration(
+          labelText: 'Nome de exibição',
+          hintText: 'Digite seu nome',
+        ),
+        autofocus: true,
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_nameController.text.trim().isNotEmpty) {
+              widget.onSave(_nameController.text.trim());
+              Navigator.of(context).pop();
+            }
+          },
+          child: const Text('Salvar'),
+        ),
+      ],
     );
-  }
-
-  void _openTermsOfService() {
-    // Implementar abertura dos termos de uso
-  }
-
-  void _rateApp() {
-    // Implementar avaliação do app
   }
 }

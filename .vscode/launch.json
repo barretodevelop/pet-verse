@@ -10,7 +10,7 @@
       "args": [
         "--dart-define=ENVIRONMENT=development"
       ],
-      "preLaunchTask": "Build Runner Build"
+      // "preLaunchTask": "Build Runner Build"
     },
     {
       "name": "PetVerse Profile",
