@@ -42,32 +42,39 @@ class _AppWrapperState extends ConsumerState<AppWrapper> {
     final authState = ref.watch(authProvider);
     final userGameDataState = ref.watch(userGameDataProvider);
 
-    // Show splash screen during initialization
-    if (_isInitializing) {
-      return const SplashScreen();
-    }
-
-    // Show splash screen while auth is loading
-    if (authState.status == AuthStatus.loading) {
-      return const SplashScreen();
-    }
+    // ✅ DEBUG DETALHADO
+    print('🔍 AppWrapper State:');
+    print('  - Auth: ${authState.status}');
+    print('  - User: ${userGameDataState.status}');
+    print('  - Has User: ${userGameDataState.hasUser}');
+    print('  - Firebase User: ${authState.firebaseUser?.uid}');
 
     // Show login screen if not authenticated
     if (!authState.isAuthenticated) {
+      print('❌ Not authenticated, showing login');
       return const LoginScreen();
     }
 
-    // Show splash screen while user data is loading (first time only)
-    if (userGameDataState.status == LoadingState.loading && !userGameDataState.hasUser) {
+    // ✅ VERIFICAR SE USUÁRIO ESTÁ SENDO CARREGADO
+    if (userGameDataState.status == LoadingState.loading) {
+      print('🔄 User data loading, showing splash');
       return const SplashScreen();
     }
 
-    // Show error screen if user data failed to load
+    // ✅ VERIFICAR ERRO NO CARREGAMENTO DO USUÁRIO
     if (userGameDataState.hasError && !userGameDataState.hasUser) {
+      print('❌ User data error: ${userGameDataState.errorMessage}');
       return _buildErrorScreen();
     }
 
+    // ✅ VERIFICAR SE AINDA NÃO TEM DADOS DO USUÁRIO
+    if (!userGameDataState.hasUser) {
+      print('⏳ No user data yet, waiting...');
+      return const SplashScreen();
+    }
+
     // Show home screen when everything is ready
+    print('✅ Everything ready, showing home');
     return const HomeScreen();
   }
 

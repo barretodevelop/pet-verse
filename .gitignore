@@ -68,7 +68,7 @@ secrets/
 # Firebase
 google-services.json
 GoogleService-Info.plist
-firebase_options.dart
+firebase_options.dart 
 lib/firebase_options.dart
 
 # Chaves de API específicas

@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_core/firebase_core.dart';
 
-import '../core/config/firebase_options.dart';
 import '../core/errors/exceptions.dart';
+import '../firebase_options.dart';
 
 /// Centralized Firebase service for app initialization and configuration
 class FirebaseService {

@@ -28,7 +28,13 @@ class FirebaseAuthDatasourceImpl implements FirebaseAuthDatasource {
   Future<fb_auth.User> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
+
+      signOut();
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      // ✅ DELAY PARA EVITAR RACE CONDITION
+      await Future.delayed(const Duration(milliseconds: 300));
 
       if (googleUser == null) {
         throw const AuthException('Google sign in was cancelled');
@@ -55,6 +61,8 @@ class FirebaseAuthDatasourceImpl implements FirebaseAuthDatasource {
     } on fb_auth.FirebaseAuthException catch (e) {
       throw AuthException('Firebase Auth Error: ${e.message}', code: e.code);
     } catch (e) {
+      signOut();
+
       throw AuthException('Failed to sign in with Google: $e');
     }
   }

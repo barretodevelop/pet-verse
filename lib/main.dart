@@ -1,15 +1,17 @@
 // File: lib/main.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/firebase_options.dart';
 import 'package:petverse/presentation/providers/theme_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/app_config.dart';
 // Core imports
-import 'core/config/firebase_options.dart';
+
 import 'core/config/theme_config.dart';
 // Presentation imports
 import 'presentation/providers/dependencies_provider.dart';
@@ -21,6 +23,14 @@ void main() async {
 
   // Initialize Firebase
   await _initializeFirebase();
+
+  // ✅ DEBUG FIREBASE
+  await Firebase.initializeApp();
+  print('🔥 Firebase initialized: ${Firebase.apps.length} apps');
+
+  // ✅ DEBUG AUTH
+  final auth = FirebaseAuth.instance;
+  print('🔐 Auth instance: ${auth.app.name}');
 
   // Initialize dependencies
   final providerOverrides = await _initializeDependencies();
@@ -46,6 +56,9 @@ Future<void> _initializeFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // await AppCheckService.initialize();
+
     debugPrint('✅ Firebase initialized successfully');
   } catch (e) {
     debugPrint('❌ Firebase initialization failed: $e');
@@ -128,10 +141,10 @@ class PetGameApp extends ConsumerWidget {
       },
 
       // Localization (if needed in the future)
-      supportedLocales: const [
-        Locale('en', 'US'),
-        Locale('pt', 'BR'),
-      ],
+      // supportedLocales: const [
+      //   Locale('en', 'US'),
+      //   Locale('pt', 'BR'),
+      // ],
     );
   }
 }

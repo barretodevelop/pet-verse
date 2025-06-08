@@ -33,7 +33,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        targetSdk =  34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -68,4 +68,8 @@ flutter {
     implementation("com.google.firebase:firebase-auth-ktx") // For Firebase Authentication with Kotlin extensions
     implementation("com.google.firebase:firebase-analytics-ktx") // For Firebase Analytics with Kotlin extensions
     // implementation("com.google.firebase:firebase-firestore-ktx") // Add if you use Firestore
+
+    implementation ("androidx.multidex:multidex:2.0.1")
+    // ✅ FORÇA VERSÃO ESPECÍFICA DO GOOGLE SERVICES
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
 }

@@ -1,5 +1,3 @@
-// File: lib/presentation/screens/auth/login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/core/config/theme_config.dart';
@@ -9,7 +7,6 @@ import 'package:petverse/presentation/widgets/animations/pulse_animation.dart';
 import 'package:petverse/presentation/widgets/animations/shake_animation.dart';
 import 'package:petverse/presentation/widgets/animations/slide_fade_animation.dart';
 
-/// Enhanced login screen with Google authentication
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -51,12 +48,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
   }
 
   Future<void> _handleGoogleLogin() async {
+    print('🚀 Starting Google login...');
     final success = await ref.read(authProvider.notifier).signInWithGoogle();
 
+    print('📊 Login result: $success');
     if (!success && mounted) {
+      print('✅ Login successful, waiting for navigation...');
       _formShakeKey.currentState?.shake();
-
       final errorMessage = ref.read(authProvider).errorMessage;
+
       if (errorMessage != null) {
         Helpers.showSnackBar(
           context,
@@ -75,13 +75,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
           gradient: ThemeConfig.primaryGradient,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(ThemeConfig.spacing20),
-            child: SlideFadeAnimation(
-              duration: const Duration(milliseconds: 900),
-              child: ShakeAnimation(
-                key: _formShakeKey,
-                child: _buildLoginForm(),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(ThemeConfig.spacing20),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 380),
+                child: SlideFadeAnimation(
+                  duration: const Duration(milliseconds: 900),
+                  child: ShakeAnimation(
+                    key: _formShakeKey,
+                    child: _buildLoginForm(),
+                  ),
+                ),
               ),
             ),
           ),
@@ -91,35 +96,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
   }
 
   Widget _buildLoginForm() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 380),
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConfig.spacing28,
-          vertical: ThemeConfig.spacing32,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(ThemeConfig.borderRadius20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: ThemeConfig.spacing32),
-            _buildErrorDisplay(),
-            _buildGoogleButton(),
-            const SizedBox(height: ThemeConfig.spacing16),
-            _buildTermsText(),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConfig.spacing28,
+        vertical: ThemeConfig.spacing32,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(ThemeConfig.borderRadius20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: ThemeConfig.spacing32),
+          _buildErrorDisplay(),
+          _buildGoogleButton(),
+          const SizedBox(height: ThemeConfig.spacing16),
+          _buildTermsText(),
+        ],
       ),
     );
   }
@@ -127,7 +129,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
   Widget _buildHeader() {
     return Column(
       children: [
-        // Animated app icon
         PulseAnimation(
           duration: const Duration(milliseconds: 2000),
           minScale: 0.95,
@@ -153,10 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
             ),
           ),
         ),
-
         const SizedBox(height: ThemeConfig.spacing24),
-
-        // Welcome text
         Text(
           'Welcome Back!',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -164,9 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
                 color: Theme.of(context).textTheme.headlineSmall?.color,
               ),
         ),
-
         const SizedBox(height: ThemeConfig.spacing8),
-
         Text(
           'Sign in to continue caring for your virtual pets',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -183,9 +179,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
       builder: (context, ref, child) {
         final authState = ref.watch(authProvider);
 
-        if (!authState.hasError) {
-          return const SizedBox.shrink();
-        }
+        if (!authState.hasError) return const SizedBox.shrink();
 
         return Container(
           margin: const EdgeInsets.only(bottom: ThemeConfig.spacing20),
@@ -202,11 +196,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: ThemeConfig.errorColor,
-                size: ThemeConfig.iconSize20,
-              ),
+              const Icon(Icons.error_outline,
+                  color: ThemeConfig.errorColor, size: ThemeConfig.iconSize20),
               const SizedBox(width: ThemeConfig.spacing8),
               Expanded(
                 child: Text(
@@ -218,11 +209,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
                 ),
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.close,
-                  color: ThemeConfig.errorColor,
-                  size: ThemeConfig.iconSize16,
-                ),
+                icon: const Icon(Icons.close,
+                    color: ThemeConfig.errorColor, size: ThemeConfig.iconSize16),
                 onPressed: () => ref.read(authProvider.notifier).clearError(),
               ),
             ],
@@ -248,9 +236,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(ThemeConfig.borderRadius12),
-                side: BorderSide(
-                  color: Colors.grey.withOpacity(0.3),
-                ),
+                side: BorderSide(color: Colors.grey.withOpacity(0.3)),
               ),
             ),
             icon: authState.isLoading
@@ -259,9 +245,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
                     height: ThemeConfig.iconSize20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        ThemeConfig.primaryColor,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeConfig.primaryColor),
                     ),
                   )
                 : Image.network(
@@ -299,23 +283,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
             height: 1.4,
           ),
           children: const [
-            TextSpan(
-              text: 'By signing in, you agree to our ',
-            ),
+            TextSpan(text: 'By signing in, you agree to our '),
             TextSpan(
               text: 'Terms of Service',
-              style: TextStyle(
-                color: ThemeConfig.primaryColor,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: ThemeConfig.primaryColor, fontWeight: FontWeight.w500),
             ),
             TextSpan(text: ' and '),
             TextSpan(
               text: 'Privacy Policy',
-              style: TextStyle(
-                color: ThemeConfig.primaryColor,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: ThemeConfig.primaryColor, fontWeight: FontWeight.w500),
             ),
             TextSpan(text: '.'),
           ],

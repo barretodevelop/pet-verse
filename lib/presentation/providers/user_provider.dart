@@ -69,9 +69,16 @@ class UserGameDataNotifier extends StateNotifier<UserGameDataState> {
 
   void _listenToAuthChanges() {
     _ref.listen<AuthState>(authProvider, (previous, next) {
+      print('🔍 Auth state changed: ${next.status}');
+
       if (next.isAuthenticated && next.firebaseUser != null) {
-        _loadUserData(next.firebaseUser!.uid);
+        print('✅ User authenticated, loading user data...');
+        // ✅ DELAY PARA GARANTIR QUE USUÁRIO FOI CRIADO
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _loadUserData(next.firebaseUser!.uid);
+        });
       } else {
+        print('❌ User not authenticated, resetting state');
         _resetState();
       }
     });
@@ -79,37 +86,62 @@ class UserGameDataNotifier extends StateNotifier<UserGameDataState> {
     // Initialize if already authenticated
     final authState = _ref.read(authProvider);
     if (authState.isAuthenticated && authState.firebaseUser != null) {
+      print('🔄 Already authenticated, loading user data...');
       _loadUserData(authState.firebaseUser!.uid);
     }
   }
 
   Future<void> _loadUserData(String userId) async {
+    print('📊 Loading user data for: $userId');
     state = state.copyWith(status: LoadingState.loading, clearError: true);
 
-    final result = await _getUserData(userId);
+    // ✅ RETRY MECHANISM PARA USUÁRIOS RECÉM CRIADOS
+    UserEntity? user;
+    int attempts = 0;
+    const maxAttempts = 3;
 
-    result.fold(
-      (failure) {
-        state = state.copyWith(
-          status: LoadingState.error,
-          errorMessage: _getErrorMessage(failure),
-        );
-      },
-      (user) {
-        final canClaim = user != null ? Helpers.canClaimDailyReward(user.lastDailyReward) : false;
+    while (attempts < maxAttempts && user == null) {
+      attempts++;
+      print('🔄 Attempt $attempts to load user data...');
 
-        state = state.copyWith(
-          user: user,
-          status: LoadingState.success,
-          canClaimDailyReward: canClaim,
-          clearError: true,
-        );
+      final result = await _getUserData(userId);
 
-        if (user != null) {
-          _startDailyRewardTimer();
-        }
-      },
-    );
+      result.fold(
+        (failure) {
+          print('❌ Attempt $attempts failed: ${failure.message}');
+          if (attempts == maxAttempts) {
+            state = state.copyWith(
+              status: LoadingState.error,
+              errorMessage: _getErrorMessage(failure),
+            );
+          }
+        },
+        (userData) {
+          user = userData;
+          if (user != null) {
+            final canClaim = Helpers.canClaimDailyReward(user!.lastDailyReward);
+
+            state = state.copyWith(
+              user: user,
+              status: LoadingState.success,
+              canClaimDailyReward: canClaim,
+              clearError: true,
+            );
+
+            print('✅ User data loaded successfully');
+
+            if (user != null) {
+              _startDailyRewardTimer();
+            }
+          }
+        },
+      );
+
+      if (user == null && attempts < maxAttempts) {
+        // ✅ DELAY ENTRE TENTATIVAS
+        await Future.delayed(Duration(seconds: attempts));
+      }
+    }
   }
 
   void _startDailyRewardTimer() {
