@@ -296,3 +296,54 @@ validar fluxo de adocao
 
 
 jogo precisa ter uma economia onde o usuario ganha coins para poder manter o cuidado do pet 
+
+
+
+
+
+
+
+
+
+
+
+
+🧩 Diretrizes da Refatoração:
+
+Analise o código atual do projeto e o prompt de refatoração contido no conteúdo fornecido.
+
+Siga rigorosamente a ordem de criação de arquivos abaixo, para uma arquitetura limpa e escalável:
+
+core/classes iniciais
+
+core/config
+
+core/enums
+
+core/rotas
+
+features/screens
+
+shared/widgets
+
+providers
+
+services
+
+Outros arquivos auxiliares
+
+Envie logo no início um script PowerShell para gerar a estrutura de pastas e arquivos em lib/, conforme o padrão acima.
+
+📦 Requisitos importantes:
+
+Não envie feedback parcial durante a execução para evitar desperdício de mensagens e estouro de limite.
+
+Não repita ou reenvie partes já feitas. Mantenha em memória todas as classes e arquivos gerados.
+
+O feedback geral do trabalho deve ser enviado apenas ao final, com:
+
+A lista completa das classes e arquivos gerados;
+
+Um relatório resumido das melhorias implementadas.
+
+Otimize o fluxo de execução para concluir toda a refatoração de forma contínua, sem exceder o limite de caracteres por mensagem.  use desenvolvimento incremental e use artefatos devidamente para evitar estourar limites  quando ja tiver 7 artefatos gerados  pause e aguarde confirmação para continuar.

@@ -1,303 +1,100 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:logger/logger.dart';
+// File: lib/core/config/app_config.dart
 
-/// Enum para ambientes de execução
-enum AppEnvironment {
-  development('development'),
-  staging('staging'),
-  production('production');
-
-  const AppEnvironment(this.name);
-  final String name;
-
-  static AppEnvironment fromString(String env) {
-    return AppEnvironment.values.firstWhere(
-      (e) => e.name == env.toLowerCase(),
-      orElse: () => AppEnvironment.development,
-    );
-  }
-}
-
-/// Gerenciador central de configurações da aplicação
+/// Application configuration constants and settings
 class AppConfig {
-  static AppConfig? _instance;
-  static final Logger _logger = Logger();
+  static const String appName = 'Pet Game Deluxe';
+  static const String appVersion = '1.0.0';
+  static const String appDescription = 'Your favorite virtual pet companion';
 
-  late final AppEnvironment _environment;
-  late final Map<String, String> _config;
-  bool _isInitialized = false;
+  // Database settings
+  static const String firestoreUsersCollection = 'users';
+  static const String firestorePetsCollection = 'pets';
+  static const String firestoreTransactionsCollection = 'transactions';
+  static const String firestoreAchievementsCollection = 'achievements';
 
-  AppConfig._internal() : _isInitialized = false;
+  // Game settings
+  static const int initialCoins = 1000;
+  static const int initialGems = 50;
+  static const int initialXp = 0;
+  static const int initialLevel = 1;
 
-  /// Singleton instance
-  static AppConfig get instance {
-    _instance ??= AppConfig._internal();
-    return _instance!;
-  }
+  // Pet care settings
+  static const int petHungerDecayRate = 3; // per minute
+  static const int petHappinessDecayRate = 2; // per minute
+  static const int petEnergyDecayRate = 1; // per 5 minutes
 
-  /// Inicializa as configurações carregando o arquivo .env apropriado
-  static Future<void> initialize({String? flavor}) async {
-    final config = AppConfig.instance;
+  // Transaction costs
+  static const int feedPetCost = 10;
+  static const int playWithPetCost = 5;
+  static const int adoptPetCost = 100;
 
-    try {
-      // Determina qual arquivo .env carregar baseado no flavor/ambiente
-      String envFile = '.env';
+  // Rewards
+  static const int feedPetXpReward = 10;
+  static const int playWithPetXpReward = 15;
+  static const int restPetXpReward = 5;
+  static const int dailyRewardBaseCoins = 50;
+  static const int dailyRewardBaseGems = 0;
+  static const int dailyRewardBaseXp = 20;
 
-      if (flavor != null) {
-        envFile = '.env.$flavor';
-      } else if (kDebugMode) {
-        envFile = '.env.dev';
-      } else {
-        envFile = '.env.prod';
-      }
+  // Timers (in milliseconds)
+  static const int petDecayTimerInterval = 60000; // 1 minute
+  static const int dailyRewardCheckInterval = 30000; // 30 seconds
 
-      // Tenta carregar o arquivo específico, senão carrega o padrão
-      try {
-        await dotenv.load(fileName: envFile);
-        _logger.i('Configurações carregadas de: $envFile');
-      } catch (e) {
-        _logger.w('Não foi possível carregar $envFile, tentando .env padrão');
-        await dotenv.load(fileName: '.env');
-      }
+  // Animation durations
+  static const int defaultAnimationDuration = 300;
+  static const int fastAnimationDuration = 150;
+  static const int slowAnimationDuration = 600;
 
-      config._config = Map<String, String>.from(dotenv.env);
-      config._environment = AppEnvironment.fromString(
-        config._config['ENVIRONMENT'] ?? 'development',
-      );
+  // Cache settings
+  static const int imageCacheMaxAge = 7; // days
+  static const int dataCacheMaxAge = 1; // day
 
-      config._isInitialized = true;
-      _logger.i(
-          'AppConfig inicializado para ambiente: ${config._environment.name}');
+  // Pagination
+  static const int defaultPageSize = 20;
+  static const int maxPageSize = 50;
 
-      // Valida configurações críticas
-      config._validateCriticalConfig();
-    } catch (e, stackTrace) {
-      _logger.e('Erro ao inicializar AppConfig',
-          error: e, stackTrace: stackTrace);
-
-      // Configurações padrão em caso de erro
-      config._config = _getDefaultConfig();
-      config._environment = AppEnvironment.development;
-      config._isInitialized = true;
-
-      _logger.w('Usando configurações padrão devido ao erro');
-    }
-  }
-
-  /// Valida se as configurações críticas estão presentes
-  void _validateCriticalConfig() {
-    final criticalKeys = [
-      'GEMINI_API_KEY',
-      'IMAGEN_API_KEY',
-      'BACKEND_BASE_URL',
-    ];
-
-    final missingKeys = <String>[];
-
-    for (final key in criticalKeys) {
-      if (_config[key] == null || _config[key]!.isEmpty) {
-        missingKeys.add(key);
-      }
-    }
-
-    if (missingKeys.isNotEmpty && isProduction) {
-      throw Exception(
-          'Configurações críticas ausentes em produção: ${missingKeys.join(', ')}');
-    }
-
-    if (missingKeys.isNotEmpty) {
-      _logger.w(
-          'Configurações ausentes (não crítico em dev): ${missingKeys.join(', ')}');
-    }
-  }
-
-  /// Configurações padrão para fallback
-  static Map<String, String> _getDefaultConfig() {
-    return {
-      'ENVIRONMENT': 'development',
-      'DEBUG_MODE': 'true',
-      'BACKEND_BASE_URL': 'https://dev-api.petadote.com',
-      'MAX_REQUESTS_PER_MINUTE': '120',
-      'MAX_REQUESTS_PER_HOUR': '2000',
-      'REQUEST_TIMEOUT': '30',
-      'CONNECT_TIMEOUT': '10',
-      'RECEIVE_TIMEOUT': '60',
-      'CACHE_MAX_AGE': '1800',
-      'CACHE_MAX_SIZE': '50',
-      'ANALYTICS_ENABLED': 'false',
-      'CRASH_REPORTING_ENABLED': 'false',
-    };
-  }
-
-  /// Getters para ambiente
-  AppEnvironment get environment => _environment;
-  bool get isProduction => _environment == AppEnvironment.production;
-  bool get isDevelopment => _environment == AppEnvironment.development;
-  bool get isStaging => _environment == AppEnvironment.staging;
-  bool get isInitialized => _isInitialized;
-
-  /// Getter genérico para configurações
-  String? getString(String key, [String? defaultValue]) {
-    _ensureInitialized();
-    final value = _config[key] ?? defaultValue;
-
-    // Log apenas chaves não sensíveis
-    if (!_isSensitiveKey(key)) {
-      _logger.d('Config[$key]: $value');
-    } else {
-      _logger.d('Config[$key]: [REDACTED]');
-    }
-
-    return value;
-  }
-
-  /// Getter para boolean
-  bool getBool(String key, [bool defaultValue = false]) {
-    final value = getString(key, defaultValue.toString());
-    return value?.toLowerCase() == 'true';
-  }
-
-  /// Getter para int
-  int getInt(String key, [int defaultValue = 0]) {
-    final value = getString(key, defaultValue.toString());
-    return int.tryParse(value ?? '') ?? defaultValue;
-  }
-
-  /// Getter para double
-  double getDouble(String key, [double defaultValue = 0.0]) {
-    final value = getString(key, defaultValue.toString());
-    return double.tryParse(value ?? '') ?? defaultValue;
-  }
-
-  /// Verifica se uma chave é sensível (não deve ser logada)
-  bool _isSensitiveKey(String key) {
-    final sensitivePatterns = [
-      'api_key',
-      'secret',
-      'token',
-      'password',
-      'credential',
-    ];
-
-    final lowerKey = key.toLowerCase();
-    return sensitivePatterns.any((pattern) => lowerKey.contains(pattern));
-  }
-
-  /// Garante que as configurações foram inicializadas
-  void _ensureInitialized() {
-    if (!_isInitialized) {
-      throw Exception(
-          'AppConfig não foi inicializado. Chame AppConfig.initialize() antes de usar.');
-    }
-  }
-
-  // ========================================
-  // CONFIGURAÇÕES ESPECÍFICAS DA APLICAÇÃO
-  // ========================================
-
-  /// Configurações de API
-  String? get geminiApiKey => getString('GEMINI_API_KEY');
-  String? get imagenApiKey => getString('IMAGEN_API_KEY');
-  String? get openaiApiKey => getString('OPENAI_API_KEY');
-
-  String get geminiBaseUrl => getString(
-      'GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com')!;
-  String get imagenBaseUrl =>
-      getString('IMAGEN_BASE_URL', 'https://cloud.google.com/vertex-ai')!;
-  String get backendBaseUrl =>
-      getString('BACKEND_BASE_URL', 'https://api.petadote.com')!;
-
-  /// Configurações de rate limiting
-  int get maxRequestsPerMinute => getInt('MAX_REQUESTS_PER_MINUTE', 60);
-  int get maxRequestsPerHour => getInt('MAX_REQUESTS_PER_HOUR', 1000);
-
-  /// Configurações de timeout
-  int get requestTimeoutSeconds => getInt('REQUEST_TIMEOUT', 30);
-  int get connectTimeoutSeconds => getInt('CONNECT_TIMEOUT', 10);
-  int get receiveTimeoutSeconds => getInt('RECEIVE_TIMEOUT', 60);
-
-  /// Configurações de cache
-  int get cacheMaxAge => getInt('CACHE_MAX_AGE', 3600);
-  int get cacheMaxSize => getInt('CACHE_MAX_SIZE', 100);
-
-  /// Configurações de analytics
-  bool get analyticsEnabled => getBool('ANALYTICS_ENABLED', false);
-  bool get crashReportingEnabled => getBool('CRASH_REPORTING_ENABLED', false);
-  bool get debugMode => getBool('DEBUG_MODE', kDebugMode);
-
-  /// Headers de API comuns
-  Map<String, String> get commonHeaders => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'PetAdote/${_getAppVersion()}',
-        'X-App-Environment': environment.name,
-        if (debugMode) 'X-Debug-Mode': 'true',
-      };
-
-  /// Headers específicos para Gemini
-  Map<String, String> get geminiHeaders => {
-        ...commonHeaders,
-        if (geminiApiKey != null) 'Authorization': 'Bearer $geminiApiKey',
-      };
-
-  /// Headers específicos para Imagen
-  Map<String, String> get imagenHeaders => {
-        ...commonHeaders,
-        if (imagenApiKey != null) 'Authorization': 'Bearer $imagenApiKey',
-      };
-
-  /// Versão da aplicação (placeholder)
-  String _getAppVersion() {
-    return '1.0.0'; // Em uma implementação real, pegaria do pubspec.yaml
-  }
-
-  /// Dump de configurações (para debug - sem informações sensíveis)
-  Map<String, dynamic> toDebugMap() {
-    final debugConfig = <String, dynamic>{};
-
-    for (final entry in _config.entries) {
-      if (_isSensitiveKey(entry.key)) {
-        debugConfig[entry.key] = '[REDACTED]';
-      } else {
-        debugConfig[entry.key] = entry.value;
-      }
-    }
-
-    return {
-      'environment': environment.name,
-      'isInitialized': isInitialized,
-      'config': debugConfig,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'AppConfig(environment: ${environment.name}, initialized: $isInitialized)';
-  }
+  // URLs and endpoints
+  static const String supportEmail = 'support@petgame.com';
+  static const String privacyPolicyUrl = 'https://petgame.com/privacy';
+  static const String termsOfServiceUrl = 'https://petgame.com/terms';
 }
 
-/// Extension para facilitar o uso
-extension AppConfigExtensions on AppConfig {
-  /// Verifica se uma API key está configurada
-  bool hasApiKey(String service) {
-    switch (service.toLowerCase()) {
-      case 'gemini':
-        return geminiApiKey != null && geminiApiKey!.isNotEmpty;
-      case 'imagen':
-        return imagenApiKey != null && imagenApiKey!.isNotEmpty;
-      case 'openai':
-        return openaiApiKey != null && openaiApiKey!.isNotEmpty;
-      default:
-        return false;
-    }
-  }
+// File: lib/core/constants/app_constants.dart
 
-  /// Valida se todas as APIs necessárias estão configuradas
-  bool get hasAllRequiredApiKeys {
-    return hasApiKey('gemini') && hasApiKey('imagen');
-  }
+/// Application constants and configuration values
+class AppConstants {
+  // Animation durations
+  static const Duration fastAnimation = Duration(milliseconds: 150);
+  static const Duration normalAnimation = Duration(milliseconds: 300);
+  static const Duration slowAnimation = Duration(milliseconds: 600);
 
-  /// Configurações para desenvolvimento
-  bool get isDev => isDevelopment || debugMode;
+  // Timeouts
+  static const Duration networkTimeout = Duration(seconds: 30);
+  static const Duration authTimeout = Duration(seconds: 60);
+
+  // Cache keys
+  static const String userDataCacheKey = 'user_data';
+  static const String petDataCacheKey = 'pet_data';
+  static const String themeCacheKey = 'app_theme';
+
+  // Shared preferences keys
+  static const String onboardingCompleteKey = 'onboarding_complete';
+  static const String lastDailyRewardKey = 'last_daily_reward';
+  static const String userPreferencesKey = 'user_preferences';
+
+  // Error messages
+  static const String networkErrorMessage = 'Please check your internet connection';
+  static const String authErrorMessage = 'Authentication failed';
+  static const String unknownErrorMessage = 'Something went wrong';
+
+  // Success messages
+  static const String petFedSuccessMessage = 'Pet fed successfully!';
+  static const String petPlaySuccessMessage = 'Pet is happy after playing!';
+  static const String petRestSuccessMessage = 'Pet is well rested!';
+  static const String dailyRewardClaimedMessage = 'Daily reward claimed!';
+
+  // Validation
+  static const int minPasswordLength = 6;
+  static const int maxNameLength = 50;
+  static const int maxDescriptionLength = 200;
 }

@@ -1,333 +1,142 @@
+// File: lib/presentation/providers/theme_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/core/config/theme_config.dart';
+import 'package:petverse/core/enums/enums/app_enums.dart';
+import 'package:petverse/presentation/providers/dependencies_provider.dart';
 
-/// Enum para representar os temas disponíveis
-enum AppTheme {
-  light('light'),
-  dark('dark'),
-  system('system');
+/// Theme state class
+class ThemeState {
+  final AppTheme currentTheme;
+  final bool isAnimating;
 
-  const AppTheme(this.value);
-  final String value;
+  const ThemeState({
+    this.currentTheme = AppTheme.light,
+    this.isAnimating = false,
+  });
 
-  static AppTheme fromString(String value) {
-    return AppTheme.values.firstWhere(
-      (theme) => theme.value == value,
-      orElse: () => AppTheme.system,
+  ThemeState copyWith({
+    AppTheme? currentTheme,
+    bool? isAnimating,
+  }) {
+    return ThemeState(
+      currentTheme: currentTheme ?? this.currentTheme,
+      isAnimating: isAnimating ?? this.isAnimating,
     );
   }
-}
 
-/// StateNotifier para gerenciar o estado do tema
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.system);
+  bool get isDark => currentTheme == AppTheme.dark;
+  bool get isLight => currentTheme == AppTheme.light;
+  bool get isSystem => currentTheme == AppTheme.system;
 
-  /// Alterna entre tema claro e escuro
-  void toggleTheme() {
-    switch (state) {
-      case ThemeMode.light:
-        state = ThemeMode.dark;
-        break;
-      case ThemeMode.dark:
-        state = ThemeMode.light;
-        break;
-      case ThemeMode.system:
-        // Se está em system, vai para light
-        state = ThemeMode.light;
-        break;
-    }
-  }
-
-  /// Define um tema específico
-  void setTheme(ThemeMode themeMode) {
-    state = themeMode;
-  }
-
-  /// Define tema baseado no enum AppTheme
-  void setAppTheme(AppTheme appTheme) {
-    switch (appTheme) {
+  ThemeMode get themeMode {
+    switch (currentTheme) {
       case AppTheme.light:
-        state = ThemeMode.light;
-        break;
+        return ThemeMode.light;
       case AppTheme.dark:
-        state = ThemeMode.dark;
-        break;
+        return ThemeMode.dark;
       case AppTheme.system:
-        state = ThemeMode.system;
-        break;
+        return ThemeMode.system;
     }
   }
 
-  /// Retorna o AppTheme atual
-  AppTheme get currentAppTheme {
-    switch (state) {
-      case ThemeMode.light:
-        return AppTheme.light;
-      case ThemeMode.dark:
+  ThemeData get lightTheme => ThemeConfig.lightTheme;
+  ThemeData get darkTheme => ThemeConfig.darkTheme;
+}
+
+/// Theme notifier
+class ThemeNotifier extends StateNotifier<ThemeState> {
+  final Ref _ref;
+
+  ThemeNotifier(this._ref) : super(const ThemeState()) {
+    _loadSavedTheme();
+  }
+
+  Future<void> _loadSavedTheme() async {
+    try {
+      final localStorage = _ref.read(localStorageProvider);
+      final savedTheme = await localStorage.getThemeMode();
+
+      if (savedTheme != null) {
+        final theme = _stringToAppTheme(savedTheme);
+        state = state.copyWith(currentTheme: theme);
+      }
+    } catch (e) {
+      // Use default theme if loading fails
+      state = state.copyWith(currentTheme: AppTheme.light);
+    }
+  }
+
+  Future<void> setTheme(AppTheme theme) async {
+    state = state.copyWith(isAnimating: true);
+
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    state = state.copyWith(currentTheme: theme);
+
+    // Save to local storage
+    try {
+      final localStorage = _ref.read(localStorageProvider);
+      await localStorage.setThemeMode(_appThemeToString(theme));
+    } catch (e) {
+      // Handle save error silently
+    }
+
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    state = state.copyWith(isAnimating: false);
+  }
+
+  Future<void> toggleTheme() async {
+    final newTheme = state.isDark ? AppTheme.light : AppTheme.dark;
+    await setTheme(newTheme);
+  }
+
+  AppTheme _stringToAppTheme(String value) {
+    switch (value.toLowerCase()) {
+      case 'dark':
         return AppTheme.dark;
-      case ThemeMode.system:
+      case 'system':
         return AppTheme.system;
+      default:
+        return AppTheme.light;
     }
   }
 
-  /// Verifica se o tema atual é claro
-  bool get isLightTheme => state == ThemeMode.light;
-
-  /// Verifica se o tema atual é escuro
-  bool get isDarkTheme => state == ThemeMode.dark;
-
-  /// Verifica se está seguindo o sistema
-  bool get isSystemTheme => state == ThemeMode.system;
-}
-
-/// Provider para o estado do tema
-final themeModeProvider =
-    StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
-
-/// Provider computado para verificar se é tema claro
-final isLightThemeProvider = Provider<bool>((ref) {
-  final themeMode = ref.watch(themeModeProvider);
-  return themeMode == ThemeMode.light;
-});
-
-/// Provider computado para verificar se é tema escuro
-final isDarkThemeProvider = Provider<bool>((ref) {
-  final themeMode = ref.watch(themeModeProvider);
-  return themeMode == ThemeMode.dark;
-});
-
-/// Provider para o tema claro customizado
-final lightThemeProvider = Provider<ThemeData>((ref) {
-  return ThemeData(
-    primarySwatch: Colors.purple,
-    brightness: Brightness.light,
-    primaryColor: const Color(0xFF8A05BE),
-    scaffoldBackgroundColor: Colors.grey[50],
-    cardColor: Colors.white,
-
-    // AppBar Theme
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF4A148C),
-      foregroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-    ),
-
-    // Elevated Button Theme
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF8A05BE),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 4,
-      ),
-    ),
-
-    // Card Theme
-    cardTheme: CardThemeData(
-      color: Colors.white,
-      shadowColor: Colors.black26,
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-
-    // Input Decoration Theme
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey[300]!),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF8A05BE), width: 2),
-      ),
-      fillColor: Colors.grey[50],
-      filled: true,
-    ),
-
-    // Bottom Navigation Bar Theme
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF8A05BE),
-      unselectedItemColor: Colors.grey[500],
-      type: BottomNavigationBarType.fixed,
-      elevation: 8,
-    ),
-
-    // Text Theme
-    textTheme: const TextTheme(
-      headlineLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w900,
-        color: Color(0xFF8A05BE),
-      ),
-      headlineMedium: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF4A148C),
-      ),
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
-      ),
-      bodyLarge: TextStyle(
-        fontSize: 16,
-        color: Colors.black87,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        color: Colors.black54,
-      ),
-    ),
-
-    // Color Scheme
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF8A05BE),
-      brightness: Brightness.light,
-    ),
-
-    visualDensity: VisualDensity.adaptivePlatformDensity,
-    fontFamily: 'Inter',
-    useMaterial3: true,
-  );
-});
-
-/// Provider para o tema escuro customizado
-final darkThemeProvider = Provider<ThemeData>((ref) {
-  return ThemeData(
-    primarySwatch: Colors.deepPurple,
-    brightness: Brightness.dark,
-    primaryColor: const Color(0xFF9C27B0),
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    cardColor: const Color(0xFF1E1E1E),
-
-    // AppBar Theme
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1A1A1A),
-      foregroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-    ),
-
-    // Elevated Button Theme
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF9C27B0),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 4,
-      ),
-    ),
-
-    // Card Theme
-    cardTheme: CardThemeData(
-      color: const Color(0xFF1E1E1E),
-      shadowColor: Colors.black54,
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-
-    // Input Decoration Theme
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF9C27B0), width: 2),
-      ),
-      fillColor: const Color(0xFF2A2A2A),
-      filled: true,
-    ),
-
-    // Bottom Navigation Bar Theme
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color(0xFF1E1E1E),
-      selectedItemColor: Color(0xFF9C27B0),
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed,
-      elevation: 8,
-    ),
-
-    // Text Theme
-    textTheme: const TextTheme(
-      headlineLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w900,
-        color: Color(0xFF9C27B0),
-      ),
-      headlineMedium: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFFBB86FC),
-      ),
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-      bodyLarge: TextStyle(
-        fontSize: 16,
-        color: Colors.white70,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        color: Colors.white60,
-      ),
-    ),
-
-    // Color Scheme
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF9C27B0),
-      brightness: Brightness.dark,
-    ),
-
-    visualDensity: VisualDensity.adaptivePlatformDensity,
-    fontFamily: 'Inter',
-    useMaterial3: true,
-  );
-});
-
-/// Provider computado que retorna o tema ativo baseado no modo
-final activeThemeProvider = Provider<ThemeData>((ref) {
-  final themeMode = ref.watch(themeModeProvider);
-  final lightTheme = ref.watch(lightThemeProvider);
-  final darkTheme = ref.watch(darkThemeProvider);
-
-  switch (themeMode) {
-    case ThemeMode.light:
-      return lightTheme;
-    case ThemeMode.dark:
-      return darkTheme;
-    case ThemeMode.system:
-      // Por padrão, retorna o tema claro se não conseguir detectar o sistema
-      return lightTheme;
+  String _appThemeToString(AppTheme theme) {
+    switch (theme) {
+      case AppTheme.dark:
+        return 'dark';
+      case AppTheme.system:
+        return 'system';
+      default:
+        return 'light';
+    }
   }
+}
+
+/// Theme provider
+final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
+  return ThemeNotifier(ref);
 });
 
-/// Extension para facilitar acesso ao tema atual
-extension ThemeContextExtension on BuildContext {
-  /// Retorna se o tema atual é claro
-  bool get isLightTheme => Theme.of(this).brightness == Brightness.light;
+/// Theme mode provider (for MaterialApp)
+final themeModeProvider = Provider<ThemeMode>((ref) {
+  return ref.watch(themeProvider).themeMode;
+});
 
-  /// Retorna se o tema atual é escuro
-  bool get isDarkTheme => Theme.of(this).brightness == Brightness.dark;
+/// Dark theme check provider
+final isDarkThemeProvider = Provider<bool>((ref) {
+  return ref.watch(themeProvider).isDark;
+});
 
-  /// Retorna as cores do tema atual
-  ColorScheme get colors => Theme.of(this).colorScheme;
+/// Light theme data provider
+final lightThemeProvider = Provider<ThemeData>((ref) {
+  return ref.watch(themeProvider).lightTheme;
+});
 
-  /// Retorna os estilos de texto do tema atual
-  TextTheme get textStyles => Theme.of(this).textTheme;
-}
+/// Dark theme data provider
+final darkThemeProvider = Provider<ThemeData>((ref) {
+  return ref.watch(themeProvider).darkTheme;
+});

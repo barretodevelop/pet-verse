@@ -21,7 +21,7 @@
   },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
-  "files.autoSave": "onFocusChange",
+  "files.autoSave": "off",
   "files.exclude": {
     "**/.dart_tool": true,
     "**/.idea": true,
