@@ -20,6 +20,7 @@ import 'package:petverse/domain/usecases/pet/play_with_pet.dart';
 import 'package:petverse/domain/usecases/pet/rest_pet.dart';
 import 'package:petverse/domain/usecases/user/claim_daily_reward.dart';
 import 'package:petverse/domain/usecases/user/update_user_data.dart';
+import 'package:petverse/presentation/providers/enhanced_pet_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Data Sources
@@ -279,3 +280,15 @@ class AppProviderObserver extends ProviderObserver {
 
 /// Debug mode flag
 const bool kDebugMode = bool.fromEnvironment('dart.vm.product') == false;
+
+/// Enhanced pet game provider (substitui o antigo petGameProvider)
+final enhancedPetGameProvider =
+    StateNotifierProvider<EnhancedPetGameNotifier, EnhancedPetGameState>((ref) {
+  return EnhancedPetGameNotifier(
+    ref.read(adoptPetProvider),
+    ref.read(feedPetProvider),
+    ref.read(playWithPetProvider),
+    ref.read(restPetProvider),
+    ref,
+  );
+});

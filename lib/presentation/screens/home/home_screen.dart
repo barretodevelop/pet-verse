@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/core/config/theme_config.dart';
 import 'package:petverse/presentation/providers/dependencies_provider.dart';
-import 'package:petverse/presentation/providers/pet_provider.dart';
 import 'package:petverse/presentation/providers/user_provider.dart';
+import 'package:petverse/presentation/screens/home/pet/enhanced_pet_screen.dart';
 import 'package:petverse/presentation/screens/home/pet/pet_adoption_screen.dart';
 import 'package:petverse/presentation/screens/settings/settings_screen.dart';
 import 'package:petverse/presentation/widgets/animations/slide_fade_animation.dart';
@@ -14,7 +14,6 @@ import 'package:petverse/presentation/widgets/common/custom_app_bar.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'feed/feed_screen.dart';
 import 'games/games_screen.dart';
-import 'pet/pet_screen.dart';
 import 'shop/shop_screen.dart';
 
 /// Main home screen with bottom navigation
@@ -146,6 +145,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
+  // Widget _renderCurrentScreen() {
+  //   if (_showSettings) {
+  //     return SettingsScreen(onBack: _handleBackFromSettings);
+  //   }
+
+  //   final currentIndex = ref.watch(bottomNavIndexProvider);
+  //   final petGameState = ref.watch(petGameProvider);
+
+  //   switch (currentIndex) {
+  //     case 0:
+  //       return const DashboardScreen();
+  //     case 1:
+  //       return const ShopScreen();
+  //     case 2:
+  //       // Show pet screen if user has pets, otherwise show adoption screen
+  //       return petGameState.hasUserPets ? const PetScreen() : const PetAdoptionScreen();
+  //     case 3:
+  //       return const GamesScreen();
+  //     case 4:
+  //       return const FeedScreen();
+  //     default:
+  //       return const DashboardScreen();
+  //   }
+  // }
+
+  Widget _renderCurrentScreen() {
+    if (_showSettings) {
+      return SettingsScreen(onBack: _handleBackFromSettings);
+    }
+
+    final currentIndex = ref.watch(bottomNavIndexProvider);
+    final petGameState = ref.watch(enhancedPetGameProvider); // ✅ MUDANÇA: novo provider
+
+    switch (currentIndex) {
+      case 0:
+        return const DashboardScreen();
+      case 1:
+        return const ShopScreen();
+      case 2:
+        // ✅ MUDANÇA: Usar nova tela de pets
+        return petGameState.hasUserPets ? const EnhancedPetScreen() : const PetAdoptionScreen();
+      case 3:
+        return const GamesScreen();
+      case 4:
+        return const FeedScreen();
+      default:
+        return const DashboardScreen();
+    }
+  }
+
   Widget _buildNotificationItem(
     String emoji,
     String title,
@@ -213,31 +262,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       return '${difference.inHours}h ago';
     } else {
       return '${difference.inDays}d ago';
-    }
-  }
-
-  Widget _renderCurrentScreen() {
-    if (_showSettings) {
-      return SettingsScreen(onBack: _handleBackFromSettings);
-    }
-
-    final currentIndex = ref.watch(bottomNavIndexProvider);
-    final petGameState = ref.watch(petGameProvider);
-
-    switch (currentIndex) {
-      case 0:
-        return const DashboardScreen();
-      case 1:
-        return const ShopScreen();
-      case 2:
-        // Show pet screen if user has pets, otherwise show adoption screen
-        return petGameState.hasUserPets ? const PetScreen() : const PetAdoptionScreen();
-      case 3:
-        return const GamesScreen();
-      case 4:
-        return const FeedScreen();
-      default:
-        return const DashboardScreen();
     }
   }
 

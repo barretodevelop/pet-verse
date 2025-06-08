@@ -92,6 +92,7 @@ class ThemeConfig {
   static const double fontSize24 = 24.0;
   static const double fontSize28 = 28.0;
   static const double fontSize32 = 32.0;
+  static const double fontSize48 = 48.0;
 
   /// Light theme configuration
   static ThemeData get lightTheme {
