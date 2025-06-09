@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/core/config/app_config.dart';
 import 'package:petverse/core/config/theme_config.dart';
 import 'package:petverse/core/enums/enums/app_enums.dart';
 import 'package:petverse/presentation/providers/dependencies_provider.dart';
@@ -95,77 +96,130 @@ class EnhancedPetScreen extends ConsumerWidget {
   Widget _buildPetSelectionHeader(BuildContext context, WidgetRef ref, EnhancedPetGameState state) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(ThemeConfig.spacing16),
+        padding: const EdgeInsets.all(ThemeConfig.spacing8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Your Pets (${state.userPets.length})',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-                if (state.isTimerActive)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: ThemeConfig.spacing8,
-                      vertical: ThemeConfig.spacing4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ThemeConfig.successColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(ThemeConfig.borderRadius8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        PulseAnimation(
-                          child: Icon(
-                            Icons.favorite,
-                            size: ThemeConfig.iconSize16,
-                            color: ThemeConfig.successColor,
-                          ),
-                        ),
-                        SizedBox(width: ThemeConfig.spacing4),
-                        Text(
-                          'Active',
-                          style: TextStyle(
-                            color: ThemeConfig.successColor,
-                            fontSize: ThemeConfig.fontSize12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: Text(
+            //         'Your Pets (${state.userPets.length})',
+            //         style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //       ),
+            //     ),
+            //     if (state.isTimerActive)
+            //       Container(
+            //         padding: const EdgeInsets.symmetric(
+            //           horizontal: ThemeConfig.spacing8,
+            //           vertical: ThemeConfig.spacing4,
+            //         ),
+            //         decoration: BoxDecoration(
+            //           color: ThemeConfig.successColor.withOpacity(0.1),
+            //           borderRadius: BorderRadius.circular(ThemeConfig.borderRadius8),
+            //         ),
+            //         child: const Row(
+            //           mainAxisSize: MainAxisSize.min,
+            //           children: [
+            //             PulseAnimation(
+            //               child: Icon(
+            //                 Icons.favorite,
+            //                 size: ThemeConfig.iconSize16,
+            //                 color: ThemeConfig.successColor,
+            //               ),
+            //             ),
+            //             SizedBox(width: ThemeConfig.spacing4),
+            //             Text(
+            //               'Active',
+            //               style: TextStyle(
+            //                 color: ThemeConfig.successColor,
+            //                 fontSize: ThemeConfig.fontSize12,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //   ],
+            // ),
 
             const SizedBox(height: ThemeConfig.spacing16),
 
             // Pet selection carousel
+            // SizedBox(
+            //   height: 120,
+            //   child: ListView.builder(
+            //     scrollDirection: Axis.horizontal,
+            //     itemCount: state.userPets.length,
+            //     itemBuilder: (context, index) {
+            //       final pet = state.userPets[index];
+            //       final isSelected = state.selectedPet?.id == pet.id;
+
+            //       return Padding(
+            //         padding: EdgeInsets.only(
+            //           right: index < state.userPets.length - 1 ? ThemeConfig.spacing12 : 0,
+            //         ),
+            //         child: _buildPetSelectionCard(context, ref, pet, isSelected),
+            //       );
+            //     },
+            //   ),
+            // ),
+
             SizedBox(
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: state.userPets.length,
+                itemCount: AppConstants().totalSlots, // Sempre mostrar 3 cards
                 itemBuilder: (context, index) {
-                  final pet = state.userPets[index];
-                  final isSelected = state.selectedPet?.id == pet.id;
+                  final hasPet = index < state.userPets.length;
 
                   return Padding(
-                    padding: EdgeInsets.only(
-                      right: index < state.userPets.length - 1 ? ThemeConfig.spacing12 : 0,
-                    ),
-                    child: _buildPetSelectionCard(context, ref, pet, isSelected),
+                    padding: EdgeInsets.symmetric(horizontal: 6
+                        // right: index < 2 ? ThemeConfig.spacing12 : 0, // Espaçamento entre cards
+                        ),
+                    child: hasPet
+                        ? _buildPetSelectionCard(context, ref, state.userPets[index],
+                            state.selectedPet?.id == state.userPets[index].id)
+                        : _buildAddPetCard(context), // Card vazio com ícone "+"
                   );
                 },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddPetCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Ação ao clicar para adicionar novo pet
+        // Exemplo: navegar para tela de criação ou seleção
+        // Navigator.pushNamed(context, '/add-pet');
+      },
+      child: Container(
+        width: 100, // ou o tamanho desejado
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey, width: 1),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add, size: 32, color: Colors.grey[600]),
+              const SizedBox(height: 8),
+              Text(
+                'Adicionar',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

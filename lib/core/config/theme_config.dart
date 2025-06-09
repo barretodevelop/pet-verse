@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// Theme configuration for the application
 class ThemeConfig {
   // Color palette
-  static const Color primaryColor = Color(0xFF8A05BE);
+  static const Color primaryColor = Color.fromARGB(255, 79, 4, 108);
   static const Color primaryColorDark = Color(0xFF4B0082);
   static const Color primaryColorLight = Color(0xFFB366D9);
   static const Color secondaryColor = Color(0xFF40E0D0);

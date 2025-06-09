@@ -15,6 +15,7 @@ class PetEntity extends Equatable {
   final int energy;
   final int level;
   final int xp;
+  final int health;
   final int xpToNextLevel;
   final DateTime lastFed;
   final DateTime lastPlayed;
@@ -36,6 +37,7 @@ class PetEntity extends Equatable {
     this.level = 1,
     this.xp = 0,
     this.xpToNextLevel = 100,
+    this.health = 100,
     required this.lastFed,
     required this.lastPlayed,
     required this.lastSlept,
@@ -57,6 +59,7 @@ class PetEntity extends Equatable {
     int? level,
     int? xp,
     int? xpToNextLevel,
+    int? health,
     DateTime? lastFed,
     DateTime? lastPlayed,
     DateTime? lastSlept,
@@ -74,6 +77,7 @@ class PetEntity extends Equatable {
       hunger: hunger ?? this.hunger,
       happiness: happiness ?? this.happiness,
       energy: energy ?? this.energy,
+      health: health ?? this.health,
       level: level ?? this.level,
       xp: xp ?? this.xp,
       xpToNextLevel: xpToNextLevel ?? this.xpToNextLevel,
@@ -97,6 +101,7 @@ class PetEntity extends Equatable {
         hunger,
         happiness,
         energy,
+        health,
         level,
         xp,
         xpToNextLevel,

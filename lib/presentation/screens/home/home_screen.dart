@@ -6,8 +6,7 @@ import 'package:petverse/core/config/theme_config.dart';
 import 'package:petverse/domain/entities/daily_reward_result.dart';
 import 'package:petverse/presentation/providers/dependencies_provider.dart';
 import 'package:petverse/presentation/providers/user_provider.dart';
-import 'package:petverse/presentation/screens/home/pet/enhanced_pet_screen.dart';
-import 'package:petverse/presentation/screens/home/pet/pet_adoption_screen.dart';
+import 'package:petverse/presentation/screens/home/pet/new_pet_screen.dart';
 import 'package:petverse/presentation/screens/settings/settings_screen.dart';
 import 'package:petverse/presentation/widgets/animations/slide_fade_animation.dart';
 import 'package:petverse/presentation/widgets/common/custom_app_bar.dart';
@@ -146,38 +145,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  // Widget _renderCurrentScreen() {
-  //   if (_showSettings) {
-  //     return SettingsScreen(onBack: _handleBackFromSettings);
-  //   }
-
-  //   final currentIndex = ref.watch(bottomNavIndexProvider);
-  //   final petGameState = ref.watch(petGameProvider);
-
-  //   switch (currentIndex) {
-  //     case 0:
-  //       return const DashboardScreen();
-  //     case 1:
-  //       return const ShopScreen();
-  //     case 2:
-  //       // Show pet screen if user has pets, otherwise show adoption screen
-  //       return petGameState.hasUserPets ? const PetScreen() : const PetAdoptionScreen();
-  //     case 3:
-  //       return const GamesScreen();
-  //     case 4:
-  //       return const FeedScreen();
-  //     default:
-  //       return const DashboardScreen();
-  //   }
-  // }
-
   Widget _renderCurrentScreen() {
     if (_showSettings) {
       return SettingsScreen(onBack: _handleBackFromSettings);
     }
 
     final currentIndex = ref.watch(bottomNavIndexProvider);
-    final petGameState = ref.watch(enhancedPetGameProvider); // ✅ MUDANÇA: novo provider
+    final petGameState = ref.watch(enhancedPetGameProvider);
 
     switch (currentIndex) {
       case 0:
@@ -185,8 +159,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       case 1:
         return const ShopScreen();
       case 2:
-        // ✅ MUDANÇA: Usar nova tela de pets
-        return petGameState.hasUserPets ? const EnhancedPetScreen() : const PetAdoptionScreen();
+        return const NewPetScreen();
+      //petGameState.hasUserPets ? const EnhancedPetScreen() : const PetAdoptionScreen();
       case 3:
         return const GamesScreen();
       case 4:

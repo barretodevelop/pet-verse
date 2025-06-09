@@ -308,11 +308,18 @@ jogo precisa ter uma economia onde o usuario ganha coins para poder manter o cui
 
 
 
-🧩 Diretrizes da Refatoração:
+🧩 Diretrizes para a criação da feature
 
-Analise o código atual do projeto e o prompt de refatoração contido no conteúdo fornecido.
+assuma que agora voce e um analista senior em desenvolvimento de game , com vasta esperiencia em designa de games. UX entao focado na experiencia do usuario siga o roteiro
+baseados na documentacao sistema de adocao colaborativa e principais inovações , traçe um plano de execução para a implação da feature. 
 
-Siga rigorosamente a ordem de criação de arquivos abaixo, para uma arquitetura limpa e escalável:
+Siga rigorosamente a ordem de criação das classes de acordo com o que precisar conforme abaixo , para uma arquitetura limpa e escalável conforme ja esta no projeto:
+
+faça o mapeamento de toda a funcionalidade monte e valide e todo o fluxo antes de enviar os arquivo para evitar a refatoração das classes a todo momento gerando varias versoes  e consumindo mensagem
+crie uma otimização adequada para a geração de todo o fluxo sem erro de limite de mensagem , ou limite de caracter por mensagem. cade classe gerada deve conter no inicio o nome da mesma para facilitar
+quero receber antes da gerção do codigo um cript powersheel que crie todos os arquivos necessario ,todas as classes devem vir completas e sem erros  
+utilixe o maximo de sua inteligencia e experiencia para criar um otimo codigo 
+
 
 core/classes iniciais
 
@@ -331,14 +338,14 @@ providers
 services
 
 Outros arquivos auxiliares
-
-Envie logo no início um script PowerShell para gerar a estrutura de pastas e arquivos em lib/, conforme o padrão acima.
-
+ 
 📦 Requisitos importantes:
 
 Não envie feedback parcial durante a execução para evitar desperdício de mensagens e estouro de limite.
 
 Não repita ou reenvie partes já feitas. Mantenha em memória todas as classes e arquivos gerados.
+
+se precisa podera excluir os codigos gerados anteriormente , apos minha autorização entao se precisar de espaco ou limite solicitacao a aprovação para esclusao de contedudo ou artefatos. gerando anteriormente
 
 O feedback geral do trabalho deve ser enviado apenas ao final, com:
 
@@ -346,4 +353,5 @@ A lista completa das classes e arquivos gerados;
 
 Um relatório resumido das melhorias implementadas.
 
-Otimize o fluxo de execução para concluir toda a refatoração de forma contínua, sem exceder o limite de caracteres por mensagem.  use desenvolvimento incremental e use artefatos devidamente para evitar estourar limites  quando ja tiver 7 artefatos gerados  pause e aguarde confirmação para continuar.
+Otimize o fluxo de execução para concluir toda a refatoração de forma contínua, sem exceder o limite de caracteres por mensagem. 
+ use desenvolvimento incremental e use artefatos devidamente para evitar estourar limites  quando ja tiver 7 artefatos gerados  pause e aguarde confirmação para continuar.

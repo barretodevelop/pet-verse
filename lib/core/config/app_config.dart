@@ -97,4 +97,6 @@ class AppConstants {
   static const int minPasswordLength = 6;
   static const int maxNameLength = 50;
   static const int maxDescriptionLength = 200;
+
+  int get totalSlots => 4;
 }

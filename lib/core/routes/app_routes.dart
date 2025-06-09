@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:petverse/presentation/screens/auth/app_wrapper.dart';
 import 'package:petverse/presentation/screens/auth/login_screen.dart';
 import 'package:petverse/presentation/screens/home/home_screen.dart';
+import 'package:petverse/presentation/screens/home/pet/new_pet_screen.dart';
 import 'package:petverse/presentation/screens/settings/settings_screen.dart';
 import 'package:petverse/presentation/screens/splash/splash_screen.dart';
 
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String shop = '/shop';
   static const String games = '/games';
   static const String feed = '/feed';
+  static const String pet = '/pet';
 
   /// Router configuration
   static final GoRouter router = GoRouter(
@@ -59,6 +61,7 @@ class AppRoutes {
               onBack: () => context.pop(),
             ),
           ),
+          GoRoute(path: 'pet', name: 'pet', builder: (context, state) => NewPetScreen()),
         ],
       ),
 
