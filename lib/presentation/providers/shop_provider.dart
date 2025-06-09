@@ -1,504 +1,58 @@
 // File: lib/presentation/providers/shop_provider.dart
+// ATUALIZADO - Usando UserProvider simplificado
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petverse/core/constants/economy_constants.dart';
 import 'package:petverse/core/enums/enums/app_enums.dart';
+import 'package:petverse/domain/entities/shop_item_entity.dart';
+import 'package:petverse/presentation/providers/cart_provider.dart';
+import 'package:petverse/presentation/providers/dependencies_provider.dart';
+import 'package:petverse/presentation/providers/user_provider.dart';
+import 'package:petverse/services/shop_service.dart';
 
-// class ShopState {
-//   final List<ShopItemEntity> items;
-//   final ItemType? selectedCategory;
-//   final LoadingState status;
-//   final String? errorMessage;
-
-//   const ShopState({
-//     this.items = const [],
-//     this.selectedCategory,
-//     this.status = LoadingState.initial,
-//     this.errorMessage,
-//   });
-
-//   ShopState copyWith({
-//     List<ShopItemEntity>? items,
-//     ItemType? selectedCategory,
-//     bool clearCategory = false,
-//     LoadingState? status,
-//     String? errorMessage,
-//     bool clearError = false,
-//   }) {
-//     return ShopState(
-//       items: items ?? this.items,
-//       selectedCategory: clearCategory ? null : selectedCategory ?? this.selectedCategory,
-//       status: status ?? this.status,
-//       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-//     );
-//   }
-
-//   bool get isLoading => status == LoadingState.loading;
-//   bool get hasError => status == LoadingState.error;
-// }
-
-// class ShopNotifier extends StateNotifier<ShopState> {
-//   final Ref _ref;
-
-//   ShopNotifier(this._ref) : super(const ShopState()) {
-//     loadAllItems();
-//   }
-
-//   void loadAllItems() {
-//     state = state.copyWith(status: LoadingState.loading);
-//     final items = ShopService.getAllItems();
-//     state = state.copyWith(
-//       items: items,
-//       status: LoadingState.success,
-//     );
-//   }
-
-//   void filterByCategory(ItemType? category) {
-//     final filteredItems =
-//         category == null ? ShopService.getAllItems() : ShopService.getItemsByCategory(category);
-
-//     state = state.copyWith(
-//       items: filteredItems,
-//       selectedCategory: category,
-//       clearCategory: category == null,
-//     );
-//   }
-
-//   Future<PurchaseResult> purchaseItem(ShopItemEntity item, int quantity) async {
-//     final userState = _ref.read(userGameDataProvider);
-
-//     if (!userState.hasUser) {
-//       return PurchaseResult(success: false, message: 'User not found');
-//     }
-
-//     final user = userState.user!;
-//     final totalCost = item.price * quantity;
-
-//     // Check if user has enough currency
-//     bool hasEnoughCurrency = false;
-//     switch (item.currency) {
-//       case CurrencyType.coins:
-//         hasEnoughCurrency = user.coins >= totalCost;
-//         break;
-//       case CurrencyType.gems:
-//         hasEnoughCurrency = user.gems >= totalCost;
-//         break;
-//       case CurrencyType.xp:
-//         hasEnoughCurrency = user.totalXp >= totalCost;
-//         break;
-//     }
-
-//     if (!hasEnoughCurrency) {
-//       return PurchaseResult(
-//         success: false,
-//         message: 'Insufficient ${item.currency.name}',
-//       );
-//     }
-
-//     // Deduct currency
-//     Map<String, dynamic> updateData = {};
-//     switch (item.currency) {
-//       case CurrencyType.coins:
-//         updateData['coins'] = user.coins - totalCost;
-//         break;
-//       case CurrencyType.gems:
-//         updateData['gems'] = user.gems - totalCost;
-//         break;
-//       case CurrencyType.xp:
-//         updateData['totalXp'] = user.totalXp - totalCost;
-//         break;
-//     }
-
-//     // Update user currency
-//     final userRepository = _ref.read(userRepositoryProvider);
-//     final updateResult = await userRepository.updateUser(user.id, updateData);
-
-//     return updateResult.fold(
-//       (failure) => PurchaseResult(success: false, message: failure.message),
-//       (_) async {
-//         // Add item to inventory
-//         final inventoryResult =
-//             await _ref.read(inventoryProvider.notifier).addItem(item.id, quantity);
-
-//         if (inventoryResult.success) {
-//           return PurchaseResult(
-//             success: true,
-//             message: 'Purchased ${item.name} x$quantity!',
-//           );
-//         } else {
-//           return PurchaseResult(success: false, message: inventoryResult.message);
-//         }
-//       },
-//     );
-//   }
-// }
-
-// final shopProvider = StateNotifierProvider<ShopNotifier, ShopState>((ref) {
-//   return ShopNotifier(ref);
-// });
-
-// class PurchaseResult {
-//   final bool success;
-//   final String message;
-
-//   PurchaseResult({required this.success, required this.message});
-// }
-
-// /// Shop state
-// class ShopState {
-//   final List<ShopItemEntity> items;
-//   final List<ShopItemEntity> filteredItems;
-//   final ItemCategory? selectedCategory;
-//   final LoadingState status;
-//   final String? errorMessage;
-//   final bool isPurchasing;
-
-//   const ShopState({
-//     this.items = const [],
-//     this.filteredItems = const [],
-//     this.selectedCategory,
-//     this.status = LoadingState.initial,
-//     this.errorMessage,
-//     this.isPurchasing = false,
-//   });
-
-//   ShopState copyWith({
-//     List<ShopItemEntity>? items,
-//     List<ShopItemEntity>? filteredItems,
-//     ItemCategory? selectedCategory,
-//     bool clearCategory = false,
-//     LoadingState? status,
-//     String? errorMessage,
-//     bool clearError = false,
-//     bool? isPurchasing,
-//   }) {
-//     return ShopState(
-//       items: items ?? this.items,
-//       filteredItems: filteredItems ?? this.filteredItems,
-//       selectedCategory: clearCategory ? null : selectedCategory ?? this.selectedCategory,
-//       status: status ?? this.status,
-//       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-//       isPurchasing: isPurchasing ?? this.isPurchasing,
-//     );
-//   }
-
-//   bool get isLoading => status == LoadingState.loading;
-//   bool get hasError => status == LoadingState.error;
-//   bool get hasItems => items.isNotEmpty;
-
-//   List<ShopItemEntity> getItemsByCategory(ItemCategory category) {
-//     return items.where((item) => item.category == category).toList();
-//   }
-
-//   List<ItemCategory> get availableCategories {
-//     return items.map((item) => item.category).toSet().toList();
-//   }
-// }
-
-// /// Shop notifier
-// class ShopNotifier extends StateNotifier<ShopState> {
-//   final Ref _ref;
-
-//   ShopNotifier(this._ref) : super(const ShopState()) {
-//     loadShopItems();
-//   }
-
-//   /// Load all shop items
-//   Future<void> loadShopItems() async {
-//     state = state.copyWith(status: LoadingState.loading, clearError: true);
-
-//     try {
-//       // Mock shop items - em produção viria do repository
-//       final mockItems = _generateMockShopItems();
-
-//       state = state.copyWith(
-//         items: mockItems,
-//         filteredItems: mockItems,
-//         status: LoadingState.success,
-//       );
-//     } catch (e) {
-//       state = state.copyWith(
-//         status: LoadingState.error,
-//         errorMessage: 'Failed to load shop items: $e',
-//       );
-//     }
-//   }
-
-//   /// Filter items by category
-//   void filterByCategory(ItemCategory? category) {
-//     final filteredItems = category == null
-//         ? state.items
-//         : state.items.where((item) => item.category == category).toList();
-
-//     state = state.copyWith(
-//       selectedCategory: category,
-//       filteredItems: filteredItems,
-//       clearCategory: category == null,
-//     );
-//   }
-
-//   /// Purchase item
-//   Future<PurchaseResult> purchaseItem(ShopItemEntity item) async {
-//     final authState = _ref.read(authProvider);
-//     if (!authState.isAuthenticated || authState.firebaseUser == null) {
-//       return PurchaseResult(
-//         success: false,
-//         message: 'User not authenticated',
-//       );
-//     }
-
-//     final userGameData = _ref.read(userGameDataProvider);
-//     if (!userGameData.hasUser) {
-//       return PurchaseResult(
-//         success: false,
-//         message: 'User data not available',
-//       );
-//     }
-
-//     final user = userGameData.user!;
-
-//     // Check if user has enough currency
-//     final requiredAmount = item.price;
-//     final userCurrency = item.currency == CurrencyType.coins ? user.coins : user.gems;
-
-//     if (userCurrency < requiredAmount) {
-//       return PurchaseResult(
-//         success: false,
-//         message: 'Insufficient ${item.currency.name}',
-//       );
-//     }
-
-//     state = state.copyWith(isPurchasing: true);
-
-//     try {
-//       // Deduct currency from user
-//       final newCoins =
-//           item.currency == CurrencyType.coins ? user.coins - requiredAmount : user.coins;
-//       final newGems = item.currency == CurrencyType.gems ? user.gems - requiredAmount : user.gems;
-
-//       final updateResult = await _ref.read(userRepositoryProvider).updateUserCurrency(
-//             userId: user.id,
-//             coins: newCoins,
-//             gems: newGems,
-//             xp: user.totalXp,
-//             level: user.level,
-//           );
-
-//       return updateResult.fold(
-//         (failure) {
-//           state = state.copyWith(isPurchasing: false);
-//           return PurchaseResult(
-//             success: false,
-//             message: 'Purchase failed: ${failure.message}',
-//           );
-//         },
-//         (_) async {
-//           // Add item to inventory
-//           final inventoryResult = await _ref.read(inventoryProvider.notifier).addItem(item.id, 1);
-
-//           state = state.copyWith(isPurchasing: false);
-
-//           if (inventoryResult.success) {
-//             // Refresh user data
-//             _ref.invalidate(userGameDataProvider);
-
-//             return PurchaseResult(
-//               success: true,
-//               message: '${item.name} purchased successfully!',
-//             );
-//           } else {
-//             return PurchaseResult(
-//               success: false,
-//               message: 'Failed to add item to inventory',
-//             );
-//           }
-//         },
-//       );
-//     } catch (e) {
-//       state = state.copyWith(isPurchasing: false);
-//       return PurchaseResult(
-//         success: false,
-//         message: 'Purchase error: $e',
-//       );
-//     }
-//   }
-
-//   /// Generate mock shop items
-//   List<ShopItemEntity> _generateMockShopItems() {
-//     return [
-//       // FOOD ITEMS
-//       const ShopItemEntity(
-//         id: 'food_basic_01',
-//         name: 'Pet Food',
-//         description: 'Basic nutritious food for your pet',
-//         imageUrl: '🍖',
-//         price: 10,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.food,
-//         rarity: ItemRarity.common,
-//         effects: {
-//           ItemEffectType.hunger: 30,
-//         },
-//       ),
-//       const ShopItemEntity(
-//         id: 'food_premium_01',
-//         name: 'Premium Steak',
-//         description: 'High-quality meat that pets love',
-//         imageUrl: '🥩',
-//         price: 25,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.food,
-//         rarity: ItemRarity.rare,
-//         effects: {
-//           ItemEffectType.hunger: 50,
-//           ItemEffectType.happiness: 10,
-//         },
-//       ),
-//       const ShopItemEntity(
-//         id: 'food_super_01',
-//         name: 'Golden Feast',
-//         description: 'Legendary meal fit for champions',
-//         imageUrl: '🍗',
-//         price: 3,
-//         currency: CurrencyType.gems,
-//         category: ItemCategory.food,
-//         rarity: ItemRarity.legendary,
-//         effects: {
-//           ItemEffectType.hunger: 80,
-//           ItemEffectType.happiness: 20,
-//           ItemEffectType.xp: 50,
-//         },
-//       ),
-
-//       // TOYS
-//       const ShopItemEntity(
-//         id: 'toy_ball_01',
-//         name: 'Tennis Ball',
-//         description: 'Classic ball for endless fun',
-//         imageUrl: '🎾',
-//         price: 15,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.toys,
-//         rarity: ItemRarity.common,
-//         effects: {
-//           ItemEffectType.happiness: 25,
-//         },
-//       ),
-//       const ShopItemEntity(
-//         id: 'toy_rope_01',
-//         name: 'Rope Toy',
-//         description: 'Durable rope for tugging games',
-//         imageUrl: '🪢',
-//         price: 20,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.toys,
-//         rarity: ItemRarity.uncommon,
-//         effects: {
-//           ItemEffectType.happiness: 35,
-//           ItemEffectType.energy: -5,
-//         },
-//       ),
-
-//       // MEDICINE
-//       const ShopItemEntity(
-//         id: 'med_potion_01',
-//         name: 'Health Potion',
-//         description: 'Restores pet vitality',
-//         imageUrl: '🧪',
-//         price: 30,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.medicine,
-//         rarity: ItemRarity.rare,
-//         effects: {
-//           ItemEffectType.health: 40,
-//           ItemEffectType.energy: 20,
-//         },
-//       ),
-//       const ShopItemEntity(
-//         id: 'med_energy_01',
-//         name: 'Energy Drink',
-//         description: 'Instant energy boost',
-//         imageUrl: '⚡',
-//         price: 1,
-//         currency: CurrencyType.gems,
-//         category: ItemCategory.medicine,
-//         rarity: ItemRarity.epic,
-//         effects: {
-//           ItemEffectType.energy: 60,
-//         },
-//       ),
-
-//       // ACCESSORIES
-//       const ShopItemEntity(
-//         id: 'acc_collar_01',
-//         name: 'Gold Collar',
-//         description: 'Fancy collar for stylish pets',
-//         imageUrl: '👑',
-//         price: 50,
-//         currency: CurrencyType.coins,
-//         category: ItemCategory.accessories,
-//         rarity: ItemRarity.epic,
-//         effects: {
-//           ItemEffectType.happiness: 15,
-//           ItemEffectType.xp: 25,
-//         },
-//       ),
-//     ];
-//   }
-// }
-
-// /// Shop provider
-// final shopProvider = StateNotifierProvider<ShopNotifier, ShopState>((ref) {
-//   return ShopNotifier(ref);
-// });
-
-// /// Purchase result class
-// class PurchaseResult {
-//   final bool success;
-//   final String message;
-
-//   PurchaseResult({
-//     required this.success,
-//     required this.message,
-//   });
-// }
-
-/// Shop provider for managing shop items and purchases
 class ShopState {
-  final List<ShopItem> items;
+  final List<ShopItemEntity> items;
+  final List<ShopItemEntity> filteredItems;
   final ItemCategory? selectedCategory;
   final LoadingState status;
   final String? errorMessage;
   final bool isPurchasing;
+  final ShopSortType sortType;
+  final String searchQuery;
 
   const ShopState({
     this.items = const [],
+    this.filteredItems = const [],
     this.selectedCategory,
     this.status = LoadingState.initial,
     this.errorMessage,
     this.isPurchasing = false,
+    this.sortType = ShopSortType.nameAsc,
+    this.searchQuery = '',
   });
 
   ShopState copyWith({
-    List<ShopItem>? items,
+    List<ShopItemEntity>? items,
+    List<ShopItemEntity>? filteredItems,
     ItemCategory? selectedCategory,
     bool clearCategory = false,
     LoadingState? status,
     String? errorMessage,
     bool clearError = false,
     bool? isPurchasing,
+    ShopSortType? sortType,
+    String? searchQuery,
   }) {
     return ShopState(
       items: items ?? this.items,
+      filteredItems: filteredItems ?? this.filteredItems,
       selectedCategory: clearCategory ? null : selectedCategory ?? this.selectedCategory,
       status: status ?? this.status,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       isPurchasing: isPurchasing ?? this.isPurchasing,
+      sortType: sortType ?? this.sortType,
+      searchQuery: searchQuery ?? this.searchQuery,
     );
-  }
-
-  List<ShopItem> get filteredItems {
-    if (selectedCategory == null) return items;
-    return items.where((item) => item.category == selectedCategory).toList();
   }
 
   bool get isLoading => status == LoadingState.loading;
@@ -507,75 +61,312 @@ class ShopState {
 }
 
 class ShopNotifier extends StateNotifier<ShopState> {
-  ShopNotifier() : super(const ShopState()) {
-    _loadShopItems();
+  final Ref _ref;
+
+  ShopNotifier(this._ref) : super(const ShopState()) {
+    loadShopItems();
   }
 
-  void _loadShopItems() {
-    // Mock shop items for now
-    final mockItems = [
-      ShopItem(
-        id: '1',
-        name: 'Premium Food',
-        description: 'Delicious food that restores 50 hunger',
-        price: 100,
-        currency: CurrencyType.coins,
-        category: ItemCategory.food,
-        effects: {ItemEffectType.hunger: 50},
-        imageUrl: 'food_premium.png',
-      ),
-      ShopItem(
-        id: '2',
-        name: 'Super Toy',
-        description: 'Fun toy that boosts happiness by 40',
-        price: 80,
-        currency: CurrencyType.coins,
-        category: ItemCategory.toys,
-        effects: {ItemEffectType.happiness: 40},
-        imageUrl: 'toy_ball.png',
-      ),
-      ShopItem(
-        id: '3',
-        name: 'Energy Drink',
-        description: 'Restores 60 energy instantly',
-        price: 5,
-        currency: CurrencyType.gems,
-        category: ItemCategory.medicine,
-        effects: {ItemEffectType.energy: 60},
-        imageUrl: 'energy_drink.png',
-      ),
-    ];
+  Future<void> loadShopItems() async {
+    state = state.copyWith(status: LoadingState.loading, clearError: true);
 
-    state = state.copyWith(
-      items: mockItems,
-      status: LoadingState.success,
-    );
+    try {
+      final mockItems = ShopService.getAllItems(); // Pega da sua classe
+      state = state.copyWith(
+        items: mockItems,
+        filteredItems: mockItems,
+        status: LoadingState.success,
+      );
+      _applyFiltersAndSort();
+    } catch (e) {
+      state = state.copyWith(
+        status: LoadingState.error,
+        errorMessage: 'Falha ao carregar itens: $e',
+      );
+    }
   }
 
-  void selectCategory(ItemCategory? category) {
+  void filterByCategory(ItemCategory? category) {
     state = state.copyWith(
       selectedCategory: category,
       clearCategory: category == null,
     );
+    _applyFiltersAndSort();
   }
 
-  Future<PurchaseResult> purchaseItem(ShopItem item) async {
+  void searchItems(String query) {
+    state = state.copyWith(searchQuery: query);
+    _applyFiltersAndSort();
+  }
+
+  void sortItems(ShopSortType sortType) {
+    state = state.copyWith(sortType: sortType);
+    _applyFiltersAndSort();
+  }
+
+  void _applyFiltersAndSort() {
+    var filtered = state.items.where((item) => item.isAvailable);
+
+    // Aplicar filtro de categoria
+    if (state.selectedCategory != null) {
+      filtered = filtered.where((item) => item.category == state.selectedCategory);
+    }
+
+    // Aplicar busca
+    if (state.searchQuery.isNotEmpty) {
+      filtered = filtered.where((item) => item.matchesSearch(state.searchQuery));
+    }
+
+    // Aplicar ordenação
+    final sortedList = filtered.toList();
+    _sortItemsList(sortedList, state.sortType);
+
+    state = state.copyWith(filteredItems: sortedList);
+  }
+
+  void _sortItemsList(List<ShopItemEntity> items, ShopSortType sortType) {
+    switch (sortType) {
+      case ShopSortType.nameAsc:
+        items.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case ShopSortType.nameDesc:
+        items.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case ShopSortType.priceAsc:
+        items.sort((a, b) => a.basePrice.compareTo(b.basePrice));
+        break;
+      case ShopSortType.priceDesc:
+        items.sort((a, b) => b.basePrice.compareTo(a.basePrice));
+        break;
+      case ShopSortType.category:
+        items.sort((a, b) => a.category.name.compareTo(b.category.name));
+        break;
+      case ShopSortType.popularity:
+        items.sort((a, b) => b.popularity.compareTo(a.popularity));
+        break;
+      case ShopSortType.newest:
+        items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case ShopSortType.rarity:
+        items.sort((a, b) => b.rarity.index.compareTo(a.rarity.index));
+        break;
+    }
+  }
+
+  Future<void> addToCart(ShopItemEntity item, int quantity) async {
+    final userState = _ref.read(userGameDataProvider);
+    if (userState.user == null) return;
+
+    await _ref.read(cartProvider.notifier).addItem(
+          shopItem: item,
+          quantity: quantity,
+          userLevel: userState.user!.level,
+        );
+  }
+
+  /// Processa compra do carrinho (versão simplificada)
+  Future<void> purchaseCart() async {
+    final userState = _ref.read(userGameDataProvider);
+    final cartState = _ref.read(cartProvider);
+
+    if (userState.user == null || cartState.isEmpty) return;
+
     state = state.copyWith(isPurchasing: true);
 
-    // Simulate purchase process
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      // Calcular totais
+      int totalCoins = 0;
+      int totalGems = 0;
 
-    // Mock successful purchase
-    state = state.copyWith(isPurchasing: false);
+      for (final item in cartState.items) {
+        if (item.currency == CurrencyType.coins) {
+          totalCoins += item.totalPrice;
+        } else {
+          totalGems += item.totalPrice;
+        }
+      }
 
-    return PurchaseResult(
-      success: true,
-      message: '${item.name} purchased successfully!',
-      item: item,
-    );
+      // Processar compra usando método simplificado
+      final success = await _ref.read(userGameDataProvider.notifier).processPurchase(
+            coinsToRemove: totalCoins,
+            gemsToRemove: totalGems,
+          );
+
+      if (success) {
+        // Adicionar itens ao inventário (simulado por enquanto)
+        await _addItemsToInventory(cartState.items);
+
+        // Limpar carrinho
+        _ref.read(cartProvider.notifier).clearCart();
+
+        state = state.copyWith(
+          isPurchasing: false,
+          clearError: true,
+        );
+      } else {
+        state = state.copyWith(
+          isPurchasing: false,
+          errorMessage: 'Erro na compra - saldo insuficiente',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isPurchasing: false,
+        errorMessage: 'Erro na compra: $e',
+      );
+    }
+  }
+
+  /// Simula adição de itens ao inventário
+  Future<void> _addItemsToInventory(List<dynamic> cartItems) async {
+    try {
+      final inventoryRepository = _ref.read(inventoryRepositoryProvider);
+      final userState = _ref.read(userGameDataProvider);
+
+      if (userState.user == null) return;
+
+      for (final cartItem in cartItems) {
+        await inventoryRepository.addItem(
+          userId: userState.user!.id,
+          shopItemId: cartItem.shopItem.id,
+          quantity: cartItem.quantity,
+          name: cartItem.shopItem.name,
+          description: cartItem.shopItem.description,
+          imageUrl: cartItem.shopItem.imageUrl,
+          category: cartItem.shopItem.category.name,
+          rarity: cartItem.shopItem.rarity.name,
+          effects: cartItem.shopItem.effects.map((key, value) => MapEntry(key.name, value)),
+        );
+      }
+    } catch (e) {
+      // Silenciar erro de inventário por enquanto
+      print('Erro ao adicionar ao inventário: $e');
+    }
+  }
+
+  List<ShopItemEntity> _generateMockShopItems() {
+    final now = DateTime.now();
+    return [
+      // === COMIDA ===
+      ShopItemEntity(
+        id: 'basic_food',
+        name: 'Comida Básica',
+        description: 'Alimenta seu pet e restaura fome',
+        imageUrl: '🍖',
+        basePrice: EconomyConstants.basePricesCoins['basic_food']!,
+        currency: CurrencyType.coins,
+        category: ItemCategory.food,
+        rarity: ItemRarity.common,
+        effects: const {ItemEffectType.hunger: 30},
+        createdAt: now.subtract(const Duration(days: 10)),
+        popularity: 95,
+        tags: const ['comida', 'básico', 'fome'],
+      ),
+      ShopItemEntity(
+        id: 'premium_food',
+        name: 'Comida Premium',
+        description: 'Comida especial que restaura fome e dá felicidade',
+        imageUrl: '🥩',
+        basePrice: EconomyConstants.basePricesCoins['premium_food']!,
+        currency: CurrencyType.coins,
+        category: ItemCategory.food,
+        rarity: ItemRarity.rare,
+        effects: const {ItemEffectType.hunger: 50, ItemEffectType.happiness: 20},
+        createdAt: now.subtract(const Duration(days: 5)),
+        popularity: 80,
+        isFeatured: true,
+        tags: const ['comida', 'premium', 'felicidade'],
+      ),
+
+      // === BRINQUEDOS ===
+      ShopItemEntity(
+        id: 'simple_toy',
+        name: 'Bolinha',
+        description: 'Brinquedo simples que aumenta felicidade',
+        imageUrl: '⚽',
+        basePrice: EconomyConstants.basePricesCoins['simple_toy']!,
+        currency: CurrencyType.coins,
+        category: ItemCategory.toy,
+        rarity: ItemRarity.common,
+        effects: const {ItemEffectType.happiness: 25},
+        createdAt: now.subtract(const Duration(days: 8)),
+        popularity: 70,
+        tags: const ['brinquedo', 'felicidade', 'simples'],
+      ),
+      ShopItemEntity(
+        id: 'interactive_toy',
+        name: 'Brinquedo Interativo',
+        description: 'Brinquedo que aumenta felicidade e energia',
+        imageUrl: '🎾',
+        basePrice: EconomyConstants.basePricesCoins['interactive_toy']!,
+        currency: CurrencyType.coins,
+        category: ItemCategory.toy,
+        rarity: ItemRarity.uncommon,
+        effects: const {ItemEffectType.happiness: 40, ItemEffectType.energy: 15},
+        createdAt: now.subtract(const Duration(days: 3)),
+        popularity: 85,
+        isNew: true,
+        tags: const ['brinquedo', 'interativo', 'energia'],
+      ),
+
+      // === MEDICINA ===
+      ShopItemEntity(
+        id: 'health_potion',
+        name: 'Poção de Saúde',
+        description: 'Restaura completamente a saúde do pet',
+        imageUrl: '🧪',
+        basePrice: EconomyConstants.basePricesCoins['health_potion']!,
+        currency: CurrencyType.coins,
+        category: ItemCategory.medicine,
+        rarity: ItemRarity.uncommon,
+        effects: const {ItemEffectType.health: 100},
+        createdAt: now.subtract(const Duration(days: 12)),
+        popularity: 60,
+        tags: const ['medicina', 'saúde', 'cura'],
+      ),
+
+      // === ITENS PREMIUM (GEMS) ===
+      ShopItemEntity(
+        id: 'legendary_food',
+        name: 'Comida Lendária',
+        description: 'Comida mítica que restaura tudo e dá XP',
+        imageUrl: '🍗',
+        basePrice: EconomyConstants.basePricesGems['legendary_food']!,
+        currency: CurrencyType.gems,
+        category: ItemCategory.food,
+        rarity: ItemRarity.legendary,
+        effects: const {
+          ItemEffectType.hunger: 100,
+          ItemEffectType.happiness: 50,
+          ItemEffectType.energy: 50,
+          ItemEffectType.xp: 100,
+        },
+        createdAt: now.subtract(const Duration(days: 1)),
+        popularity: 95,
+        isFeatured: true,
+        isNew: true,
+        limitPerUser: 5,
+        tags: const ['lendário', 'premium', 'xp'],
+      ),
+      ShopItemEntity(
+        id: 'mythic_toy',
+        name: 'Brinquedo Mítico',
+        description: 'Brinquedo raro que maximiza felicidade',
+        imageUrl: '🎯',
+        basePrice: EconomyConstants.basePricesGems['mythic_toy']!,
+        currency: CurrencyType.gems,
+        category: ItemCategory.toy,
+        rarity: ItemRarity.legendary,
+        effects: const {ItemEffectType.happiness: 100, ItemEffectType.xp: 50},
+        createdAt: now.subtract(const Duration(days: 2)),
+        popularity: 90,
+        limitPerUser: 3,
+        tags: const ['mítico', 'raro', 'máximo'],
+      ),
+    ];
   }
 }
 
 final shopProvider = StateNotifierProvider<ShopNotifier, ShopState>((ref) {
-  return ShopNotifier();
+  return ShopNotifier(ref);
 });

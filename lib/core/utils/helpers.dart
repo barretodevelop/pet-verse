@@ -153,4 +153,47 @@ class Helpers {
       return null;
     }
   }
+
+  /// Valida email
+  static bool isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  /// Verifica se é um número válido
+  static bool isNumeric(String str) {
+    return double.tryParse(str) != null;
+  }
+
+  /// Calcula porcentagem
+  static double calculatePercentage(num value, num total) {
+    if (total == 0) return 0;
+    return (value / total) * 100;
+  }
+
+  static final Map<String, Timer> _debounceTimers = {};
+
+  /// Gera cor aleatória
+  static Color generateRandomColor() {
+    final random = math.Random();
+    return Color.fromARGB(
+      255,
+      random.nextInt(256),
+      random.nextInt(256),
+      random.nextInt(256),
+    );
+  }
+
+  /// Converte hex para Color
+  static Color hexToColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+    return Color(int.parse(hex, radix: 16));
+  }
+
+  /// Converte Color para hex
+  static String colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+  }
 }

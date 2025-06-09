@@ -269,7 +269,7 @@ class InventoryNotifier extends StateNotifier<InventoryState> {
         userId: 'user1',
         shopItemId: '2',
         name: 'Super Toy',
-        category: ItemCategory.toys,
+        category: ItemCategory.toy,
         quantity: 1,
         effects: {ItemEffectType.happiness: 40},
         imageUrl: 'toy_ball.png',

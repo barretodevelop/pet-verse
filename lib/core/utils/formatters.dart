@@ -4,35 +4,66 @@ import 'package:intl/intl.dart';
 
 /// Utility class for formatting data
 class Formatters {
-  /// Formats currency with commas
-  static String formatCurrency(int amount) {
-    final formatter = NumberFormat('#,###');
-    return formatter.format(amount);
-  }
-
-  /// Formats large numbers with K, M suffixes
-  static String formatLargeNumber(int number) {
+  /// Formata números grandes com abreviações (K, M, B)
+  static String formatLargeNumber(num number) {
     if (number < 1000) {
       return number.toString();
     } else if (number < 1000000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
+      return '${(number / 1000).toStringAsFixed(number % 1000 == 0 ? 0 : 1)}K';
     } else if (number < 1000000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
+      return '${(number / 1000000).toStringAsFixed(number % 1000000 == 0 ? 0 : 1)}M';
     } else {
-      return '${(number / 1000000000).toStringAsFixed(1)}B';
+      return '${(number / 1000000000).toStringAsFixed(number % 1000000000 == 0 ? 0 : 1)}B';
     }
   }
 
-  /// Formats date and time
-  static String formatDateTime(DateTime dateTime) {
-    final formatter = DateFormat('MMM dd, yyyy HH:mm');
-    return formatter.format(dateTime);
+  /// Formata moeda brasileira
+  static String formatCurrency(double value) {
+    final formatter = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+    );
+    return formatter.format(value);
   }
 
-  /// Formats date only
-  static String formatDate(DateTime dateTime) {
-    final formatter = DateFormat('MMM dd, yyyy');
-    return formatter.format(dateTime);
+  /// Formata data para exibição
+  static String formatDate(DateTime date) {
+    return DateFormat('dd/MM/yyyy').format(date);
+  }
+
+  /// Formata data e hora
+  static String formatDateTime(DateTime dateTime) {
+    return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
+  }
+
+  /// Formata duração em formato legível
+  static String formatDuration(Duration duration) {
+    if (duration.inDays > 0) {
+      return '${duration.inDays}d ${duration.inHours % 24}h';
+    } else if (duration.inHours > 0) {
+      return '${duration.inHours}h ${duration.inMinutes % 60}m';
+    } else if (duration.inMinutes > 0) {
+      return '${duration.inMinutes}m';
+    } else {
+      return '${duration.inSeconds}s';
+    }
+  }
+
+  /// Formata porcentagem
+  static String formatPercentage(double value) {
+    return '${(value * 100).toStringAsFixed(1)}%';
+  }
+
+  /// Capitaliza primeira letra
+  static String capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  /// Trunca texto com reticências
+  static String truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
   }
 
   /// Formats time only
@@ -61,22 +92,6 @@ class Formatters {
     }
   }
 
-  /// Formats duration
-  static String formatDuration(Duration duration) {
-    if (duration.inDays > 0) {
-      return '${duration.inDays}d ${duration.inHours % 24}h';
-    } else if (duration.inHours > 0) {
-      return '${duration.inHours}h ${duration.inMinutes % 60}m';
-    } else {
-      return '${duration.inMinutes}m';
-    }
-  }
-
-  /// Formats percentage
-  static String formatPercentage(double value, {int decimals = 1}) {
-    return '${(value * 100).toStringAsFixed(decimals)}%';
-  }
-
   /// Formats pet stat value (0-100)
   static String formatPetStat(int value) {
     return '$value/100';
@@ -88,11 +103,5 @@ class Formatters {
       if (word.isEmpty) return word;
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
     }).join(' ');
-  }
-
-  /// Truncates text with ellipsis
-  static String truncateText(String text, int maxLength) {
-    if (text.length <= maxLength) return text;
-    return '${text.substring(0, maxLength)}...';
   }
 }

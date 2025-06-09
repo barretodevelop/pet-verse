@@ -3,14 +3,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petverse/core/config/app_config.dart';
 import 'package:petverse/core/enums/enums/app_enums.dart';
-import 'package:petverse/core/errors/failures.dart';
-import 'package:petverse/core/utils/helpers.dart';
 import 'package:petverse/domain/entities/user_entity.dart';
-import 'package:petverse/domain/usecases/auth/domain/usecases/user/get_user_data.dart';
-import 'package:petverse/domain/usecases/user/claim_daily_reward.dart';
-import 'package:petverse/domain/usecases/user/update_user_data.dart';
 import 'package:petverse/presentation/providers/auth_provider.dart';
 import 'package:petverse/presentation/providers/dependencies_provider.dart';
 
@@ -49,233 +43,198 @@ class UserGameDataState {
   bool get hasUser => user != null;
 }
 
-/// User game data notifier
+/// User game data notifier (versão simplificada)
 class UserGameDataNotifier extends StateNotifier<UserGameDataState> {
-  final GetUserData _getUserData;
-  final UpdateUserData _updateUserData;
-  final ClaimDailyReward _claimDailyReward;
   final Ref _ref;
+  Timer? _refreshTimer;
 
-  Timer? _dailyRewardTimer;
-
-  UserGameDataNotifier(
-    this._getUserData,
-    this._updateUserData,
-    this._claimDailyReward,
-    this._ref,
-  ) : super(const UserGameDataState()) {
-    _listenToAuthChanges();
-  }
-
-  void _listenToAuthChanges() {
-    _ref.listen<AuthState>(authProvider, (previous, next) {
-      print('🔍 Auth state changed: ${next.status}');
-
-      if (next.isAuthenticated && next.firebaseUser != null) {
-        print('✅ User authenticated, loading user data...');
-        // ✅ DELAY PARA GARANTIR QUE USUÁRIO FOI CRIADO
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _loadUserData(next.firebaseUser!.uid);
-        });
-      } else {
-        print('❌ User not authenticated, resetting state');
-        _resetState();
-      }
-    });
-
-    // Initialize if already authenticated
-    final authState = _ref.read(authProvider);
-    if (authState.isAuthenticated && authState.firebaseUser != null) {
-      print('🔄 Already authenticated, loading user data...');
-      _loadUserData(authState.firebaseUser!.uid);
-    }
-  }
-
-  Future<void> _loadUserData(String userId) async {
-    print('📊 Loading user data for: $userId');
-    state = state.copyWith(status: LoadingState.loading, clearError: true);
-
-    // ✅ RETRY MECHANISM PARA USUÁRIOS RECÉM CRIADOS
-    UserEntity? user;
-    int attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts && user == null) {
-      attempts++;
-      print('🔄 Attempt $attempts to load user data...');
-
-      final result = await _getUserData(userId);
-
-      result.fold(
-        (failure) {
-          print('❌ Attempt $attempts failed: ${failure.message}');
-          if (attempts == maxAttempts) {
-            state = state.copyWith(
-              status: LoadingState.error,
-              errorMessage: _getErrorMessage(failure),
-            );
-          }
-        },
-        (userData) {
-          user = userData;
-          if (user != null) {
-            final canClaim = Helpers.canClaimDailyReward(user!.lastDailyReward);
-
-            state = state.copyWith(
-              user: user,
-              status: LoadingState.success,
-              canClaimDailyReward: canClaim,
-              clearError: true,
-            );
-
-            print('✅ User data loaded successfully');
-
-            if (user != null) {
-              _startDailyRewardTimer();
-            }
-          }
-        },
-      );
-
-      if (user == null && attempts < maxAttempts) {
-        // ✅ DELAY ENTRE TENTATIVAS
-        await Future.delayed(Duration(seconds: attempts));
-      }
-    }
-  }
-
-  void _startDailyRewardTimer() {
-    _dailyRewardTimer?.cancel();
-    _dailyRewardTimer = Timer.periodic(
-      const Duration(milliseconds: AppConfig.dailyRewardCheckInterval),
-      (_) => _checkDailyReward(),
-    );
-  }
-
-  void _checkDailyReward() {
-    if (state.user != null) {
-      final canClaim = Helpers.canClaimDailyReward(state.user!.lastDailyReward);
-      if (canClaim != state.canClaimDailyReward) {
-        state = state.copyWith(canClaimDailyReward: canClaim);
-      }
-    }
-  }
-
-  void _resetState() {
-    _dailyRewardTimer?.cancel();
-    state = const UserGameDataState();
-  }
-
-  Future<bool> updateUserData(Map<String, dynamic> data) async {
-    if (state.user == null) return false;
-
-    final params = UpdateUserDataParams(
-      userId: state.user!.id,
-      data: data,
-    );
-
-    final result = await _updateUserData(params);
-
-    return result.fold(
-      (failure) {
-        state = state.copyWith(
-          status: LoadingState.error,
-          errorMessage: _getErrorMessage(failure),
-        );
-        return false;
-      },
-      (_) {
-        // Reload user data to get updated values
-        _loadUserData(state.user!.id);
-        return true;
-      },
-    );
-  }
-
-  Future<DailyRewardResult> claimDailyReward() async {
-    if (state.user == null) {
-      return DailyRewardResult(
-        success: false,
-        message: 'User not authenticated',
-      );
-    }
-
-    if (!state.canClaimDailyReward) {
-      return DailyRewardResult(
-        success: false,
-        message: 'Daily reward already claimed today',
-      );
-    }
-
-    final result = await _claimDailyReward(state.user!.id);
-
-    return result.fold(
-      (failure) {
-        return DailyRewardResult(
-          success: false,
-          message: _getErrorMessage(failure),
-        );
-      },
-      (reward) {
-        // Update local state
-        state = state.copyWith(canClaimDailyReward: false);
-
-        // Reload user data to get updated currency
-        _loadUserData(state.user!.id);
-
-        return DailyRewardResult(
-          success: true,
-          message: 'Daily reward claimed! Day ${reward.day}',
-          coins: reward.type == RewardType.coins ? reward.amount : 0,
-          gems: reward.type == RewardType.gems ? reward.amount : 0,
-          xp: reward.type == RewardType.xp ? reward.amount : 0,
-        );
-      },
-    );
-  }
-
-  String _getErrorMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case UserDataFailure:
-      case DatabaseFailure:
-        return failure.message;
-      case NetworkFailure:
-        return 'Please check your internet connection';
-      default:
-        return 'An unexpected error occurred';
-    }
+  UserGameDataNotifier(this._ref) : super(const UserGameDataState()) {
+    loadUserData();
+    _startPeriodicRefresh();
   }
 
   @override
   void dispose() {
-    _dailyRewardTimer?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
+  }
+
+  /// Carrega os dados do usuário
+  Future<void> loadUserData() async {
+    final authState = _ref.read(authProvider);
+
+    if (authState.firebaseUser == null) {
+      state = state.copyWith(
+        user: null,
+        status: LoadingState.error,
+        errorMessage: 'Usuário não autenticado',
+      );
+      return;
+    }
+
+    state = state.copyWith(status: LoadingState.loading, clearError: true);
+
+    try {
+      final getUserData = _ref.read(getUserDataProvider);
+      final result = await getUserData(authState.firebaseUser!.uid);
+
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            status: LoadingState.error,
+            errorMessage: failure.message,
+          );
+        },
+        (user) {
+          state = state.copyWith(
+            user: user,
+            status: LoadingState.success,
+            canClaimDailyReward: true,
+            clearError: true,
+          );
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: LoadingState.error,
+        errorMessage: 'Erro ao carregar dados do usuário: $e',
+      );
+    }
+  }
+
+  /// Força recarregamento dos dados do usuário
+  Future<void> refreshUserData() async {
+    await loadUserData();
+  }
+
+  /// Atualiza moedas do usuário (versão simplificada)
+  Future<void> updateUserCoins(int newCoins, int newGems) async {
+    if (state.user == null) return;
+
+    try {
+      final userRepository = _ref.read(userRepositoryProvider);
+
+      final result = await userRepository.updateUserCurrency(
+        userId: state.user!.id,
+        coins: newCoins,
+        gems: newGems,
+        xp: state.user!.totalXp,
+        level: state.user!.level,
+      );
+
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            status: LoadingState.error,
+            errorMessage: failure.message,
+          );
+        },
+        (_) {
+          // Recarregar dados do usuário após atualização
+          loadUserData();
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: LoadingState.error,
+        errorMessage: 'Erro ao atualizar moedas: $e',
+      );
+    }
+  }
+
+  /// Adiciona coins ao usuário
+  Future<void> addCoins(int amount) async {
+    if (state.user == null || amount <= 0) return;
+
+    final newCoins = (state.user!.coins + amount).clamp(0, 999999999);
+    await updateUserCoins(newCoins, state.user!.gems);
+  }
+
+  /// Remove coins do usuário
+  Future<void> removeCoins(int amount) async {
+    if (state.user == null || amount <= 0) return;
+
+    final newCoins = (state.user!.coins - amount).clamp(0, 999999999);
+    await updateUserCoins(newCoins, state.user!.gems);
+  }
+
+  /// Adiciona gems ao usuário
+  Future<void> addGems(int amount) async {
+    if (state.user == null || amount <= 0) return;
+
+    final newGems = (state.user!.gems + amount).clamp(0, 999999);
+    await updateUserCoins(state.user!.coins, newGems);
+  }
+
+  /// Remove gems do usuário
+  Future<void> removeGems(int amount) async {
+    if (state.user == null || amount <= 0) return;
+
+    final newGems = (state.user!.gems - amount).clamp(0, 999999);
+    await updateUserCoins(state.user!.coins, newGems);
+  }
+
+  /// Processa uma compra (remove moedas)
+  Future<bool> processPurchase({
+    required int coinsToRemove,
+    required int gemsToRemove,
+  }) async {
+    if (state.user == null) return false;
+
+    // Verificar se tem saldo suficiente
+    if (state.user!.coins < coinsToRemove || state.user!.gems < gemsToRemove) {
+      state = state.copyWith(
+        status: LoadingState.error,
+        errorMessage: 'Saldo insuficiente',
+      );
+      return false;
+    }
+
+    // Remover moedas
+    final newCoins = state.user!.coins - coinsToRemove;
+    final newGems = state.user!.gems - gemsToRemove;
+
+    await updateUserCoins(newCoins, newGems);
+    return !state.hasError;
+  }
+
+  /// Inicia refresh periódico para manter dados atualizados
+  void _startPeriodicRefresh() {
+    _refreshTimer = Timer.periodic(
+      const Duration(minutes: 2),
+      (_) {
+        if (state.hasUser && !state.isLoading) {
+          loadUserData();
+        }
+      },
+    );
+  }
+
+  /// Simula daily reward (versão simplificada)
+  Future<bool> claimDailyReward() async {
+    if (state.user == null) return false;
+
+    // Recompensas básicas
+    final bonusCoins = 100 + (state.user!.level * 10);
+    final bonusGems = 2 + (state.user!.level ~/ 5);
+
+    await addCoins(bonusCoins);
+    await addGems(bonusGems);
+
+    state = state.copyWith(canClaimDailyReward: false);
+
+    // Reabilitar depois de 24 horas (simulado)
+    Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        state = state.copyWith(canClaimDailyReward: true);
+      }
+    });
+
+    return true;
   }
 }
 
-/// User game data provider
+/// Provider do estado de dados do usuário
 final userGameDataProvider = StateNotifierProvider<UserGameDataNotifier, UserGameDataState>((ref) {
-  return UserGameDataNotifier(
-    ref.read(getUserDataProvider),
-    ref.read(updateUserDataProvider),
-    ref.read(claimDailyRewardProvider),
-    ref,
-  );
+  return UserGameDataNotifier(ref);
 });
-
-/// Daily reward result class
-class DailyRewardResult {
-  final bool success;
-  final String message;
-  final int coins;
-  final int gems;
-  final int xp;
-
-  DailyRewardResult({
-    required this.success,
-    required this.message,
-    this.coins = 0,
-    this.gems = 0,
-    this.xp = 0,
-  });
-}

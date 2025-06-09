@@ -5,9 +5,16 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:petverse/data/datasources/local/local_storage_datasource.dart';
+import 'package:petverse/data/datasources/remote/firebase_auth_datasource.dart';
+import 'package:petverse/data/datasources/remote/firestore_inventory_datasource.dart';
 import 'package:petverse/data/datasources/remote/firestore_pet_datasource.dart';
 import 'package:petverse/data/datasources/remote/firestore_user_datasource.dart';
+import 'package:petverse/data/repositories/auth_repository_impl.dart';
+import 'package:petverse/data/repositories/inventory_repository_impl.dart';
+import 'package:petverse/data/repositories/pet_repository_impl.dart';
+import 'package:petverse/data/repositories/user_repository_impl.dart';
 import 'package:petverse/domain/repositories/auth_repository.dart';
+import 'package:petverse/domain/repositories/inventory_repository.dart';
 import 'package:petverse/domain/repositories/pet_repository.dart';
 import 'package:petverse/domain/repositories/user_repository.dart';
 import 'package:petverse/domain/usecases/auth/domain/usecases/user/get_user_data.dart';
@@ -18,16 +25,17 @@ import 'package:petverse/domain/usecases/pet/adopt_pet.dart';
 import 'package:petverse/domain/usecases/pet/feed_pet.dart';
 import 'package:petverse/domain/usecases/pet/play_with_pet.dart';
 import 'package:petverse/domain/usecases/pet/rest_pet.dart';
+import 'package:petverse/domain/usecases/shop/add_to_cart.dart';
+import 'package:petverse/domain/usecases/shop/clear_cart.dart';
+import 'package:petverse/domain/usecases/shop/process_cart_purchase.dart';
+import 'package:petverse/domain/usecases/shop/remove_from_cart.dart';
 import 'package:petverse/domain/usecases/user/claim_daily_reward.dart';
 import 'package:petverse/domain/usecases/user/update_user_data.dart';
 import 'package:petverse/presentation/providers/enhanced_pet_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Data Sources
-import '../../data/datasources/remote/firebase_auth_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/pet_repository_impl.dart';
-import '../../data/repositories/user_repository_impl.dart';
+
 // Repositories
 
 // Use Cases - Auth
@@ -290,5 +298,50 @@ final enhancedPetGameProvider =
     ref.read(playWithPetProvider),
     ref.read(restPetProvider),
     ref,
+  );
+});
+
+// ============================================================================
+// USE CASES - SHOP & CART (NOVOS)
+// ============================================================================
+
+/// Add to cart use case provider
+final addToCartProvider = Provider<AddToCart>((ref) {
+  return AddToCart();
+});
+
+/// Remove from cart use case provider
+final removeFromCartProvider = Provider<RemoveFromCart>((ref) {
+  return RemoveFromCart();
+});
+
+/// Clear cart use case provider
+final clearCartProvider = Provider<ClearCart>((ref) {
+  return ClearCart();
+});
+
+/// Process cart purchase use case provider
+final processCartPurchaseProvider = Provider<ProcessCartPurchase>((ref) {
+  return ProcessCartPurchase(
+    ref.read(userRepositoryProvider),
+    ref.read(inventoryRepositoryProvider),
+  );
+});
+
+// ============================================================================
+// REPOSITORY - INVENTORY (SE NÃO EXISTIR)
+// ============================================================================
+
+/// Inventory repository provider (adicionar se não existir)
+final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
+  return InventoryRepositoryImpl(
+    ref.read(firestoreInventoryDatasourceProvider),
+  );
+});
+
+/// Firestore inventory datasource provider (adicionar se não existir)
+final firestoreInventoryDatasourceProvider = Provider<FirestoreInventoryDatasource>((ref) {
+  return FirestoreInventoryDatasourceImpl(
+    ref.read(firestoreProvider),
   );
 });

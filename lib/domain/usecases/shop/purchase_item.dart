@@ -50,7 +50,7 @@ class PurchaseItem {
               return const Left(UserDataFailure('User not found'));
             }
 
-            final totalCost = item.price * params.quantity;
+            final totalCost = item.basePrice * params.quantity;
 
             // Check if user has enough currency
             final hasEnoughCurrency = item.currency == CurrencyType.coins

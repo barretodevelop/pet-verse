@@ -116,7 +116,7 @@ class UseItem {
                     // Remove item from inventory
                     final removeResult = await _inventoryRepository.removeItem(
                       userId: params.userId,
-                      inventoryItemId: params.inventoryItemId,
+                      itemId: params.inventoryItemId,
                       quantity: params.quantity,
                     );
 
