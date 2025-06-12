@@ -3,15 +3,15 @@
 // lib/screens/home_screen.dart - HomeScreen
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/theme_provider.dart';
-import '../providers/user_provider.dart';
-import '../widgets/pet_slots.dart';
-import 'dashboard_screen.dart';
-import 'feed_screen.dart';
-import 'missions_screen.dart';
-import 'pet_screen.dart';
-import 'shop_screen.dart';
+import 'package:petverse/providers/theme_provider.dart';
+import 'package:petverse/providers/user_provider.dart';
+import 'package:petverse/screens/dashboard_screen.dart';
+import 'package:petverse/screens/feed_screen.dart';
+import 'package:petverse/screens/missions_screen.dart';
+import 'package:petverse/screens/pet_screen.dart';
+import 'package:petverse/screens/shop_screen.dart';
+import 'package:petverse/widgets/adoption_flow.dart';
+import 'package:petverse/widgets/pet_slots.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 2; // Start with Pet tab
+  bool _showAdoption = false; // ✅ CORREÇÃO 1: Estado para modal de adoção
 
   final List<Widget> _screens = [
     const FeedScreen(),
@@ -40,47 +41,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
         elevation: 2,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: const Color(0xFF8B5CF6),
-              child: Text(user?.avatar ?? '👨',
-                  style: const TextStyle(fontSize: 20)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user?.username ?? 'Usuário',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF1F2937),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Icon(Icons.star,
-                          size: 16, color: Color(0xFFFBBF24)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Nível ${user?.level ?? 1} • ${(user?.xp ?? 0) % 100}/100 XP',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? const Color(0xFF9CA3AF)
-                              : const Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+        title: GestureDetector(
+          onTap: () => _showUserProfile(context), // ✅ CORREÇÃO: Avatar clicável
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFF8B5CF6),
+                child: Text(user?.avatar ?? '👨',
+                    style: const TextStyle(fontSize: 20)),
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.username ?? 'Usuário',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1F2937),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.star,
+                            size: 16, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Nível ${user?.level ?? 1} • ${(user?.xp ?? 0) % 100}/100 XP',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? const Color(0xFF9CA3AF)
+                                : const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           Container(
@@ -132,10 +136,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
+      // ✅ CORREÇÃO 2: Body como Stack para incluir modais
+      body: Stack(
         children: [
-          const PetSlots(),
-          Expanded(child: _screens[_currentIndex]),
+          Column(
+            children: [
+              // ✅ CORREÇÃO 3: Callback implementado para abrir adoção
+              PetSlots(onSlotClick: () => setState(() => _showAdoption = true)),
+              Expanded(child: _screens[_currentIndex]),
+            ],
+          ),
+          // ✅ CORREÇÃO 4: Modal de adoção implementado
+          if (_showAdoption)
+            AdoptionFlow(
+              show: _showAdoption,
+              onClose: () => setState(() => _showAdoption = false),
+            ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -165,6 +181,319 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ✅ CORREÇÃO: Método para mostrar perfil do usuário
+  void _showUserProfile(BuildContext context) {
+    final user = ref.read(userProvider);
+    final isDark = ref.read(themeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                children: [
+                  Text(
+                    'Perfil do Usuário',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1F2937),
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF374151)
+                            : const Color(0xFFF3F4F6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        size: 18,
+                        color: isDark ? Colors.white : const Color(0xFF1F2937),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    // Avatar e info do usuário
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF374151)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                user?.avatar ?? '👨',
+                                style: const TextStyle(fontSize: 40),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            user?.username ?? 'Usuário',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.star,
+                                  size: 16, color: Color(0xFFFBBF24)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Nível ${user?.level ?? 1}',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF4B5563)
+                                  : const Color(0xFFE5E7EB),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: ((user?.xp ?? 0) % 100) / 100,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF8B5CF6),
+                                      Color(0xFF3B82F6)
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${(user?.xp ?? 0) % 100}/100 XP • Total: ${user?.xp ?? 0} XP',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? const Color(0xFF9CA3AF)
+                                  : const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Toggle tema
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF374151)
+                            : const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isDark ? Icons.dark_mode : Icons.light_mode,
+                            color:
+                                isDark ? Colors.white : const Color(0xFF1F2937),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tema Escuro',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1F2937),
+                                  ),
+                                ),
+                                Text(
+                                  'Alternar entre tema claro e escuro',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? const Color(0xFF9CA3AF)
+                                        : const Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: isDark,
+                            onChanged: (_) =>
+                                ref.read(themeProvider.notifier).toggleTheme(),
+                            activeColor: const Color(0xFF8B5CF6),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Botão logout
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showLogoutDialog(context),
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Sair da Conta'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF4444),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ CORREÇÃO: Dialog de logout
+  void _showLogoutDialog(BuildContext context) {
+    final isDark = ref.read(themeProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Sair da Conta',
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1F2937),
+          ),
+        ),
+        content: Text(
+          'Tem certeza que deseja sair da sua conta?',
+          style: TextStyle(
+            color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color:
+                    isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Fechar dialog
+              Navigator.of(context).pop(); // Fechar bottom sheet
+              // Implementar logout real aqui
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      '👋 Logout simulado (implementar AuthService.signOut)'),
+                  backgroundColor: Color(0xFF8B5CF6),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Sair'),
+          ),
+        ],
       ),
     );
   }
@@ -217,11 +546,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-                  )
+                    colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)])
                 : const LinearGradient(
-                    colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
-                  ),
+                    colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)]),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(

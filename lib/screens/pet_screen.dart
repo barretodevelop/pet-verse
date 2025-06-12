@@ -3,11 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../providers/app_provider.dart';
-import '../providers/pet_provider.dart';
-import '../providers/theme_provider.dart';
-import '../widgets/pet_circle.dart';
+import 'package:petverse/providers/app_provider.dart';
+import 'package:petverse/providers/pet_provider.dart';
+import 'package:petverse/providers/theme_provider.dart';
+import 'package:petverse/widgets/pet_circle.dart';
 
 class PetScreen extends ConsumerWidget {
   const PetScreen({super.key});
@@ -17,6 +16,8 @@ class PetScreen extends ConsumerWidget {
     final pets = ref.watch(petProvider);
     final appState = ref.watch(appProvider);
     final isDark = ref.watch(themeProvider);
+    final user =
+        ref.watch(userProvider); // ✅ CORREÇÃO 1: Obter dados do usuário
 
     final activePet = pets.isNotEmpty && appState.activePetIndex < pets.length
         ? pets[appState.activePetIndex]
@@ -83,11 +84,9 @@ class PetScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
+                  // ✅ CORREÇÃO 2: Botão IA com navegação funcional
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // CORREÇÃO: Implementar navegação para tela IA
-                      _navigateToAIGeneration(context);
-                    },
+                    onPressed: () => _navigateToAIGeneration(context, ref),
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Gerar Pet Único com IA'),
                     style: ElevatedButton.styleFrom(
@@ -100,27 +99,95 @@ class PetScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
+
+                  // ✅ CORREÇÃO 3: Mostrar gemas disponíveis
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.diamond,
+                          size: 16, color: Color(0xFF8B5CF6)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Você tem ${user?.gems ?? 0} gemas',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
     );
   }
 
-  // CORREÇÃO: Implementar navegação para IA
-  void _navigateToAIGeneration(BuildContext context) {
+  // ✅ CORREÇÃO 4: Implementação robusta de navegação
+  void _navigateToAIGeneration(BuildContext context, WidgetRef ref) {
+    final user = ref.read(userProvider);
+
+    // Verificar se usuário tem gemas suficientes
+    if ((user?.gems ?? 0) < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ Você precisa de 10 gemas para gerar um pet único!'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
     try {
+      // ✅ CORREÇÃO 5: Navegação com tratamento de erro
       context.push('/ai-generation');
+      print('✅ Navegando para IA Generation'); // Debug
     } catch (e) {
-      // Se a rota não existir, mostrar um dialog temporário
+      print('❌ Erro na navegação: $e'); // Debug
+
+      // ✅ CORREÇÃO 6: Fallback com dialog se navegação falhar
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('🎨 Pet Único com IA'),
-          content: const Text(
-              'Funcionalidade em desenvolvimento!\n\nEm breve você poderá gerar pets únicos usando inteligência artificial.'),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Color(0xFF8B5CF6)),
+              SizedBox(width: 8),
+              Text('🎨 Pet Único com IA'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Funcionalidade em desenvolvimento!\n\n'
+                'Em breve você poderá gerar pets únicos usando inteligência artificial.',
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.diamond, color: Color(0xFF8B5CF6)),
+                  SizedBox(width: 4),
+                  Text('Custo: 10 gemas',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
           actions: [
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B5CF6),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
               child: const Text('OK'),
             ),
           ],

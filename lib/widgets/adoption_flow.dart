@@ -3,12 +3,13 @@
 // lib/widgets/adoption_flow.dart - AdoptionFlow
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/user_provider.dart';
-import '../providers/pet_provider.dart';
-import '../providers/theme_provider.dart';
-import '../utils/constants.dart';
-import '../models/pet_model.dart';
-import 'bottom_sheet_base.dart';
+import 'package:petverse/models/pet_model.dart';
+import 'package:petverse/providers/app_provider.dart';
+import 'package:petverse/providers/feed_provider.dart';
+import 'package:petverse/providers/pet_provider.dart';
+import 'package:petverse/providers/theme_provider.dart';
+import 'package:petverse/utils/constants.dart';
+import 'package:petverse/widgets/bottom_sheet_base.dart';
 
 class AdoptionFlow extends ConsumerStatefulWidget {
   final bool show;
@@ -27,14 +28,17 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
   @override
   void initState() {
     super.initState();
-    if (widget.show) _currentStep = 0;
+    if (widget.show) {
+      _currentStep = 0;
+      _selectedType = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BottomSheetBase(
       show: widget.show,
-      onClose: widget.onClose,
+      onClose: _handleClose,
       title: _currentStep == 0 ? 'Tipo de Adoção' : _getScreenTitle(),
       fullHeight: true,
       child: _currentStep == 0 ? _buildTypeSelection() : _buildPetSelection(),
@@ -43,16 +47,19 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
 
   String _getScreenTitle() {
     switch (_selectedType) {
-      case 'solo': return 'Pets Básicos';
-      case 'collab': return 'Pets Especiais';
-      default: return 'Seleção';
+      case 'solo':
+        return 'Pets Básicos';
+      case 'collab':
+        return 'Pets Especiais';
+      default:
+        return 'Seleção';
     }
   }
 
   Widget _buildTypeSelection() {
     final pets = ref.watch(petProvider);
     final hasSoloPet = pets.any((pet) => !pet.isCollab);
-    
+
     return Column(
       children: [
         _buildTypeCard(
@@ -94,39 +101,44 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
     bool isSpecial = false,
   }) {
     final isDark = ref.watch(themeProvider);
-    
+
     return GestureDetector(
-      onTap: enabled ? () {
-        if (type == 'ai') {
-          // Navigate to AI generation
-          widget.onClose();
-        } else {
-          setState(() {
-            _selectedType = type;
-            _currentStep = 1;
-          });
-        }
-      } : null,
+      onTap: enabled
+          ? () {
+              if (type == 'ai') {
+                // Navigate to AI generation
+                widget.onClose();
+                _showAIComingSoon();
+              } else {
+                setState(() {
+                  _selectedType = type;
+                  _currentStep = 1;
+                });
+              }
+            }
+          : null,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: enabled 
-            ? (isSpecial 
-                ? (isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF))
-                : (isDark ? const Color(0xFF1F2937) : Colors.white))
-            : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+          color: enabled
+              ? (isSpecial
+                  ? (isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF))
+                  : (isDark ? const Color(0xFF1F2937) : Colors.white))
+              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
           borderRadius: BorderRadius.circular(16),
-          border: isSpecial 
-            ? Border.all(color: const Color(0xFF8B5CF6), width: 2)
-            : Border.all(color: Colors.transparent),
-          boxShadow: enabled ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ] : [],
+          border: isSpecial
+              ? Border.all(color: const Color(0xFF8B5CF6), width: 2)
+              : Border.all(color: Colors.transparent),
+          boxShadow: enabled
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Column(
           children: [
@@ -137,18 +149,20 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: enabled 
-                  ? (isDark ? Colors.white : const Color(0xFF1F2937))
-                  : const Color(0xFF9CA3AF),
+                color: enabled
+                    ? (isDark ? Colors.white : const Color(0xFF1F2937))
+                    : const Color(0xFF9CA3AF),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               description,
               style: TextStyle(
-                color: enabled 
-                  ? (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280))
-                  : const Color(0xFF6B7280),
+                color: enabled
+                    ? (isDark
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF6B7280))
+                    : const Color(0xFF6B7280),
               ),
             ),
             if (!enabled && disabledMessage != null) ...[
@@ -172,7 +186,9 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
                     '10 gemas',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? const Color(0xFF8B5CF6) : const Color(0xFF7C3AED),
+                      color: isDark
+                          ? const Color(0xFF8B5CF6)
+                          : const Color(0xFF7C3AED),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -187,8 +203,9 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
 
   Widget _buildPetSelection() {
     final user = ref.watch(userProvider);
-    final pets = _selectedType == 'solo' ? Constants.basicPets : Constants.collabPets;
-    
+    final pets =
+        _selectedType == 'solo' ? Constants.basicPets : Constants.collabPets;
+
     return Column(
       children: [
         Expanded(
@@ -196,17 +213,17 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              childAspectRatio: 0.8,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: 0.75, // ✅ CORREÇÃO: Proporção ajustada
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
             itemCount: pets.length,
             itemBuilder: (context, index) {
               final pet = pets[index];
-              final canAfford = _selectedType == 'solo' 
-                ? (user?.coins ?? 0) >= (pet['cost'] ?? 0)
-                : true;
-              
+              final canAfford = _selectedType == 'solo'
+                  ? (user?.coins ?? 0) >= (pet['cost'] ?? 0)
+                  : true;
+
               return _buildPetCard(pet, canAfford);
             },
           ),
@@ -217,92 +234,146 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
 
   Widget _buildPetCard(Map<String, dynamic> petData, bool canAfford) {
     final isDark = ref.watch(themeProvider);
-    
+
     return GestureDetector(
       onTap: canAfford ? () => _adoptPet(petData) : null,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(6), // ✅ CORREÇÃO: Padding reduzido
         decoration: BoxDecoration(
-          color: canAfford 
-            ? (isDark ? const Color(0xFF1F2937) : Colors.white)
-            : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-          borderRadius: BorderRadius.circular(16),
-          border: canAfford 
-            ? Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB))
-            : Border.all(color: Colors.transparent),
-          boxShadow: canAfford ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ] : [],
+          color: canAfford
+              ? (isDark ? const Color(0xFF1F2937) : Colors.white)
+              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+          borderRadius: BorderRadius.circular(12),
+          border: canAfford
+              ? Border.all(
+                  color: isDark
+                      ? const Color(0xFF374151)
+                      : const Color(0xFFE5E7EB))
+              : Border.all(color: Colors.transparent),
+          boxShadow: canAfford
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment
+              .spaceEvenly, // ✅ CORREÇÃO: Distribuição uniforme
           children: [
-            Text(
-              petData['emoji'],
-              style: TextStyle(
-                fontSize: 32,
-                color: canAfford ? null : Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              petData['name'],
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: canAfford 
-                  ? (isDark ? Colors.white : const Color(0xFF1F2937))
-                  : const Color(0xFF9CA3AF),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              petData['rarity'],
-              style: TextStyle(
-                fontSize: 10,
-                color: canAfford 
-                  ? (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280))
-                  : const Color(0xFF6B7280),
-              ),
-            ),
-            if (_selectedType == 'solo') ...[
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.monetization_on,
-                    size: 12,
-                    color: canAfford ? const Color(0xFFF59E0B) : const Color(0xFF9CA3AF),
+            // ✅ CORREÇÃO: Emoji com Flexible
+            Flexible(
+              flex: 3,
+              child: FittedBox(
+                child: Text(
+                  petData['emoji'],
+                  style: TextStyle(
+                    fontSize: 24, // ✅ Tamanho controlado
+                    color: canAfford ? null : Colors.grey,
                   ),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${petData['cost']}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: canAfford 
-                        ? (isDark ? Colors.white : const Color(0xFF1F2937))
-                        : const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (_selectedType == 'collab' && petData['hasMatch'] == true) ...[
-              const SizedBox(height: 4),
-              Text(
-                '✅ Match disponível',
-                style: TextStyle(
-                  fontSize: 9,
-                  color: canAfford ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
                 ),
               ),
-            ],
+            ),
+
+            // ✅ CORREÇÃO: Nome com overflow controlado
+            Flexible(
+              flex: 2,
+              child: Text(
+                petData['name'],
+                style: TextStyle(
+                  fontSize: 10, // ✅ Fonte pequena
+                  fontWeight: FontWeight.bold,
+                  color: canAfford
+                      ? (isDark ? Colors.white : const Color(0xFF1F2937))
+                      : const Color(0xFF9CA3AF),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1, // ✅ Máximo 1 linha
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            // ✅ CORREÇÃO: Raridade compacta
+            Flexible(
+              flex: 1,
+              child: Text(
+                petData['rarity'],
+                style: TextStyle(
+                  fontSize: 8, // ✅ Fonte muito pequena
+                  color: canAfford
+                      ? (isDark
+                          ? const Color(0xFF9CA3AF)
+                          : const Color(0xFF6B7280))
+                      : const Color(0xFF6B7280),
+                ),
+              ),
+            ),
+
+            // ✅ CORREÇÃO: Preço/Status
+            if (_selectedType == 'solo')
+              Flexible(
+                flex: 2,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: canAfford
+                        ? const Color(0xFFFEF3C7)
+                        : const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: FittedBox(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.monetization_on,
+                          size: 8,
+                          color: canAfford
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFF9CA3AF),
+                        ),
+                        const SizedBox(width: 1),
+                        Text(
+                          '${petData['cost']}',
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: canAfford
+                                ? const Color(0xFFA16207)
+                                : const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            if (_selectedType == 'collab' && petData['hasMatch'] == true)
+              Flexible(
+                flex: 1,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD1FAE5),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const FittedBox(
+                    child: Text(
+                      '✅',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF065F46),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -313,11 +384,15 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
     final petNotifier = ref.read(petProvider.notifier);
     final userNotifier = ref.read(userProvider.notifier);
     final user = ref.read(userProvider);
-    
+
+    print('✅ Tentando adotar: ${petData['name']} (${_selectedType})'); // Debug
+
     if (_selectedType == 'solo') {
       if (user != null && user.coins >= (petData['cost'] as int)) {
+        // Deduzir moedas
         userNotifier.updateCoins(user.coins - (petData['cost'] as int));
-        
+
+        // ✅ CORREÇÃO: Criar pet solo corretamente
         final newPet = PetModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: petData['name'],
@@ -333,7 +408,7 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
           energy: 50,
           health: 80,
           revealLevel: 5,
-          isCollab: false,
+          isCollab: false, // ✅ Pet solo
           isUnique: false,
           identityRevealed: false,
           canInteract: true,
@@ -341,22 +416,62 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
           lastCared: DateTime.now(),
           adoptedAt: DateTime.now(),
         );
-        
+
+        // ✅ CORREÇÃO: Adicionar pet ao provider
         petNotifier.addPet(newPet);
-        widget.onClose();
+
+        // ✅ CORREÇÃO: Adicionar post no feed
+        final feedNotifier = ref.read(feedProvider.notifier);
+        feedNotifier.addAdoptionPost(
+          user.username,
+          newPet.name,
+          user.id,
+          newPet.id,
+        );
+
+        // ✅ CORREÇÃO: Feedback de sucesso
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Text(petData['emoji'], style: const TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text('🎉 ${petData['name']} adotado com sucesso!')),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        print(
+            '✅ Pet solo adotado: ${newPet.name} por ${petData['cost']} moedas');
+        widget.onClose(); // ✅ Fechar modal
+      } else {
+        // ✅ CORREÇÃO: Feedback de erro para moedas insuficientes
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '❌ Moedas insuficientes! Você precisa de ${petData['cost']} moedas.'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+        print('❌ Moedas insuficientes: ${user?.coins ?? 0}/${petData['cost']}');
       }
     } else {
-      // Handle collaboration adoption
+      // ✅ CORREÇÃO: Handle collaboration adoption melhorado
       _handleCollabAdoption(petData);
     }
   }
 
   void _handleCollabAdoption(Map<String, dynamic> petData) {
-    // Simplified collaboration logic for demo
+    final user = ref.read(userProvider);
+
     if (petData['hasMatch'] == true) {
       final petNotifier = ref.read(petProvider.notifier);
-      final user = ref.read(userProvider);
-      
+
+      // ✅ CORREÇÃO: Criar pet colaborativo
       final newPet = PetModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: petData['name'],
@@ -366,7 +481,7 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
         type: 'collab',
         ownerId: user?.id ?? '',
         partnerId: 'partner_${DateTime.now().millisecondsSinceEpoch}',
-        partnerAvatar: '👤',
+        partnerAvatar: _generateRandomAvatar(),
         level: 1,
         xp: 0,
         happiness: 50,
@@ -374,7 +489,7 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
         energy: 50,
         health: 80,
         revealLevel: 5,
-        isCollab: true,
+        isCollab: true, // ✅ Pet colaborativo
         isUnique: false,
         identityRevealed: false,
         canInteract: true,
@@ -382,16 +497,108 @@ class _AdoptionFlowState extends ConsumerState<AdoptionFlow> {
         lastCared: DateTime.now(),
         adoptedAt: DateTime.now(),
       );
-      
+
       petNotifier.addPet(newPet);
+
+      // ✅ CORREÇÃO: Adicionar post no feed
+      final feedNotifier = ref.read(feedProvider.notifier);
+      feedNotifier.addCollaborationPost(
+        user?.username ?? 'Usuário',
+        newPet.name,
+        user?.id ?? '',
+        newPet.id,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('🎉 Match encontrado! Vocês adotaram ${petData['name']}!'),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+
+      print('✅ Pet colaborativo adotado: ${newPet.name}');
       widget.onClose();
     } else {
-      // Add to pending adoptions queue
+      // Adicionar à fila de espera
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🦄 Solicitação enviada! Aguardando parceiro...')),
+        const SnackBar(
+          content: Text('🦄 Solicitação enviada! Aguardando parceiro...'),
+          backgroundColor: Color(0xFF8B5CF6),
+        ),
       );
       widget.onClose();
     }
   }
-}
 
+  // ✅ CORREÇÃO: Método para gerar avatar aleatório
+  String _generateRandomAvatar() {
+    final avatars = [
+      '👨',
+      '👩',
+      '🧑',
+      '👱',
+      '👨‍💻',
+      '👩‍💻',
+      '🧔',
+      '👴',
+      '👵'
+    ];
+    return avatars[DateTime.now().millisecond % avatars.length];
+  }
+
+  void _handleClose() {
+    setState(() {
+      _currentStep = 0;
+      _selectedType = null;
+    });
+    widget.onClose();
+  }
+
+  void _showAIComingSoon() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.auto_awesome, color: Color(0xFF8B5CF6)),
+            SizedBox(width: 8),
+            Text('🎨 Pet Único com IA'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Funcionalidade em desenvolvimento!\n\n'
+              'Em breve você poderá gerar pets únicos usando inteligência artificial.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.diamond, color: Color(0xFF8B5CF6)),
+                SizedBox(width: 4),
+                Text('Custo: 10 gemas',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}

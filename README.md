@@ -626,7 +626,238 @@ se detctar que algum fluxo possa ser melhorado ou incrementado com alguma inova�
 
 
 
+🐛 DEBUG PetCare Flutter
 
+PROBLEMAS ATUAIS:
+❌ Adoção slots não funcionam
+❌ Botão IA não navega  
+❌ Missões não aparecem
+❌ Slots bloqueados sem dialog
+⚠️ Overflow na loja
+⚠️ CircleAvatar quebrado
+
+ROTEIRO EXECUTADO:
+[cole resultados dos testes acima]
+
+PRIORIDADE: 
+1. Sistema adoção
+2. Missões 
+3. Navegação IA
+4. Dialogs confirmação
+
+ARQUIVOS PRINCIPAIS:
+- lib/widgets/pet_slots.dart
+- lib/providers/mission_provider.dart  
+- lib/screens/pet_screen.dart
+- lib/config/app_router.dart
+
+
+
+
+
+
+🐛 ROTEIRO DE DEBUG - PetCare Flutter
+📋 PROBLEMAS IDENTIFICADOS
+🚨 CRÍTICOS (Impedem uso básico)
+
+❌ Slots de adoção não funcionam (onTap sem ação)
+❌ Botão IA não navega para tela de geração
+❌ Missões não carregam (lista vazia)
+❌ Slots bloqueados sem dialog de compra de gemas
+
+⚠️ IMPORTANTES (UX prejudicada)
+
+⚠️ Overflow na loja (layout quebrado)
+⚠️ CircleAvatar quebrado (imagens não carregam)
+
+
+🔍 ROTEIRO DE TESTE SISTEMÁTICO
+TESTE 1: Sistema de Adoção
+1. Abrir app
+2. Verificar slots horizontais no topo
+3. Clicar em slot vazio (ícone +)
+   ❌ ESPERADO: Abrir BottomSheet de adoção
+   ❌ ATUAL: Nada acontece
+4. Verificar console para erros
+TESTE 2: Botão IA
+1. Na tela Pet (centro)
+2. Clicar "Gerar Pet Único com IA"
+   ❌ ESPERADO: Navegar para AIGenerationScreen
+   ❌ ATUAL: Nada acontece
+3. Verificar se rota existe
+TESTE 3: Sistema de Missões
+1. Ir para tab "Missões"
+2. Verificar se lista aparece
+   ❌ ESPERADO: 6 missões com progresso
+   ❌ ATUAL: Lista vazia
+3. Verificar provider de missões
+TESTE 4: Slots Bloqueados
+1. Verificar slot com ícone 🔒
+2. Clicar no slot bloqueado
+   ❌ ESPERADO: Dialog "Desbloquear slot por 5 gemas"
+   ❌ ATUAL: Nada acontece
+TESTE 5: Loja (Overflow)
+1. Ir para tab "Loja"
+2. Verificar layout dos itens
+   ⚠️ PROBLEMA: Texto cortado, overflow
+TESTE 6: Avatares
+1. Verificar avatar do usuário no header
+2. Verificar avatares em pets colaborativos
+   ⚠️ PROBLEMA: Imagens quebradas/não carregam
+
+🔧 DIAGNÓSTICO RÁPIDO
+Executar estes comandos:
+dart// 1. Verificar providers inicializados
+print('User: ${ref.read(userProvider)}');
+print('Missions: ${ref.read(missionProvider)}');
+print('Pets: ${ref.read(petProvider)}');
+
+// 2. Verificar rotas registradas
+print('Routes: ${GoRouter.of(context).routeInformationParser}');
+
+// 3. Verificar callbacks de onTap
+print('PetSlots onTap callback: ${widget.onSlotClick}');
+
+🛠️ CORREÇÕES PRINCIPAIS
+CORREÇÃO 1: PetSlots onTap
+dart// lib/widgets/pet_slots.dart - Linha ~60
+GestureDetector(
+  onTap: () {
+    if (pet != null) {
+      ref.read(appProvider.notifier).setActivePetIndex(index);
+    } else if (!isLocked) {
+      // ❌ PROBLEMA: onSlotClick pode estar null
+      onSlotClick?.call(); // Adicionar null safety
+    } else {
+      // ❌ PROBLEMA: Falta implementação para slot bloqueado
+      _showUnlockDialog(context, ref);
+    }
+  },
+)
+
+// Adicionar método:
+void _showUnlockDialog(BuildContext context, WidgetRef ref) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Desbloquear Slot'),
+      content: Text('Deseja desbloquear por 5 gemas?'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
+        ElevatedButton(onPressed: () {
+          // Implementar lógica de compra
+          Navigator.pop(context);
+        }, child: Text('Comprar')),
+      ],
+    ),
+  );
+}
+CORREÇÃO 2: Navegação IA
+dart// lib/screens/pet_screen.dart - Botão IA
+ElevatedButton.icon(
+  onPressed: () {
+    // ❌ PROBLEMA: Falta implementação de navegação
+    context.push('/ai-generation'); // Adicionar navegação
+  },
+  icon: const Icon(Icons.auto_awesome),
+  label: const Text('Gerar Pet Único com IA'),
+)
+CORREÇÃO 3: Inicialização Missões
+dart// lib/providers/mission_provider.dart
+class MissionNotifier extends StateNotifier<List<MissionModel>> {
+  MissionNotifier() : super([]) {
+    _initializeMissions(); // ❌ FALTANDO: Inicialização
+  }
+
+  void _initializeMissions() {
+    state = Constants.defaultMissions;
+  }
+}
+CORREÇÃO 4: HomeScreen - onSlotClick
+dart// lib/screens/home_screen.dart
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _showAdoption = false; // ❌ FALTANDO: Estado para controlar modal
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          PetSlots(onSlotClick: () => setState(() => _showAdoption = true)), // ❌ FALTANDO: Callback
+          Expanded(child: _screens[_currentIndex]),
+        ],
+      ),
+      // ❌ FALTANDO: Modal de adoção
+      body: Stack(
+        children: [
+          // ... conteúdo atual
+          AdoptionFlow(
+            show: _showAdoption,
+            onClose: () => setState(() => _showAdoption = false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+📁 ARQUIVOS PARA VERIFICAR/CORRIGIR
+PRIORIDADE 1 (Críticos):
+lib/screens/home_screen.dart - Adicionar AdoptionFlow
+lib/widgets/pet_slots.dart - Corrigir onTap + dialog
+lib/providers/mission_provider.dart - Inicializar missões
+lib/config/app_router.dart - Verificar rotas IA
+PRIORIDADE 2 (Importantes):
+lib/screens/shop_screen.dart - Corrigir overflow
+lib/widgets/pet_circle.dart - Corrigir CircleAvatar
+lib/screens/pet_screen.dart - Adicionar navegação IA
+
+🧪 SCRIPT DE TESTE COMPLETO
+dart// test_script.dart - Executar no projeto
+import 'package:flutter/material.dart';
+
+void debugApp(WidgetRef ref, BuildContext context) {
+  print('=== DEBUG PETCARE ===');
+  
+  // Teste 1: Providers
+  final user = ref.read(userProvider);
+  final missions = ref.read(missionProvider);
+  final pets = ref.read(petProvider);
+  
+  print('User: ${user?.username ?? "NULL"}');
+  print('Missions count: ${missions.length}');
+  print('Pets count: ${pets.length}');
+  
+  // Teste 2: Rotas
+  try {
+    context.push('/ai-generation');
+    print('✅ Rota IA OK');
+  } catch (e) {
+    print('❌ Rota IA ERROR: $e');
+  }
+  
+  // Teste 3: Constantes
+  print('Default missions: ${Constants.defaultMissions.length}');
+  print('Shop items: ${Constants.shopItems.length}');
+  
+  print('=== FIM DEBUG ===');
+}
+
+✅ CHECKLIST DE CORREÇÕES
+Para executar na próxima conversa:
+□ Corrigir PetSlots onTap (adoção + slot bloqueado)
+□ Adicionar AdoptionFlow ao HomeScreen  
+□ Inicializar missões no MissionProvider
+□ Corrigir navegação para tela IA
+□ Verificar/corrigir rotas no app_router.dart
+□ Corrigir overflow na loja
+□ Corrigir CircleAvatar quebrado
+□ Testar cada funcionalidade individualmente
+□ Verificar console para erros
+□ Validar navegação entre telas
+
+🎯 COMANDO PARA PRÓXIMA CONVERSA
+Cole exatamente isto:
 🐛 DEBUG PetCare Flutter
 
 PROBLEMAS ATUAIS:
