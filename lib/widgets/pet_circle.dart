@@ -1,5 +1,3 @@
-﻿// PetCircle
-// lib/widgets/pet_circle.dart - PetCircle
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/models/pet_model.dart';
@@ -22,7 +20,7 @@ class _PetCircleState extends ConsumerState<PetCircle>
   late AnimationController _bounceController;
   late Animation<double> _breathingAnimation;
   late Animation<double> _bounceAnimation;
-  bool _showActions = false;
+  // bool _showActions = false; // Não é mais necessário para controlar a exibição direta
   String _currentMood = 'happy';
 
   @override
@@ -129,8 +127,8 @@ class _PetCircleState extends ConsumerState<PetCircle>
                               _bounceController.forward().then((_) {
                                 _bounceController.reset();
                               });
-                              // ✅ CORREÇÃO: Abrir BottomSheet corretamente
-                              setState(() => _showActions = true);
+                              // ✅ Abrir PetActionsSheet como um modal
+                              _openPetActionsSheet(context, ref, widget.pet);
                               print('✅ Abrindo ações para ${widget.pet.name}');
                             },
                             child: AnimatedBuilder(
@@ -388,15 +386,7 @@ class _PetCircleState extends ConsumerState<PetCircle>
         ),
 
         // ✅ CORREÇÃO: BottomSheet sobreposto
-        if (_showActions)
-          PetActionsSheet(
-            pet: widget.pet,
-            show: _showActions,
-            onClose: () {
-              setState(() => _showActions = false);
-              print('✅ Fechando ações para ${widget.pet.name}');
-            },
-          ),
+        // PetActionsSheet agora é exibido via showModalBottomSheet
       ],
     );
   }
@@ -514,6 +504,34 @@ class _PetCircleState extends ConsumerState<PetCircle>
           ),
         ],
       ),
+    );
+  }
+
+  // ✅ NOVO MÉTODO: Para abrir o PetActionsSheet como um modal
+  void _openPetActionsSheet(BuildContext context, WidgetRef ref, PetModel pet) {
+    final isDark = ref.watch(themeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bContext) {
+        return Container(
+          // Ajuste a altura conforme necessário, pode ser uma fração da tela
+          // ou usar Wrap para se ajustar ao conteúdo.
+          // Para PetActionsSheet, que pode ter bastante conteúdo, uma fração maior é melhor.
+          height:
+              MediaQuery.of(bContext).size.height * 0.75, // Exemplo de altura
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          child: PetActionsSheet(pet: pet),
+        );
+      },
     );
   }
 }

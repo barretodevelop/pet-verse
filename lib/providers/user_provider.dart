@@ -3,39 +3,82 @@
 // lib/providers/user_provider.dart - UserProvider
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/models/user_model.dart';
+import 'package:petverse/services/firestore_service.dart'; // Importar FirestoreService
 
-final userProvider =
-    StateNotifierProvider<UserNotifier, UserModel?>((ref) => UserNotifier());
+// Opcional: Se FirestoreService for um provider
+// final firestoreServiceProvider = Provider((ref) => FirestoreService());
+
+final userProvider = StateNotifierProvider<UserNotifier, UserModel?>((ref) {
+  // Se FirestoreService for um provider:
+  // final firestoreService = ref.watch(firestoreServiceProvider);
+  // return UserNotifier(firestoreService);
+  return UserNotifier(
+      FirestoreService()); // Instanciando diretamente por enquanto
+});
 
 class UserNotifier extends StateNotifier<UserModel?> {
-  UserNotifier() : super(null);
+  final FirestoreService _firestoreService;
+
+  UserNotifier(this._firestoreService) : super(null);
 
   void setUser(UserModel? user) {
     state = user;
   }
 
-  void updateCoins(int coins) {
+  Future<void> updateCoins(int newCoinAmount) async {
     if (state != null) {
-      state = state!.copyWith(coins: coins);
+      try {
+        await _firestoreService.updateUser(state!.id, {'coins': newCoinAmount});
+        state = state!.copyWith(coins: newCoinAmount);
+        print(
+            '✅ UserProvider: Moedas atualizadas para $newCoinAmount e salvas no Firebase.');
+      } catch (e) {
+        print('❌ UserProvider: Falha ao atualizar moedas no Firebase: $e');
+        rethrow; // Propaga o erro para a UI tratar (ex: mostrar SnackBar)
+      }
     }
   }
 
-  void updateGems(int gems) {
+  Future<void> updateGems(int newGemAmount) async {
     if (state != null) {
-      state = state!.copyWith(gems: gems);
+      try {
+        await _firestoreService.updateUser(state!.id, {'gems': newGemAmount});
+        state = state!.copyWith(gems: newGemAmount);
+        print(
+            '✅ UserProvider: Gemas atualizadas para $newGemAmount e salvas no Firebase.');
+      } catch (e) {
+        print('❌ UserProvider: Falha ao atualizar gemas no Firebase: $e');
+        rethrow;
+      }
     }
   }
 
-  void updateXP(int xp) {
+  Future<void> updateXP(int newXp) async {
     if (state != null) {
-      final newLevel = (xp / 100).floor() + 1;
-      state = state!.copyWith(xp: xp, level: newLevel);
+      final newLevel = (newXp / 100).floor() + 1;
+      try {
+        await _firestoreService
+            .updateUser(state!.id, {'xp': newXp, 'level': newLevel});
+        state = state!.copyWith(xp: newXp, level: newLevel);
+        print(
+            '✅ UserProvider: XP atualizado para $newXp (Nível $newLevel) e salvo no Firebase.');
+      } catch (e) {
+        print('❌ UserProvider: Falha ao atualizar XP no Firebase: $e');
+        rethrow;
+      }
     }
   }
 
-  void updateAIConfig(Map<String, dynamic> config) {
+  Future<void> updateAIConfig(Map<String, dynamic> config) async {
     if (state != null) {
-      state = state!.copyWith(aiConfig: config);
+      try {
+        await _firestoreService.updateUser(state!.id, {'aiConfig': config});
+        state = state!.copyWith(aiConfig: config);
+        print('✅ UserProvider: AIConfig atualizado e salvo no Firebase.');
+      } catch (e) {
+        print('❌ UserProvider: Falha ao atualizar AIConfig no Firebase: $e');
+        rethrow;
+      }
     }
   }
 }

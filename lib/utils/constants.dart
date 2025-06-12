@@ -7,15 +7,69 @@ import 'package:petverse/models/mission_model.dart';
 
 class Constants {
   static const List<Map<String, dynamic>> basicPets = [
-    {'emoji': '🐕', 'name': 'Cachorro', 'cost': 50, 'rarity': 'comum', 'category': 'mamífero'},
-    {'emoji': '🐱', 'name': 'Gato', 'cost': 45, 'rarity': 'comum', 'category': 'mamífero'},
-    {'emoji': '🐹', 'name': 'Hamster', 'cost': 30, 'rarity': 'comum', 'category': 'roedor'},
-    {'emoji': '🐰', 'name': 'Coelho', 'cost': 40, 'rarity': 'comum', 'category': 'mamífero'},
-    {'emoji': '🐸', 'name': 'Sapo', 'cost': 25, 'rarity': 'comum', 'category': 'anfíbio'},
-    {'emoji': '🐢', 'name': 'Tartaruga', 'cost': 60, 'rarity': 'incomum', 'category': 'réptil'},
-    {'emoji': '🐦', 'name': 'Pássaro', 'cost': 35, 'rarity': 'comum', 'category': 'ave'},
-    {'emoji': '🐠', 'name': 'Peixe', 'cost': 20, 'rarity': 'comum', 'category': 'aquático'},
-    {'emoji': '🦔', 'name': 'Ouriço', 'cost': 55, 'rarity': 'incomum', 'category': 'mamífero'},
+    {
+      'emoji': '🐕',
+      'name': 'Cachorro',
+      'cost': 50,
+      'rarity': 'comum',
+      'category': 'mamífero'
+    },
+    {
+      'emoji': '🐱',
+      'name': 'Gato',
+      'cost': 45,
+      'rarity': 'comum',
+      'category': 'mamífero'
+    },
+    {
+      'emoji': '🐹',
+      'name': 'Hamster',
+      'cost': 30,
+      'rarity': 'comum',
+      'category': 'roedor'
+    },
+    {
+      'emoji': '🐰',
+      'name': 'Coelho',
+      'cost': 40,
+      'rarity': 'comum',
+      'category': 'mamífero'
+    },
+    {
+      'emoji': '🐸',
+      'name': 'Sapo',
+      'cost': 25,
+      'rarity': 'comum',
+      'category': 'anfíbio'
+    },
+    {
+      'emoji': '🐢',
+      'name': 'Tartaruga',
+      'cost': 60,
+      'rarity': 'incomum',
+      'category': 'réptil'
+    },
+    {
+      'emoji': '🐦',
+      'name': 'Pássaro',
+      'cost': 35,
+      'rarity': 'comum',
+      'category': 'ave'
+    },
+    {
+      'emoji': '🐠',
+      'name': 'Peixe',
+      'cost': 20,
+      'rarity': 'comum',
+      'category': 'aquático'
+    },
+    {
+      'emoji': '🦔',
+      'name': 'Ouriço',
+      'cost': 55,
+      'rarity': 'incomum',
+      'category': 'mamífero'
+    },
   ];
 
   static const List<Map<String, dynamic>> collabPets = [
@@ -26,12 +80,48 @@ class Constants {
       'category': 'místico',
       'hasMatch': false
     },
-    {'emoji': '🐉', 'name': 'Dragão', 'rarity': 'épico', 'category': 'místico', 'hasMatch': true},
-    {'emoji': '🦁', 'name': 'Leão', 'rarity': 'raro', 'category': 'felino', 'hasMatch': false},
-    {'emoji': '🐺', 'name': 'Lobo', 'rarity': 'raro', 'category': 'canino', 'hasMatch': false},
-    {'emoji': '🦅', 'name': 'Águia', 'rarity': 'épico', 'category': 'ave', 'hasMatch': false},
-    {'emoji': '🐅', 'name': 'Tigre', 'rarity': 'épico', 'category': 'felino', 'hasMatch': false},
-    {'emoji': '🦈', 'name': 'Tubarão', 'rarity': 'raro', 'category': 'aquático', 'hasMatch': false},
+    {
+      'emoji': '🐉',
+      'name': 'Dragão',
+      'rarity': 'épico',
+      'category': 'místico',
+      'hasMatch': true
+    },
+    {
+      'emoji': '🦁',
+      'name': 'Leão',
+      'rarity': 'raro',
+      'category': 'felino',
+      'hasMatch': false
+    },
+    {
+      'emoji': '🐺',
+      'name': 'Lobo',
+      'rarity': 'raro',
+      'category': 'canino',
+      'hasMatch': false
+    },
+    {
+      'emoji': '🦅',
+      'name': 'Águia',
+      'rarity': 'épico',
+      'category': 'ave',
+      'hasMatch': false
+    },
+    {
+      'emoji': '🐅',
+      'name': 'Tigre',
+      'rarity': 'épico',
+      'category': 'felino',
+      'hasMatch': false
+    },
+    {
+      'emoji': '🦈',
+      'name': 'Tubarão',
+      'rarity': 'raro',
+      'category': 'aquático',
+      'hasMatch': false
+    },
     {
       'emoji': '🦋',
       'name': 'Borboleta Mágica',
@@ -43,108 +133,114 @@ class Constants {
 
   static final List<ItemModel> shopItems = [
     ItemModel(
-        id: 1,
+        id: '1',
         name: 'Ração Básica',
         emoji: '🥣',
         cost: 15,
-        type: 'food',
-        effect: '+15 fome',
+        type: 'consumable', // Tipo mais genérico
+        effects: {'hunger': 15}, // ✅ Efeito estruturado
         category: 'comida'),
     ItemModel(
-        id: 2,
+        id: '2',
         name: 'Comida Premium',
         emoji: '🥩',
         cost: 30,
-        type: 'food',
-        effect: '+25 fome, +10 felicidade',
+        type: 'consumable',
+        effects: {'hunger': 25, 'happiness': 10}, // ✅ Efeito estruturado
         category: 'comida'),
     ItemModel(
-        id: 3,
+        id: '3',
         name: 'Petisco Especial',
         emoji: '🦴',
         cost: 20,
-        type: 'food',
-        effect: '+20 felicidade',
+        type: 'consumable',
+        effects: {'happiness': 20}, // ✅ Efeito estruturado
         category: 'comida'),
     ItemModel(
-        id: 4,
+        id: '4',
         name: 'Bola',
         emoji: '⚽',
         cost: 25,
-        type: 'toy',
-        effect: '+20 energia',
+        type: 'reusable', // Tipo mais genérico
+        effects: {
+          'happiness': 20,
+          'energy': -5
+        }, // Brincar gasta energia, aumenta felicidade
         category: 'brinquedo'),
     ItemModel(
-        id: 5,
+        id: '5',
         name: 'Corda',
         emoji: '🧸',
         cost: 35,
-        type: 'toy',
-        effect: '+15 felicidade, +10 energia',
+        type: 'reusable',
+        effects: {'happiness': 25, 'energy': -10}, // ✅ Efeito estruturado
         category: 'brinquedo'),
     ItemModel(
-        id: 6,
+        id: '6',
         name: 'Vitamina',
         emoji: '💊',
         cost: 40,
-        type: 'medicine',
-        effect: '+25 saúde',
+        type: 'consumable',
+        effects: {'health': 25}, // ✅ Efeito estruturado
         category: 'medicina'),
     ItemModel(
-        id: 7,
+        id: '7',
         name: 'Poção Cura',
         emoji: '🧪',
         cost: 60,
-        type: 'medicine',
-        effect: '+40 saúde, +10 energia',
+        type: 'consumable',
+        effects: {'health': 40, 'energy': 10}, // ✅ Efeito estruturado
         category: 'medicina'),
     ItemModel(
-        id: 8,
+        id: '8',
         name: 'Chapéu Mágico',
         emoji: '🎩',
         cost: 100,
-        type: 'accessory',
-        effect: '+5 todas stats',
+        type: 'wearable', // Tipo mais genérico
+        effects: {
+          'happiness': 5,
+          'energy': 5
+        }, // Exemplo, pode ser mais complexo
         category: 'acessório'),
     ItemModel(
-        id: 9,
+        id: '9',
         name: 'Coleira Dourada',
         emoji: '🏆',
         cost: 80,
-        type: 'accessory',
-        effect: '+10 felicidade',
+        type: 'wearable',
+        effects: {'happiness': 10}, // ✅ Efeito estruturado
         category: 'acessório'),
     ItemModel(
-        id: 10,
+        id: '10',
         name: 'Laço Rosa',
         emoji: '🎀',
         cost: 50,
-        type: 'accessory',
-        effect: '+15 felicidade',
+        type: 'wearable',
+        effects: {'happiness': 15}, // ✅ Efeito estruturado
         category: 'acessório'),
     ItemModel(
-        id: 11,
+        id: '11',
         name: 'Óculos Cool',
         emoji: '🕶️',
         cost: 70,
-        type: 'accessory',
-        effect: '+20 energia',
+        type: 'wearable',
+        effects: {'energy': 10, 'happiness': 5}, // ✅ Efeito estruturado
         category: 'acessório'),
     ItemModel(
-        id: 12,
+        id: '12',
         name: 'Coroa Real',
         emoji: '👑',
         cost: 150,
-        type: 'accessory',
-        effect: '+10 todas stats',
+        type: 'wearable',
+        effects: {'happiness': 10, 'health': 5, 'energy': 5}, // Exemplo
         category: 'acessório'),
     ItemModel(
-        id: 13,
+        id: '13',
         name: 'Cachecol',
         emoji: '🧣',
         cost: 60,
-        type: 'accessory',
-        effect: '+15 saúde',
+        type: 'wearable',
+        effects: {'health': 10}, // ✅ Efeito estruturado
         category: 'acessório'),
   ];
 
@@ -193,4 +289,3 @@ class Constants {
         max: 5),
   ];
 }
-

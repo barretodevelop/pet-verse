@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../services/auth_service.dart';
+import '../providers/app_provider.dart'; // Importar o AppProvider
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -30,20 +30,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
 
     _controller.repeat(reverse: true);
-    _navigateAfterDelay();
+    // A navegação será gerenciada pelo listener do appProvider
   }
 
-  void _navigateAfterDelay() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      final user = AuthService.currentUser;
-      if (user != null) {
-        context.go('/home');
-      } else {
-        context.go('/login');
-      }
-    }
-  }
+  // void _navigateAfterDelay() async { // Removido - não mais necessário
+  //   await Future.delayed(const Duration(seconds: 3));
+  //   if (mounted) {
+  //     final user = AuthService.currentUser;
+  //     if (user != null) {
+  //       context.go('/home');
+  //     } else {
+  //       context.go('/login');
+  //     }
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -53,6 +53,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Usamos ref.listen para efeitos colaterais como navegação.
+    ref.listen<AppState>(appProvider, (previousState, nextState) {
+      final wasLoading = previousState?.isLoading ?? true;
+
+      if (wasLoading && !nextState.isLoading) {
+        if (nextState.user != null) {
+          print(
+              '[SplashScreen] Usuário carregado: ${nextState.user!.id}. Navegando para /home.');
+          context.go('/home');
+        } else {
+          print(
+              '[SplashScreen] Nenhum usuário ou erro. Navegando para /login. Erro: ${nextState.error}');
+          context.go('/login');
+        }
+      }
+    });
+
+    // ref.watch é usado para reconstruir a UI da SplashScreen
+    // e para garantir que o AppNotifier seja inicializado.
+    final appState = ref.watch(appProvider);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -100,10 +121,35 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 ),
               ),
               const SizedBox(height: 64),
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 3,
-              ),
+              if (appState.isLoading)
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 3,
+                ),
+              if (appState.error != null && !appState.isLoading) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: Text(
+                    'Ocorreu um erro: ${appState.error}',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Poderia tentar recarregar os dados ou simplesmente ir para o login
+                    // ref.read(appProvider.notifier)._init(); // Para tentar recarregar
+                    print(
+                        '[SplashScreen] Botão "Tentar Novamente" pressionado. Navegando para /login.');
+                    context.go('/login');
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.purple),
+                  child: const Text('Tentar Novamente'),
+                )
+              ]
             ],
           ),
         ),
@@ -111,604 +157,3 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
-
-
-
-// // lib/screens/home_screen.dart - HomeScreen
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../providers/user_provider.dart';
-// import '../providers/theme_provider.dart';
-// import 'pet_screen.dart';
-// import 'feed_screen.dart';
-// import 'missions_screen.dart';
-// import 'shop_screen.dart';
-// import 'dashboard_screen.dart';
-// import '../widgets/pet_slots.dart';
-
-// class HomeScreen extends ConsumerStatefulWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   ConsumerState<HomeScreen> createState() => _HomeScreenState();
-// }
-
-// class _HomeScreenState extends ConsumerState<HomeScreen> {
-//   int _currentIndex = 2; // Start with Pet tab
-
-//   final List<Widget> _screens = [
-//     const FeedScreen(),
-//     const MissionsScreen(),
-//     const PetScreen(),
-//     const ShopScreen(),
-//     const DashboardScreen(),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final user = ref.watch(userProvider);
-//     final isDark = ref.watch(themeProvider);
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-//         elevation: 2,
-//         title: Row(
-//           children: [
-//             CircleAvatar(
-//               radius: 20,
-//               backgroundColor: const Color(0xFF8B5CF6),
-//               child: Text(user?.avatar ?? '👨', style: const TextStyle(fontSize: 20)),
-//             ),
-//             const SizedBox(width: 12),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     user?.username ?? 'Usuário',
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.bold,
-//                       color: isDark ? Colors.white : const Color(0xFF1F2937),
-//                     ),
-//                   ),
-//                   Row(
-//                     children: [
-//                       const Icon(Icons.star, size: 16, color: Color(0xFFFBBF24)),
-//                       const SizedBox(width: 4),
-//                       Text(
-//                         'Nível ${user?.level ?? 1} • ${(user?.xp ?? 0) % 100}/100 XP',
-//                         style: TextStyle(
-//                           fontSize: 12,
-//                           color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//         actions: [
-//           Container(
-//             margin: const EdgeInsets.only(right: 8),
-//             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-//             decoration: BoxDecoration(
-//               color: const Color(0xFFFEF3C7),
-//               borderRadius: BorderRadius.circular(20),
-//             ),
-//             child: Row(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 const Icon(Icons.monetization_on, size: 16, color: Color(0xFFF59E0B)),
-//                 const SizedBox(width: 4),
-//                 Text(
-//                   '${user?.coins ?? 0}',
-//                   style: const TextStyle(
-//                     fontSize: 14,
-//                     fontWeight: FontWeight.bold,
-//                     color: Color(0xFFA16207),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           Container(
-//             margin: const EdgeInsets.only(right: 16),
-//             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-//             decoration: BoxDecoration(
-//               color: const Color(0xFFF3E8FF),
-//               borderRadius: BorderRadius.circular(20),
-//             ),
-//             child: Row(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 const Icon(Icons.diamond, size: 16, color: Color(0xFF8B5CF6)),
-//                 const SizedBox(width: 4),
-//                 Text(
-//                   '${user?.gems ?? 0}',
-//                   style: const TextStyle(
-//                     fontSize: 14,
-//                     fontWeight: FontWeight.bold,
-//                     color: Color(0xFF7C3AED),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//       body: Column(
-//         children: [
-//           const PetSlots(),
-//           Expanded(child: _screens[_currentIndex]),
-//         ],
-//       ),
-//       bottomNavigationBar: Container(
-//         decoration: BoxDecoration(
-//           color: isDark ? const Color(0xFF1F2937) : Colors.white,
-//           boxShadow: [
-//             BoxShadow(
-//               color: Colors.black.withOpacity(0.1),
-//               blurRadius: 8,
-//               offset: const Offset(0, -2),
-//             ),
-//           ],
-//         ),
-//         child: SafeArea(
-//           child: Container(
-//             height: 80,
-//             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//             child: Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceAround,
-//               children: [
-//                 _buildNavItem(0, Icons.rss_feed, 'Feed'),
-//                 _buildNavItem(1, Icons.flag, 'Missões'),
-//                 _buildCenterNavItem(2),
-//                 _buildNavItem(3, Icons.shopping_bag, 'Loja'),
-//                 _buildNavItem(4, Icons.dashboard, 'Dashboard'),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildNavItem(int index, IconData icon, String label) {
-//     final isDark = ref.watch(themeProvider);
-//     final isSelected = _currentIndex == index;
-    
-//     return GestureDetector(
-//       onTap: () => setState(() => _currentIndex = index),
-//       child: Column(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Icon(
-//             icon,
-//             size: 24,
-//             color: isSelected 
-//               ? const Color(0xFF8B5CF6)
-//               : isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//           ),
-//           const SizedBox(height: 4),
-//           Text(
-//             label,
-//             style: TextStyle(
-//               fontSize: 12,
-//               color: isSelected 
-//                 ? const Color(0xFF8B5CF6)
-//                 : isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildCenterNavItem(int index) {
-//     final isSelected = _currentIndex == index;
-    
-//     return GestureDetector(
-//       onTap: () => setState(() => _currentIndex = index),
-//       child: Transform.translate(
-//         offset: const Offset(0, -8),
-//         child: Container(
-//           width: 56,
-//           height: 56,
-//           decoration: BoxDecoration(
-//             gradient: isSelected
-//               ? const LinearGradient(
-//                   colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-//                 )
-//               : const LinearGradient(
-//                   colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
-//                 ),
-//             shape: BoxShape.circle,
-//             boxShadow: [
-//               BoxShadow(
-//                 color: isSelected 
-//                   ? const Color(0xFF8B5CF6).withOpacity(0.3)
-//                   : Colors.black.withOpacity(0.1),
-//                 blurRadius: 8,
-//                 offset: const Offset(0, 4),
-//               ),
-//             ],
-//           ),
-//           child: const Center(
-//             child: Text('🐾', style: TextStyle(fontSize: 24)),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// // lib/screens/pet_screen.dart - PetScreen
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../providers/pet_provider.dart';
-// import '../providers/app_provider.dart';
-// import '../providers/theme_provider.dart';
-// import '../widgets/pet_circle.dart';
-
-// class PetScreen extends ConsumerWidget {
-//   const PetScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final pets = ref.watch(petProvider);
-//     final appState = ref.watch(appProvider);
-//     final isDark = ref.watch(themeProvider);
-    
-//     final activePet = pets.isNotEmpty && appState.activePetIndex < pets.length 
-//         ? pets[appState.activePetIndex] 
-//         : null;
-
-//     return Container(
-//       decoration: BoxDecoration(
-//         gradient: isDark
-//           ? const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFF111827), Color(0xFF1F2937)],
-//             )
-//           : const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-//             ),
-//       ),
-//       child: activePet != null
-//         ? PetCircle(pet: activePet)
-//         : Center(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 Container(
-//                   width: 200,
-//                   height: 200,
-//                   decoration: BoxDecoration(
-//                     shape: BoxShape.circle,
-//                     border: Border.all(
-//                       color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
-//                       width: 4,
-//                       style: BorderStyle.solid,
-//                     ),
-//                   ),
-//                   child: Column(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: [
-//                       const Text('🐾', style: TextStyle(fontSize: 64)),
-//                       const SizedBox(height: 16),
-//                       Text(
-//                         'Nenhum pet adotado',
-//                         style: TextStyle(
-//                           fontSize: 14,
-//                           color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 8),
-//                       Text(
-//                         'Use os slots acima para adotar',
-//                         style: TextStyle(
-//                           fontSize: 12,
-//                           color: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//                 const SizedBox(height: 32),
-//                 ElevatedButton.icon(
-//                   onPressed: () {
-//                     // Navigate to AI generation
-//                   },
-//                   icon: const Icon(Icons.auto_awesome),
-//                   label: const Text('Gerar Pet Único com IA'),
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: const Color(0xFF8B5CF6),
-//                     foregroundColor: Colors.white,
-//                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(16),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//     );
-//   }
-// }
-
-// // lib/screens/feed_screen.dart - FeedScreen
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../providers/feed_provider.dart';
-// import '../providers/theme_provider.dart';
-
-// class FeedScreen extends ConsumerWidget {
-//   const FeedScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final feedPosts = ref.watch(feedProvider);
-//     final isDark = ref.watch(themeProvider);
-
-//     return Container(
-//       decoration: BoxDecoration(
-//         gradient: isDark
-//           ? const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFF111827), Color(0xFF1F2937)],
-//             )
-//           : const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-//             ),
-//       ),
-//       child: feedPosts.isEmpty
-//         ? Center(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 Icon(
-//                   Icons.rss_feed,
-//                   size: 64,
-//                   color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
-//                 ),
-//                 const SizedBox(height: 16),
-//                 Text(
-//                   'Feed de Notícias',
-//                   style: TextStyle(
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.bold,
-//                     color: isDark ? Colors.white : const Color(0xFF1F2937),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 8),
-//                 Text(
-//                   'Acompanhe as atividades da comunidade',
-//                   style: TextStyle(
-//                     color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           )
-//         : ListView.builder(
-//             padding: const EdgeInsets.all(16),
-//             itemCount: feedPosts.length,
-//             itemBuilder: (context, index) {
-//               final post = feedPosts[index];
-//               return Container(
-//                 margin: const EdgeInsets.only(bottom: 12),
-//                 padding: const EdgeInsets.all(16),
-//                 decoration: BoxDecoration(
-//                   color: isDark ? const Color(0xFF1F2937) : Colors.white,
-//                   borderRadius: BorderRadius.circular(16),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.black.withOpacity(0.05),
-//                       blurRadius: 8,
-//                       offset: const Offset(0, 2),
-//                     ),
-//                   ],
-//                 ),
-//                 child: Row(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text(_getPostIcon(post.type), style: const TextStyle(fontSize: 24)),
-//                     const SizedBox(width: 12),
-//                     Expanded(
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Text(
-//                             post.content,
-//                             style: TextStyle(
-//                               color: isDark ? Colors.white : const Color(0xFF1F2937),
-//                             ),
-//                           ),
-//                           const SizedBox(height: 4),
-//                           Text(
-//                             _formatTimestamp(post.timestamp),
-//                             style: TextStyle(
-//                               fontSize: 12,
-//                               color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             },
-//           ),
-//     );
-//   }
-
-//   String _getPostIcon(String type) {
-//     switch (type) {
-//       case 'adoption': return '🎉';
-//       case 'death': return '💀';
-//       case 'level_up': return '⭐';
-//       case 'collaboration': return '🤝';
-//       case 'return': return '🔄';
-//       case 'unique_generation': return '🎨';
-//       default: return '📢';
-//     }
-//   }
-
-//   String _formatTimestamp(DateTime timestamp) {
-//     final now = DateTime.now();
-//     final diff = now.difference(timestamp);
-    
-//     if (diff.inMinutes < 1) return 'Agora';
-//     if (diff.inHours < 1) return '${diff.inMinutes}m';
-//     if (diff.inDays < 1) return '${diff.inHours}h';
-//     return '${diff.inDays}d';
-//   }
-// }
-
-// // lib/screens/missions_screen.dart - MissionsScreen
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../providers/mission_provider.dart';
-// import '../providers/theme_provider.dart';
-
-// class MissionsScreen extends ConsumerWidget {
-//   const MissionsScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final missions = ref.watch(missionProvider);
-//     final isDark = ref.watch(themeProvider);
-
-//     return Container(
-//       decoration: BoxDecoration(
-//         gradient: isDark
-//           ? const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFF111827), Color(0xFF1F2937)],
-//             )
-//           : const LinearGradient(
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//               colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-//             ),
-//       ),
-//       child: ListView.builder(
-//         padding: const EdgeInsets.all(16),
-//         itemCount: missions.length,
-//         itemBuilder: (context, index) {
-//           final mission = missions[index];
-//           final isCompleted = mission.progress >= mission.max;
-          
-//           return Container(
-//             margin: const EdgeInsets.only(bottom: 12),
-//             padding: const EdgeInsets.all(16),
-//             decoration: BoxDecoration(
-//               color: isCompleted 
-//                 ? (isDark ? const Color(0xFF065F46) : const Color(0xFFD1FAE5))
-//                 : (isDark ? const Color(0xFF1F2937) : Colors.white),
-//               borderRadius: BorderRadius.circular(16),
-//               border: isCompleted 
-//                 ? Border.all(color: const Color(0xFF10B981), width: 2)
-//                 : null,
-//               boxShadow: [
-//                 BoxShadow(
-//                   color: Colors.black.withOpacity(0.05),
-//                   blurRadius: 8,
-//                   offset: const Offset(0, 2),
-//                 ),
-//               ],
-//             ),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Text(
-//                       isCompleted ? '✅ ${mission.title}' : mission.title,
-//                       style: TextStyle(
-//                         fontSize: 16,
-//                         fontWeight: FontWeight.bold,
-//                         color: isDark ? Colors.white : const Color(0xFF1F2937),
-//                       ),
-//                     ),
-//                     Row(
-//                       children: [
-//                         const Icon(Icons.monetization_on, size: 16, color: Color(0xFFF59E0B)),
-//                         const SizedBox(width: 4),
-//                         Text(
-//                           '${mission.reward}',
-//                           style: TextStyle(
-//                             fontSize: 14,
-//                             fontWeight: FontWeight.bold,
-//                             color: isDark ? Colors.white : const Color(0xFF1F2937),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//                 const SizedBox(height: 8),
-//                 Text(
-//                   mission.desc,
-//                   style: TextStyle(
-//                     color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 12),
-//                 Row(
-//                   children: [
-//                     Expanded(
-//                       child: Container(
-//                         height: 8,
-//                         decoration: BoxDecoration(
-//                           color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-//                           borderRadius: BorderRadius.circular(4),
-//                         ),
-//                         child: FractionallySizedBox(
-//                           alignment: Alignment.centerLeft,
-//                           widthFactor: (mission.progress / mission.max).clamp(0.0, 1.0),
-//                           child: Container(
-//                             decoration: BoxDecoration(
-//                               gradient: isCompleted
-//                                 ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
-//                                 : const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
-//                               borderRadius: BorderRadius.circular(4),
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     const SizedBox(width: 12),
-//                     Text(
-//                       '${mission.progress}/${mission.max}',
-//                       style: TextStyle(
-//                         fontSize: 12,
-//                         fontWeight: FontWeight.bold,
-//                         color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-

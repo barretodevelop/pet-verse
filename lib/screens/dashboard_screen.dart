@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/providers/inventory_provider.dart';
+import 'package:petverse/providers/mission_provider.dart'; // Importar mission_provider
 import 'package:petverse/providers/pet_provider.dart';
 import 'package:petverse/providers/theme_provider.dart';
 import 'package:petverse/providers/user_provider.dart';
@@ -15,8 +16,17 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(userProvider);
     final pets = ref.watch(petProvider);
     final inventory = ref.watch(inventoryProvider);
+    final missionsState =
+        ref.watch(missionProvider); // Obter estado das missões
     final isDark = ref.watch(themeProvider);
 
+    // Calcular taxa de conclusão de missões
+    final totalMissions = missionsState.length;
+    final completedMissions =
+        missionsState.where((m) => m.progress >= m.max).length;
+    final missionCompletionRate = totalMissions > 0
+        ? (completedMissions / totalMissions * 100).toStringAsFixed(0)
+        : "0";
     return Container(
       decoration: BoxDecoration(
         gradient: isDark
@@ -44,20 +54,8 @@ class DashboardScreen extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(user?.avatar ?? '👨',
-                        style: const TextStyle(fontSize: 40)),
-                  ),
-                ),
-                const SizedBox(width: 16),
+                // Avatar removido conforme discussão para um card mais enxuto
+                // const SizedBox(width: 16), // Removido pois o avatar foi removido
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +209,7 @@ class DashboardScreen extends ConsumerWidget {
                       child: Column(
                         children: [
                           Text(
-                            'Taxa de Sucesso',
+                            'Missões Concluídas', // Label atualizado
                             style: TextStyle(
                               color: isDark
                                   ? const Color(0xFF9CA3AF)
@@ -220,11 +218,12 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '100%',
+                            '$missionCompletionRate%', // Usar a taxa calculada
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: pets.isEmpty
+                              color: completedMissions >
+                                      0 // Condição de cor pode ser ajustada
                                   ? const Color(0xFF10B981)
                                   : const Color(0xFF10B981),
                             ),

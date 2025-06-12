@@ -10,36 +10,72 @@ final missionProvider =
         (ref) => MissionNotifier());
 
 class MissionNotifier extends StateNotifier<List<MissionModel>> {
-  // ✅ CORREÇÃO 1: Inicializar com missões padrão ao invés de lista vazia
+  // ✅ CORREÇÃO CRÍTICA: Inicializar com missões padrão IMEDIATAMENTE
   MissionNotifier() : super(Constants.defaultMissions) {
-    print('✅ MissionProvider: ${state.length} missões inicializadas'); // Debug
+    _initializeMissions();
+    print(
+        '✅ MissionProvider inicializado com ${state.length} missões'); // Debug
+  }
+
+  // ✅ CORREÇÃO: Método de inicialização garantindo que missões estejam sempre presentes
+  void _initializeMissions() {
+    if (state.isEmpty) {
+      state = Constants.defaultMissions;
+      print('✅ Missões carregadas: ${state.length}'); // Debug
+    }
+
+    // ✅ Debug: Mostrar todas as missões carregadas
+    for (int i = 0; i < state.length; i++) {
+      final mission = state[i];
+      print(
+          '✅ Missão ${i + 1}: ${mission.title} (${mission.progress}/${mission.max})');
+    }
   }
 
   void setMissions(List<MissionModel> missions) {
     state = missions;
-    print('✅ MissionProvider: ${state.length} missões definidas'); // Debug
+    print(
+        '✅ MissionProvider: ${state.length} missões definidas manualmente'); // Debug
   }
 
-  // ✅ CORREÇÃO 2: Melhorar lógica de atualização de progresso
+  // ✅ CORREÇÃO: Método robusto de atualização de progresso
   void updateMissionProgress(int missionId, int progress) {
     bool missionFound = false;
+
     state = state.map((mission) {
       if (mission.id == missionId) {
         missionFound = true;
         final newProgress = (mission.progress + progress).clamp(0, mission.max);
+
         print(
-            '✅ Missão ${mission.title}: ${mission.progress} → $newProgress'); // Debug
+            '✅ Missão ${mission.title}: ${mission.progress} → $newProgress/${mission.max}'); // Debug
+
+        // ✅ Verificar se missão foi completada
+        if (newProgress >= mission.max && mission.progress < mission.max) {
+          print(
+              '🎉 MISSÃO COMPLETADA: ${mission.title} - Recompensa: ${mission.reward} moedas');
+
+          // TODO: Adicionar recompensa automaticamente ao usuário
+          // final userNotifier = ref.read(userProvider.notifier);
+          // final user = ref.read(userProvider);
+          // if (user != null) {
+          //   userNotifier.updateCoins(user.coins + mission.reward);
+          // }
+        }
+
         return mission.copyWith(progress: newProgress);
       }
       return mission;
     }).toList();
 
     if (!missionFound) {
-      print('⚠️ Missão ID $missionId não encontrada');
+      print('⚠️ ERRO: Missão ID $missionId não encontrada!');
+      print(
+          '📋 Missões disponíveis: ${state.map((m) => '${m.id}: ${m.title}').join(', ')}');
     }
   }
 
-  // ✅ CORREÇÃO 3: Métodos utilitários para filtrar missões
+  // ✅ CORREÇÃO: Métodos utilitários melhorados
   List<MissionModel> getCompletedMissions() {
     final completed =
         state.where((mission) => mission.progress >= mission.max).toList();
@@ -54,40 +90,81 @@ class MissionNotifier extends StateNotifier<List<MissionModel>> {
     return active;
   }
 
-  // ✅ CORREÇÃO 4: Método para resetar missões (útil para testes)
+  // ✅ CORREÇÃO: Método para resetar missões (útil para debug/testes)
   void resetMissions() {
-    state = Constants.defaultMissions;
-    print('✅ Missões resetadas: ${state.length} missões'); // Debug
+    state = Constants.defaultMissions
+        .map((mission) => mission.copyWith(progress: 0))
+        .toList();
+    print(
+        '✅ Missões resetadas: ${state.length} missões com progresso 0'); // Debug
   }
 
-  // ✅ CORREÇÃO 5: Completar missão automaticamente quando atingir max
+  // ✅ CORREÇÃO: Completar missão forçadamente (para testes)
   void completeMission(int missionId) {
     state = state.map((mission) {
       if (mission.id == missionId) {
-        print('✅ Missão "${mission.title}" completa!'); // Debug
+        print('✅ Forçando conclusão da missão: "${mission.title}"'); // Debug
         return mission.copyWith(progress: mission.max);
       }
       return mission;
     }).toList();
   }
 
-  // ✅ CORREÇÃO 6: Verificar se missão específica está completa
+  // ✅ CORREÇÃO: Verificações de estado
   bool isMissionComplete(int missionId) {
     final mission = state.firstWhere(
       (m) => m.id == missionId,
       orElse: () => MissionModel(
           id: 0, title: '', desc: '', reward: 0, progress: 0, max: 1),
     );
-    return mission.progress >= mission.max;
+    final isComplete = mission.progress >= mission.max;
+    print(
+        '🔍 Missão $missionId completa: $isComplete (${mission.progress}/${mission.max})'); // Debug
+    return isComplete;
   }
 
-  // ✅ CORREÇÃO 7: Obter progresso percentual
   double getMissionProgress(int missionId) {
     final mission = state.firstWhere(
       (m) => m.id == missionId,
       orElse: () => MissionModel(
           id: 0, title: '', desc: '', reward: 0, progress: 0, max: 1),
     );
-    return mission.max > 0 ? (mission.progress / mission.max) : 0.0;
+    final progress = mission.max > 0 ? (mission.progress / mission.max) : 0.0;
+    print(
+        '📊 Progresso missão $missionId: ${(progress * 100).toStringAsFixed(1)}%'); // Debug
+    return progress;
+  }
+
+  // ✅ NOVO: Método para debug completo
+  void debugMissionState() {
+    print('🔍 === DEBUG MISSION STATE ===');
+    print('📊 Total de missões: ${state.length}');
+    print('✅ Missões completas: ${getCompletedMissions().length}');
+    print('🔄 Missões ativas: ${getActiveMissions().length}');
+
+    for (final mission in state) {
+      final percentage = mission.max > 0
+          ? (mission.progress / mission.max * 100).toStringAsFixed(1)
+          : '0.0';
+      final status =
+          mission.progress >= mission.max ? '✅ COMPLETA' : '🔄 ATIVA';
+      print(
+          '   ${mission.id}. ${mission.title}: ${mission.progress}/${mission.max} ($percentage%) - $status');
+    }
+    print('🔍 === FIM DEBUG ===');
+  }
+
+  // ✅ NOVO: Forçar reload das missões (para casos extremos)
+  void forceReloadMissions() {
+    final backup = List<MissionModel>.from(state);
+    state = [];
+    state = Constants.defaultMissions;
+    print('🔄 Missões recarregadas forçadamente: ${state.length} missões');
+
+    // Verificar se realmente carregou
+    if (state.isEmpty) {
+      print('❌ ERRO CRÍTICO: Missões ainda vazias após reload!');
+      state = backup; // Restaurar backup
+    }
   }
 }

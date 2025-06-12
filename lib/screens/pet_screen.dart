@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:petverse/providers/app_provider.dart';
 import 'package:petverse/providers/pet_provider.dart';
 import 'package:petverse/providers/theme_provider.dart';
+import 'package:petverse/providers/user_provider.dart';
 import 'package:petverse/widgets/pet_circle.dart';
 
 class PetScreen extends ConsumerWidget {
