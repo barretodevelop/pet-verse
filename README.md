@@ -623,262 +623,570 @@ vamos trbalhar com paradas entao a cada 10 artefetos , solicite a continuacao , 
 se detctar que algum fluxo possa ser melhorado ou incrementado com alguma inovação questionar a mudanca para aprovação.    
 
 
+# 🚨 SECURITY AUDIT - Operações Inseguras Identificadas
+
+## OPERAÇÕES CRÍTICAS INSEGURAS:
+
+### 1. lib/services/firestore_service.dart - updateUser()
+❌ PROBLEMA:
+  - Qualquer usuário pode alterar coins/gems de qualquer outro
+  - Sem validação server-side
+  - Operação direta: updateUser(userId, {'coins': newAmount})
+
+### 2. lib/providers/user_provider.dart - updateCoins/updateGems
+❌ PROBLEMA:
+  - Cliente controla valores de economia
+  - Sem verificação de transação válida
+  - Possível exploitar para gemas/coins infinitas
+
+### 3. lib/services/firestore_service.dart - createPet/updatePet
+❌ PROBLEMA:
+  - Usuário pode criar pets para outros usuários
+  - Sem validação de ownership
+  - Stats de pets podem ser manipulados
+
+### 4. Inventory Operations
+❌ PROBLEMA:
+  - addUserInventoryItem() sem verificação de compra
+  - removeUserInventoryItem() sem validação de posse
+  - Usuário pode adicionar itens sem pagar
+
+### 5. Mission Progress
+❌ PROBLEMA:
+  - updateMissionProgress() pode ser chamado diretamente
+  - Sem validação server-side de progresso real
+  - Possible exploits para recompensas
+
+## FIRESTORE COLLECTIONS SEM RULES:
+- /users/{userId} - Completamente aberta
+- /pets/{petId} - Sem ownership validation  
+- /users/{userId}/inventory/{itemId} - Sem protection
+- /feed/{postId} - Qualquer um pode postar
+- /chats/{messageId} - Sem validation de pet ownership
+
+## PRÓXIMAS AÇÕES:
+1. Implementar Firestore Security Rules
+2. Criar server-side validation functions
+3. Refactor client code para usar secure operations
+4. Implementar transaction-based operations
+
+
+🚀 Plano de Correções PetCare - Roadmap Detalhado
+📅 CRONOGRAMA GERAL (16 semanas)
+┌─ FASE 1: P0 CRÍTICO (6 semanas) ─┐
+│  Week 1-2: Setup & Security      │
+│  Week 3-4: Core Features Fix     │  
+│  Week 5-6: Testing & Validation  │
+└───────────────────────────────────┘
+
+┌─ FASE 2: P1 QUALIDADE (4 semanas) ─┐
+│  Week 7-8: Error Handling & Performance │
+│  Week 9-10: UX & Offline Support       │
+└─────────────────────────────────────────┘
+
+┌─ FASE 3: P2 MELHORIAS (4 semanas) ─┐
+│  Week 11-12: Analytics & Monitoring │
+│  Week 13-14: Performance & Polish   │
+└──────────────────────────────────────┘
+
+┌─ FASE 4: DEPLOY (2 semanas) ─┐
+│  Week 15-16: Production Ready │
+└────────────────────────────────┘
+
+🔴 FASE 1: P0 - CRÍTICO (6 semanas)
+📋 Sprint 1: Security & Infrastructure (Semanas 1-2)
+Semana 1: Firestore Security
+yamlTarefas:
+  1.1: Implementar Firestore Security Rules
+    - Arquivo: firestore.rules
+    - Rules para users, pets, inventory, chats
+    - Validação server-side de operações críticas
+    - Tempo: 3 dias
+    
+  1.2: Audit de Security Issues
+    - Revisar todas operações do FirestoreService
+    - Implementar validações de ownership
+    - Remover operações inseguras
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Usuário só pode editar seus próprios dados
+  ✅ Operações de coins/gems validadas server-side
+  ✅ Tests de security passando
+Semana 2: Background Service
+yamlTarefas:
+  2.1: Implementar Background Service Real
+    - Arquivo: lib/services/background_service.dart
+    - WorkManager para Android / Background App Refresh iOS
+    - Verificação de pets em risco a cada 4h
+    - Tempo: 4 dias
+    
+  2.2: Push Notifications Setup
+    - FCM configuration
+    - Notificações de pet em risco (24h, 12h, 6h antes da morte)
+    - Notificações de match encontrado
+    - Tempo: 1 dia
+
+Critério de Aceitação:
+  ✅ App verifica pets mesmo fechado
+  ✅ Usuário recebe notificações de alerta
+  ✅ Sistema funciona offline-to-online
+📋 Sprint 2: Core Features Fix (Semanas 3-4)
+Semana 3: IA Service Real
+yamlTarefas:
+  3.1: Implementar IA Integration Real
+    - Integração com Stability AI ou OpenAI DALL-E
+    - Sistema de fallback se API falhar
+    - Refund automático se geração falhar
+    - Tempo: 3 dias
+    
+  3.2: Pet Generation Pipeline
+    - Prompt processing + validation
+    - Image upload para Firebase Storage
+    - Metadata generation (name, stats)
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Gera imagem real baseada no prompt
+  ✅ Refund automático em caso de falha
+  ✅ Pets únicos têm imagens personalizadas
+Semana 4: Matching System Real
+yamlTarefas:
+  4.1: Queue de Matching Real
+    - Coleção 'pending_adoptions' no Firestore
+    - Algoritmo de matching por preferências
+    - Sistema de timeout (24h)
+    - Tempo: 3 dias
+    
+  4.2: Real User Matching
+    - Matching entre usuários reais
+    - Sistema de notificação de match
+    - Fallback para bot após 24h
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Usuários reais fazem match entre si
+  ✅ Sistema transparente sobre bots vs humanos
+  ✅ Queue funciona corretamente
+📋 Sprint 3: Testing & Validation (Semanas 5-6)
+Semana 5: Testes Críticos
+yamlTarefas:
+  5.1: Unit Tests para Core Services
+    - PetCareService tests (morte, XP, stats)
+    - AuthService tests (login flow)
+    - FirestoreService tests (CRUD operations)
+    - Tempo: 3 dias
+    
+  5.2: Widget Tests para Telas Principais
+    - PetScreen tests
+    - ShopScreen tests  
+    - MissionsScreen tests
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ 70%+ code coverage em services críticos
+  ✅ Todos os happy paths testados
+  ✅ CI pipeline executando testes
+Semana 6: Integration Tests
+yamlTarefas:
+  6.1: E2E Tests para Fluxos Críticos
+    - Login → Adotar Pet → Cuidar → Level Up
+    - Comprar Item → Usar Item → Verificar Stats
+    - Pet Morte → Verificar Penalidade
+    - Tempo: 3 dias
+    
+  6.2: Performance Tests
+    - Memory leak detection
+    - Loading time benchmarks
+    - Database query optimization
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Fluxos principais funcionam end-to-end
+  ✅ Sem memory leaks detectados
+  ✅ Performance dentro de benchmarks
+
+🟡 FASE 2: P1 - QUALIDADE (4 semanas)
+📋 Sprint 4: Error Handling & Performance (Semanas 7-8)
+Semana 7: Error Handling Robusto
+yamlTarefas:
+  7.1: Global Error Handler
+    - Arquivo: lib/core/error_handler.dart
+    - Try-catch com retry logic
+    - User-friendly error messages
+    - Tempo: 2 dias
+    
+  7.2: Network Error Recovery
+    - Retry mechanism para network calls
+    - Offline queue para operações
+    - Connection status monitoring
+    - Tempo: 3 dias
+
+Critério de Aceitação:
+  ✅ Errors são handled gracefully
+  ✅ Retry automático para operações críticas
+  ✅ UX clara sobre status de conexão
+Semana 8: Memory & Performance Fixes
+yamlTarefas:
+  8.1: Provider Memory Leak Fixes
+    - Audit todos os StreamSubscriptions
+    - Implementar proper disposal
+    - Memory profiling
+    - Tempo: 3 dias
+    
+  8.2: Performance Optimization
+    - Lazy loading para listas grandes
+    - Image caching optimization
+    - Database query optimization
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Zero memory leaks detectados
+  ✅ App startup < 3 segundos
+  ✅ Smooth scrolling em listas grandes
+📋 Sprint 5: UX & Offline Support (Semanas 9-10)
+Semana 9: Offline Support
+yamlTarefas:
+  9.1: Offline-First Architecture
+    - Local SQLite cache
+    - Sync queue para operações offline
+    - Conflict resolution strategy
+    - Tempo: 4 dias
+    
+  9.2: Offline UX
+    - Connection status indicator
+    - Offline mode feedback
+    - Sync progress indication
+    - Tempo: 1 dia
+
+Critério de Aceitação:
+  ✅ App funciona totalmente offline
+  ✅ Sync automático quando online
+  ✅ Conflicts resolvidos corretamente
+Semana 10: Acessibilidade
+yamlTarefas:
+  10.1: Semantic Labels
+    - Todas imagens com semanticLabel
+    - Buttons com semantic meanings
+    - Navigation accessibility
+    - Tempo: 2 dias
+    
+  10.2: Contrast & High Contrast Support
+    - Verificar contrast ratios (WCAG AA)
+    - High contrast theme variant
+    - Font scaling support
+    - Tempo: 3 dias
+
+Critério de Aceitação:
+  ✅ Screen reader navigation funcional
+  ✅ WCAG AA compliance
+  ✅ High contrast mode disponível
+
+🟢 FASE 3: P2 - MELHORIAS (4 semanas)
+📋 Sprint 6: Analytics & Monitoring (Semanas 11-12)
+Semana 11: Crash Reporting & Logging
+yamlTarefas:
+  11.1: Firebase Crashlytics Integration
+    - Setup Crashlytics
+    - Custom crash logging
+    - Performance monitoring
+    - Tempo: 2 dias
+    
+  11.2: Analytics Implementation
+    - Firebase Analytics events
+    - User behavior tracking
+    - Business metrics tracking
+    - Tempo: 3 dias
+
+Critério de Aceitação:
+  ✅ Crashes são automaticamente reportados
+  ✅ Key metrics sendo tracked
+  ✅ Performance metrics disponíveis
+Semana 12: Advanced Logging
+yamlTarefas:
+  12.1: Structured Logging
+    - Logger service com levels
+    - Remote logging para debug
+    - Log aggregation
+    - Tempo: 2 dias
+    
+  12.2: Debug Tools
+    - Debug menu em development
+    - Performance overlay
+    - State inspection tools
+    - Tempo: 3 dias
+
+Critério de Aceitação:
+  ✅ Logs estruturados e searchable
+  ✅ Debug tools para desenvolvimento
+  ✅ Production debugging capability
+📋 Sprint 7: Polish & Optimization (Semanas 13-14)
+Semana 13: Responsividade Completa
+yamlTarefas:
+  13.1: Responsive Layout System
+    - Breakpoints para tablet/desktop
+    - Adaptive font scaling
+    - Orientation support
+    - Tempo: 3 dias
+    
+  13.2: Advanced Animations
+    - Hero animations
+    - Shared element transitions
+    - Micro-interactions polish
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ Layout adapta para todas telas
+  ✅ Animations polished e smooth
+  ✅ Orientation changes handled
+Semana 14: IAP Implementation
+yamlTarefas:
+  14.1: In-App Purchases Setup
+    - Google Play Billing / App Store Connect
+    - Purchase flow implementation
+    - Receipt validation
+    - Tempo: 4 dias
+    
+  14.2: Monetization Features
+    - Gem purchase packages
+    - Subscription model (optional)
+    - Purchase restoration
+    - Tempo: 1 dia
+
+Critério de Aceitação:
+  ✅ Usuários podem comprar gemas
+  ✅ Purchases são validados server-side
+  ✅ Purchase restoration funciona
+
+🚀 FASE 4: PRODUÇÃO (2 semanas)
+📋 Sprint 8: Production Ready (Semanas 15-16)
+Semana 15: Production Setup
+yamlTarefas:
+  15.1: Environment Configuration
+    - Production Firebase project
+    - Release build optimization
+    - Security audit final
+    - Tempo: 2 dias
+    
+  15.2: App Store Preparation
+    - App icons todas as resoluções
+    - Screenshots e metadata
+    - Privacy policy & terms
+    - Tempo: 2 dias
+    
+  15.3: CI/CD Pipeline
+    - GitHub Actions / GitLab CI
+    - Automated testing
+    - Release automation
+    - Tempo: 1 dia
+
+Critério de Aceitação:
+  ✅ Build release sem warnings
+  ✅ All app store requirements met
+  ✅ CI/CD pipeline funcionando
+Semana 16: Launch Preparation
+yamlTarefas:
+  16.1: Final Testing
+    - QA testing em devices reais
+    - Performance testing final
+    - Security penetration testing
+    - Tempo: 3 dias
+    
+  16.2: Soft Launch Preparation
+    - Monitoring dashboards
+    - Support documentation
+    - Rollback procedures
+    - Tempo: 2 dias
+
+Critério de Aceitação:
+  ✅ QA signoff completo
+  ✅ Monitoring setup
+  ✅ Ready for app store submission
+
+📊 RECURSOS NECESSÁRIOS
+👥 Equipe Recomendada
+
+1 Flutter Developer Senior (Lead)
+1 Flutter Developer Mid (Support)
+1 Backend/Firebase Specialist (Part-time)
+1 QA Engineer (Weeks 5-6, 15-16)
+
+🛠️ Ferramentas Necessárias
+
+Testing: flutter_test, integration_test, mockito
+Performance: flutter_driver, firebase_performance
+Monitoring: firebase_crashlytics, firebase_analytics
+Background: workmanager, flutter_background_service
+Offline: sqflite, connectivity_plus
+IAP: in_app_purchase
+
+💰 Estimativa de Custos
+
+Development: 16 semanas × 2 devs = 32 person-weeks
+Firebase: ~$50/mês (desenvolvimento + teste)
+AI API: ~$100/mês (teste de integração)
+App Store: $99 (iOS) + $25 (Google Play)
+Testing Devices: ~$1000 (Android + iOS devices)
+
+
+🎯 MARCOS CRÍTICOS
+🚩 Milestone 1: Security & Background (Semana 2)
+Critério: App seguro + background service funcionando
+Validação: Pets não morrem inesperadamente, dados protegidos
+🚩 Milestone 2: Real Features (Semana 4)
+Critério: IA real + matching real implementados
+Validação: Features não são mais simulações
+🚩 Milestone 3: Quality Gate (Semana 6)
+Critério: Testes passando + performance aceitável
+Validação: Ready para testing interno
+🚩 Milestone 4: Production Ready (Semana 16)
+Critério: App store submission ready
+Validação: All requirements met
+
+⚠️ RISCOS E MITIGAÇÕES
+🔴 RISCOS ALTOS
+
+IA API Integration Complexity
+
+Risco: APIs podem ser complexas ou caras
+Mitigação: Testar APIs na semana 1, ter fallback plan
+
+
+Background Service iOS Limitations
+
+Risco: iOS restringe background processing
+Mitigação: Usar push notifications como backup
+
+
+Performance Degradation
+
+Risco: Correções podem afetar performance
+Mitigação: Benchmark em cada sprint
 
 
 
-🐛 DEBUG PetCare Flutter
+🟡 RISCOS MÉDIOS
 
-PROBLEMAS ATUAIS:
-❌ Adoção slots não funcionam
-❌ Botão IA não navega  
-❌ Missões não aparecem
-❌ Slots bloqueados sem dialog
-⚠️ Overflow na loja
-⚠️ CircleAvatar quebrado
+Firebase Costs Escalation
 
-ROTEIRO EXECUTADO:
-[cole resultados dos testes acima]
+Mitigação: Monitoring de usage, optimization
 
-PRIORIDADE: 
-1. Sistema adoção
-2. Missões 
-3. Navegação IA
-4. Dialogs confirmação
 
-ARQUIVOS PRINCIPAIS:
-- lib/widgets/pet_slots.dart
-- lib/providers/mission_provider.dart  
-- lib/screens/pet_screen.dart
-- lib/config/app_router.dart
+App Store Approval Delays
+
+Mitigação: Submit 1 semana antes do deadline
 
 
 
 
+📋 PRÓXIMOS PASSOS IMEDIATOS
+🚀 Para Começar HOJE:
+1. Setup do Ambiente (Dia 1)
+bash# Criar branch para correções
+git checkout -b feature/p0-critical-fixes
+
+# Setup Firebase Security Rules
+mkdir firebase
+touch firebase/firestore.rules
+2. Audit de Security (Dia 1-2)
+yamlChecklist Imediato:
+  □ Revisar lib/services/firestore_service.dart
+  □ Identificar operações inseguras (updateUser, etc)
+  □ Documentar todas as operations que precisam validation
+  □ Criar lista de Firestore rules necessárias
+3. Background Service Research (Dia 2-3)
+yamlResearch Tasks:
+  □ Estudar workmanager package
+  □ Testar background processing no Android/iOS
+  □ Documentar limitações de cada platform
+  □ Criar POC de notification scheduling
+4. Team Setup (Dia 3-5)
+yamlPreparation:
+  □ Definir team roles e responsibilities
+  □ Setup development environment padrão
+  □ Criar board do projeto (Jira/Trello)
+  □ Schedule daily standups
+
+📈 CRITÉRIOS DE SUCESSO
+🎯 Objetivos Mensuráveis
+Fim da Fase 1 (P0)
+
+✅ Zero features simuladas/fake
+✅ Background service 99% uptime
+✅ Security audit clean
+✅ 70%+ test coverage
+
+Fim da Fase 2 (P1)
+
+✅ <1% crash rate
+✅ App funciona 100% offline
+✅ WCAG AA compliance
+✅ <3s startup time
+
+Fim da Fase 3 (P2)
+
+✅ Full analytics implementation
+✅ IAP working
+✅ Responsive em todos devices
+✅ Production monitoring ativo
+
+Production Launch
+
+✅ App store approval
+✅ <5% churn rate primeira semana
+✅ >4.0 rating nas stores
+✅ Zero security incidents
 
 
-🐛 ROTEIRO DE DEBUG - PetCare Flutter
-📋 PROBLEMAS IDENTIFICADOS
-🚨 CRÍTICOS (Impedem uso básico)
+🔄 PROCESSO DE EXECUÇÃO
+📅 Daily Routine
 
-❌ Slots de adoção não funcionam (onTap sem ação)
-❌ Botão IA não navega para tela de geração
-❌ Missões não carregam (lista vazia)
-❌ Slots bloqueados sem dialog de compra de gemas
+09:00: Daily standup (15min)
+09:15-12:00: Deep work
+14:00-17:00: Development + code review
+17:00: Progress update no board
 
-⚠️ IMPORTANTES (UX prejudicada)
+📊 Weekly Review
 
-⚠️ Overflow na loja (layout quebrado)
-⚠️ CircleAvatar quebrado (imagens não carregam)
+Sexta 16:00: Sprint review
+Milestone check: Red/Green status
+Risk assessment: Novos riscos identificados
+Next week planning: Ajustes no roadmap
+
+🚨 Escalation Process
+
+Blocker > 24h: Escalate para lead
+Milestone at risk: Emergency planning session
+Major technical issue: All-hands technical review
 
 
-🔍 ROTEIRO DE TESTE SISTEMÁTICO
-TESTE 1: Sistema de Adoção
-1. Abrir app
-2. Verificar slots horizontais no topo
-3. Clicar em slot vazio (ícone +)
-   ❌ ESPERADO: Abrir BottomSheet de adoção
-   ❌ ATUAL: Nada acontece
-4. Verificar console para erros
-TESTE 2: Botão IA
-1. Na tela Pet (centro)
-2. Clicar "Gerar Pet Único com IA"
-   ❌ ESPERADO: Navegar para AIGenerationScreen
-   ❌ ATUAL: Nada acontece
-3. Verificar se rota existe
-TESTE 3: Sistema de Missões
-1. Ir para tab "Missões"
-2. Verificar se lista aparece
-   ❌ ESPERADO: 6 missões com progresso
-   ❌ ATUAL: Lista vazia
-3. Verificar provider de missões
-TESTE 4: Slots Bloqueados
-1. Verificar slot com ícone 🔒
-2. Clicar no slot bloqueado
-   ❌ ESPERADO: Dialog "Desbloquear slot por 5 gemas"
-   ❌ ATUAL: Nada acontece
-TESTE 5: Loja (Overflow)
-1. Ir para tab "Loja"
-2. Verificar layout dos itens
-   ⚠️ PROBLEMA: Texto cortado, overflow
-TESTE 6: Avatares
-1. Verificar avatar do usuário no header
-2. Verificar avatares em pets colaborativos
-   ⚠️ PROBLEMA: Imagens quebradas/não carregam
+💡 RECOMENDAÇÃO FINAL
+COMEÇAR IMEDIATAMENTE com a Fase 1 - Sprint 1 (Security & Infrastructure).
+Ordem de execução é crítica - não pular etapas pois existe dependência entre as correções.
+Success metrics devem ser trackados semanalmente para garantir progresso mensurável.
+Este plano transforma o projeto de "5.4/10" para "produção ready" em 16 semanas com risco controlado.
 
-🔧 DIAGNÓSTICO RÁPIDO
-Executar estes comandos:
-dart// 1. Verificar providers inicializados
-print('User: ${ref.read(userProvider)}');
-print('Missions: ${ref.read(missionProvider)}');
-print('Pets: ${ref.read(petProvider)}');
+ ESTRUTURA DO PLANO: 16 SEMANAS
+🔴 FASE 1: P0 CRÍTICO (6 semanas)
+Bloqueadores que impedem produção
 
-// 2. Verificar rotas registradas
-print('Routes: ${GoRouter.of(context).routeInformationParser}');
+Semanas 1-2: Security + Background Service real
+Semanas 3-4: IA real + Matching real (eliminar features fake)
+Semanas 5-6: Testes críticos + validação
 
-// 3. Verificar callbacks de onTap
-print('PetSlots onTap callback: ${widget.onSlotClick}');
+🟡 FASE 2: P1 QUALIDADE (4 semanas)
+Problemas que afetam estabilidade
 
-🛠️ CORREÇÕES PRINCIPAIS
-CORREÇÃO 1: PetSlots onTap
-dart// lib/widgets/pet_slots.dart - Linha ~60
-GestureDetector(
-  onTap: () {
-    if (pet != null) {
-      ref.read(appProvider.notifier).setActivePetIndex(index);
-    } else if (!isLocked) {
-      // ❌ PROBLEMA: onSlotClick pode estar null
-      onSlotClick?.call(); // Adicionar null safety
-    } else {
-      // ❌ PROBLEMA: Falta implementação para slot bloqueado
-      _showUnlockDialog(context, ref);
-    }
-  },
-)
+Semanas 7-8: Error handling + Memory leaks
+Semanas 9-10: Offline support + Acessibilidade
 
-// Adicionar método:
-void _showUnlockDialog(BuildContext context, WidgetRef ref) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Desbloquear Slot'),
-      content: Text('Deseja desbloquear por 5 gemas?'),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancelar')),
-        ElevatedButton(onPressed: () {
-          // Implementar lógica de compra
-          Navigator.pop(context);
-        }, child: Text('Comprar')),
-      ],
-    ),
-  );
-}
-CORREÇÃO 2: Navegação IA
-dart// lib/screens/pet_screen.dart - Botão IA
-ElevatedButton.icon(
-  onPressed: () {
-    // ❌ PROBLEMA: Falta implementação de navegação
-    context.push('/ai-generation'); // Adicionar navegação
-  },
-  icon: const Icon(Icons.auto_awesome),
-  label: const Text('Gerar Pet Único com IA'),
-)
-CORREÇÃO 3: Inicialização Missões
-dart// lib/providers/mission_provider.dart
-class MissionNotifier extends StateNotifier<List<MissionModel>> {
-  MissionNotifier() : super([]) {
-    _initializeMissions(); // ❌ FALTANDO: Inicialização
-  }
+🟢 FASE 3: P2 MELHORIAS (4 semanas)
+Features que melhoram UX
 
-  void _initializeMissions() {
-    state = Constants.defaultMissions;
-  }
-}
-CORREÇÃO 4: HomeScreen - onSlotClick
-dart// lib/screens/home_screen.dart
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _showAdoption = false; // ❌ FALTANDO: Estado para controlar modal
+Semanas 11-12: Analytics + Monitoring
+Semanas 13-14: Responsividade + IAP
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          PetSlots(onSlotClick: () => setState(() => _showAdoption = true)), // ❌ FALTANDO: Callback
-          Expanded(child: _screens[_currentIndex]),
-        ],
-      ),
-      // ❌ FALTANDO: Modal de adoção
-      body: Stack(
-        children: [
-          // ... conteúdo atual
-          AdoptionFlow(
-            show: _showAdoption,
-            onClose: () => setState(() => _showAdoption = false),
-          ),
-        ],
-      ),
-    );
-  }
-}
+🚀 FASE 4: PRODUÇÃO (2 semanas)
+Preparação final
 
-📁 ARQUIVOS PARA VERIFICAR/CORRIGIR
-PRIORIDADE 1 (Críticos):
-lib/screens/home_screen.dart - Adicionar AdoptionFlow
-lib/widgets/pet_slots.dart - Corrigir onTap + dialog
-lib/providers/mission_provider.dart - Inicializar missões
-lib/config/app_router.dart - Verificar rotas IA
-PRIORIDADE 2 (Importantes):
-lib/screens/shop_screen.dart - Corrigir overflow
-lib/widgets/pet_circle.dart - Corrigir CircleAvatar
-lib/screens/pet_screen.dart - Adicionar navegação IA
-
-🧪 SCRIPT DE TESTE COMPLETO
-dart// test_script.dart - Executar no projeto
-import 'package:flutter/material.dart';
-
-void debugApp(WidgetRef ref, BuildContext context) {
-  print('=== DEBUG PETCARE ===');
-  
-  // Teste 1: Providers
-  final user = ref.read(userProvider);
-  final missions = ref.read(missionProvider);
-  final pets = ref.read(petProvider);
-  
-  print('User: ${user?.username ?? "NULL"}');
-  print('Missions count: ${missions.length}');
-  print('Pets count: ${pets.length}');
-  
-  // Teste 2: Rotas
-  try {
-    context.push('/ai-generation');
-    print('✅ Rota IA OK');
-  } catch (e) {
-    print('❌ Rota IA ERROR: $e');
-  }
-  
-  // Teste 3: Constantes
-  print('Default missions: ${Constants.defaultMissions.length}');
-  print('Shop items: ${Constants.shopItems.length}');
-  
-  print('=== FIM DEBUG ===');
-}
-
-✅ CHECKLIST DE CORREÇÕES
-Para executar na próxima conversa:
-□ Corrigir PetSlots onTap (adoção + slot bloqueado)
-□ Adicionar AdoptionFlow ao HomeScreen  
-□ Inicializar missões no MissionProvider
-□ Corrigir navegação para tela IA
-□ Verificar/corrigir rotas no app_router.dart
-□ Corrigir overflow na loja
-□ Corrigir CircleAvatar quebrado
-□ Testar cada funcionalidade individualmente
-□ Verificar console para erros
-□ Validar navegação entre telas
-
-🎯 COMANDO PARA PRÓXIMA CONVERSA
-Cole exatamente isto:
-🐛 DEBUG PetCare Flutter
-
-PROBLEMAS ATUAIS:
-❌ Adoção slots não funcionam
-❌ Botão IA não navega  
-❌ Missões não aparecem
-❌ Slots bloqueados sem dialog
-⚠️ Overflow na loja
-⚠️ CircleAvatar quebrado
-
-ROTEIRO EXECUTADO:
-[cole resultados dos testes acima]
-
-PRIORIDADE: 
-1. Sistema adoção
-2. Missões 
-3. Navegação IA
-4. Dialogs confirmação
-
-ARQUIVOS PRINCIPAIS:
-- lib/widgets/pet_slots.dart
-- lib/providers/mission_provider.dart  
-- lib/screens/pet_screen.dart
-- lib/config/app_router.dart
+Semanas 15-16: App store + Launch prep
