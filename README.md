@@ -621,3 +621,33 @@ antes de iniciar envie me uma script powershell criando toda a estrutura de past
 toda classe devera ter o nome da classe comentado no inicio para facilitar identifcao da mesma e em que pasta devo colocar
 vamos trbalhar com paradas entao a cada 10 artefetos , solicite a continuacao , nao e necessario feedbacks , parciais , somente no final da migraçã desejo receber o feedbacks e sugestao de melhorias 
 se detctar que algum fluxo possa ser melhorado ou incrementado com alguma inovação questionar a mudanca para aprovação.    
+
+
+
+
+
+
+🐛 DEBUG PetCare Flutter
+
+PROBLEMAS ATUAIS:
+❌ Adoção slots não funcionam
+❌ Botão IA não navega  
+❌ Missões não aparecem
+❌ Slots bloqueados sem dialog
+⚠️ Overflow na loja
+⚠️ CircleAvatar quebrado
+
+ROTEIRO EXECUTADO:
+[cole resultados dos testes acima]
+
+PRIORIDADE: 
+1. Sistema adoção
+2. Missões 
+3. Navegação IA
+4. Dialogs confirmação
+
+ARQUIVOS PRINCIPAIS:
+- lib/widgets/pet_slots.dart
+- lib/providers/mission_provider.dart  
+- lib/screens/pet_screen.dart
+- lib/config/app_router.dart
