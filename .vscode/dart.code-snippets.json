@@ -1,46 +1,46 @@
-{
-  "Freezed Class": {
-    "prefix": "freezed",
-    "body": [
-      "import 'package:freezed_annotation/freezed_annotation.dart';",
-      "",
-      "part '${TM_FILENAME_BASE}.freezed.dart';",
-      "part '${TM_FILENAME_BASE}.g.dart';",
-      "",
-      "@freezed",
-      "class ${1:ClassName} with _$${1:ClassName} {",
-      "  const factory ${1:ClassName}({",
-      "    ${2}",
-      "  }) = _${1:ClassName};",
-      "",
-      "  factory ${1:ClassName}.fromJson(Map<String, dynamic> json) =>",
-      "      _$${1:ClassName}FromJson(json);",
-      "}"
-    ]
-  },
-  "Riverpod Provider": {
-    "prefix": "riverpod",
-    "body": [
-      "import 'package:riverpod_annotation/riverpod_annotation.dart';",
-      "",
-      "part '${TM_FILENAME_BASE}.g.dart';",
-      "",
-      "@riverpod",
-      "class ${1:ProviderName} extends _$${1:ProviderName} {",
-      "  @override",
-      "  ${2:FutureOr<void>} build() {",
-      "    ${3}",
-      "  }",
-      "}"
-    ]
-  },
-  "Riverpod Future Provider": {
-    "prefix": "riverpodFuture",
-    "body": [
-      "@riverpod",
-      "Future<${1:ReturnType}> ${2:providerName}(${2/(.*)/${1:/capitalize}/}Ref ref) async {",
-      "  ${3}",
-      "}"
-    ]
-  }
-}
+// {
+//   "Freezed Class": {
+//     "prefix": "freezed",
+//     "body": [
+//       "import 'package:freezed_annotation/freezed_annotation.dart';",
+//       "",
+//       "part '${TM_FILENAME_BASE}.freezed.dart';",
+//       "part '${TM_FILENAME_BASE}.g.dart';",
+//       "",
+//       "@freezed",
+//       "class ${1:ClassName} with _$${1:ClassName} {",
+//       "  const factory ${1:ClassName}({",
+//       "    ${2}",
+//       "  }) = _${1:ClassName};",
+//       "",
+//       "  factory ${1:ClassName}.fromJson(Map<String, dynamic> json) =>",
+//       "      _$${1:ClassName}FromJson(json);",
+//       "}"
+//     ]
+//   },
+//   "Riverpod Provider": {
+//     "prefix": "riverpod",
+//     "body": [
+//       "import 'package:riverpod_annotation/riverpod_annotation.dart';",
+//       "",
+//       "part '${TM_FILENAME_BASE}.g.dart';",
+//       "",
+//       "@riverpod",
+//       "class ${1:ProviderName} extends _$${1:ProviderName} {",
+//       "  @override",
+//       "  ${2:FutureOr<void>} build() {",
+//       "    ${3}",
+//       "  }",
+//       "}"
+//     ]
+//   },
+//   "Riverpod Future Provider": {
+//     "prefix": "riverpodFuture",
+//     "body": [
+//       "@riverpod",
+//       "Future<${1:ReturnType}> ${2:providerName}(${2/(.*)/${1:/capitalize}/}Ref ref) async {",
+//       "  ${3}",
+//       "}"
+//     ]
+//   }
+// }

@@ -1,47 +1,47 @@
-{
-  "dart.flutterSdkPath": null,
-  "dart.runPubGetOnPubspecChanges": true,
-  "[dart]": {
-    "editor.formatOnSave": true,
-    "editor.rulers": [
-      120
-    ]
-  },
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
-  },
-  "dart.flutterSdkPath": "flutter", // ou caminho absoluto se necessário
-  "dart.lineLength": 100,
-  "dart.enableSnippets": true,
-  "dart.formatOnSave": true,
-  "editor.formatOnSave": true,
-  "editor.formatOnType": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true
-  },
-  "editor.detectIndentation": false,
-  "editor.tabSize": 2,
-  "files.autoSave": "off",
-  "files.exclude": {
-    "**/.dart_tool": true,
-    "**/.idea": true,
-    "**/.vscode": false,
-    "**/build": true
-  },
-  "search.exclude": {
-    "**/build": true,
-    "**/.dart_tool": true
-  },
-  "dart.analysisExcludedFolders": [
-    "**/build",
-    "**/.dart_tool"
-  ],
-  "dart.analysisServerFolding": true,
-  "dart.showSdkWarnings": false,
-  "dart.closeClientsOnHotReload": true,
-  "terminal.integrated.defaultProfile.windows": "Command Prompt",
-  "workbench.iconTheme": "material-icon-theme",
-  "workbench.colorTheme": "Default Dark Modern",
-  "editor.bracketPairColorization.enabled": true,
-  "explorer.confirmDelete": false
-}
+// {
+//   "dart.flutterSdkPath": null,
+//   "dart.runPubGetOnPubspecChanges": true,
+//   "[dart]": {
+//     "editor.formatOnSave": true,
+//     "editor.rulers": [
+//       120
+//     ]
+//   },
+//   "editor.codeActionsOnSave": {
+//     "source.fixAll": "explicit"
+//   },
+//   "dart.flutterSdkPath": "flutter", // ou caminho absoluto se necessário
+//   "dart.lineLength": 100,
+//   "dart.enableSnippets": true,
+//   "dart.formatOnSave": true,
+//   "editor.formatOnSave": true,
+//   "editor.formatOnType": true,
+//   "editor.codeActionsOnSave": {
+//     "source.fixAll": true
+//   },
+//   "editor.detectIndentation": false,
+//   "editor.tabSize": 2,
+//   "files.autoSave": "off",
+//   "files.exclude": {
+//     "**/.dart_tool": true,
+//     "**/.idea": true,
+//     "**/.vscode": false,
+//     "**/build": true
+//   },
+//   "search.exclude": {
+//     "**/build": true,
+//     "**/.dart_tool": true
+//   },
+//   "dart.analysisExcludedFolders": [
+//     "**/build",
+//     "**/.dart_tool"
+//   ],
+//   "dart.analysisServerFolding": true,
+//   "dart.showSdkWarnings": false,
+//   "dart.closeClientsOnHotReload": true,
+//   "terminal.integrated.defaultProfile.windows": "Command Prompt",
+//   "workbench.iconTheme": "material-icon-theme",
+//   "workbench.colorTheme": "Default Dark Modern",
+//   "editor.bracketPairColorization.enabled": true,
+//   "explorer.confirmDelete": false
+// }

@@ -303,55 +303,321 @@ jogo precisa ter uma economia onde o usuario ganha coins para poder manter o cui
 
 
 
+ 🎯 OBJETIVO
+Migrar aplicação mobile PetCare de React para Flutter + Firebase com Google Sign-in, mantendo todas funcionalidades, design e UX. Gerar projeto Flutter completo e funcional.
+📋 ESPECIFICAÇÕES TÉCNICAS
+Stack Obrigatória:
+
+Flutter 3.16+ (Dart)
+Firebase Auth (Google Sign-in)
+Cloud Firestore (banco de dados)
+Firebase Storage (imagens)
+Provider/Riverpod (estado global)
+GoRouter (navegação)
+Animations (Lottie/Flutter built-in)
+
+
+Dependências Necessárias:
+yamldependencies:
+  flutter: sdk: flutter
+  firebase_core: latest
+  firebase_auth: latest
+  cloud_firestore: latest
+  firebase_storage: latest
+  google_sign_in: latest
+  provider: latest # ou riverpod
+  go_router: latest
+  shared_preferences: latest
+  http: latest
+  cached_network_image: latest
+  lottie: latest
+  animations: latest
+  shimmer: latest
+  flutter_local_notifications: latest
+🎮 FUNCIONALIDADES COMPLETAS
+1. AUTENTICAÇÃO
+
+Google Sign-in obrigatório
+Avatar automático do Google
+Persistência de sessão
+Logout funcional
+
+2. SISTEMA DE PETS
+
+3 Tipos: Solo (básicos), Colaborativo (especiais), Únicos (IA)
+Stats: felicidade, fome, energia, saúde (0-100)
+Níveis: XP/100 = próximo nível
+Sistema de morte: 5 dias sem cuidado = pet morre, usuário perde 50 XP
+Devolução: custa 3 gemas
+Slots: 2 iniciais + 1 a cada 5 níveis do usuário
+Desbloqueio: 5 gemas por slot
+
+3. PETS ÚNICOS COM IA
+
+Custo: 10 gemas
+Prompt do usuário → API de IA → imagem única
+Configuração API: URL + Key definidos pelo usuário
+Raridade: "único"
+Badge especial: ✨
+Missão específica: primeira geração
+
+4. COLABORAÇÃO
+
+Matching automático para pets colaborativos
+Usuários anônimos até pet nível 5
+Chat por pet colaborativo
+Revelação de identidade opcional após nível 5
+Avatares duplos no pet
+
+5. ECONOMIA
+
+Moedas: comprar pets solo e itens
+Gemas: slots, devolução, pets únicos
+Loja: 13 itens (comida, brinquedos, medicina, acessórios)
+Inventário: categorizado
+
+6. SISTEMA DE MISSÕES
+dartList<Mission> missions = [
+  Mission(id: 1, title: 'Alimentar 3 vezes', reward: 30, max: 3),
+  Mission(id: 2, title: 'Brincar 5 vezes', reward: 50, max: 5),
+  Mission(id: 3, title: 'Cuidar 10 vezes', reward: 40, max: 10),
+  Mission(id: 4, title: 'Usar 5 itens', reward: 60, max: 5),
+  Mission(id: 5, title: 'Gerar pet único', reward: 200, max: 1),
+  Mission(id: 6, title: 'Alcançar Nível 5', reward: 100, max: 5),
+];
+7. FEED SOCIAL
+
+Posts automáticos: adoções, mortes, níveis, colaborações, gerações IA
+Timeline com ícones temáticos
+Cores contextuais por tipo de evento
+
+🎨 DESIGN & UX OBRIGATÓRIOS
+Tema Dark/Light:
+dartThemeData lightTheme = ThemeData(
+  primarySwatch: Colors.purple,
+  scaffoldBackgroundColor: Color(0xFFF8FAFC),
+  // gradientes: purple-blue-teal
+);
+Navegação (5 tabs):
+
+Feed (substitui colaboradores)
+Missões
+Pet (centro, flutuante)
+Loja
+Dashboard
+
+Tela Pet - CRÍTICA:
+
+Círculo central  com pet em um tamanho condizente com a tela
+Barra XP circular ao redor (gradiente Cores ideais para exibicao de progree  )
+Animações: breathing, bounce, wiggle (automáticas)
+Partículas flutuantes: corações, estrelas, sparkles
+Sistema humor: excited/happy/neutral/sad (baseado stats)
+Stats visuais: barras coloridas com gradientes
+Cards translúcidos com backdrop blur
+Efeitos glow quando pet feliz
+
+Partículas Obrigatórias:
+dart// Partículas automáticas quando stats > 70%
+// Partículas ao clicar em ações
+// Tipos: heart (💖), star (⭐), coins (💰), sparkle (✨)
+Slots de Pets:
+
+Horizontal abaixo do app bar
+Badges: nível, colaboração, únicos, acessórios
+Slot bloqueado: 🔒 + gem badge podendo ser liberada sem compra com gem
+Troca rápida ao clicar
+
+🗂️ ESTRUTURA DE DADOS FIREBASE
+Users Collection:
+dartclass User {
+  String id;
+  String username;
+  String avatar; // URL do Google
+  String email;
+  int level;
+  int xp;
+  int coins;
+  int gems;
+  DateTime createdAt;
+  List<String> ownedPetIds;
+  Map<String, dynamic> aiConfig; // {apiUrl, apiKey, enabled}
+}
+Pets Collection:
+dartclass Pet {
+  String id;
+  String name;
+  String emoji;
+  String? imageUrl; // Para pets únicos
+  String rarity; // comum, incomum, raro, épico, lendário, único
+  String category;
+  String type; // solo, collab, unique
+  int level;
+  int xp;
+  int happiness;
+  int hunger;
+  int energy;
+  int health;
+  bool isCollab;
+  bool isUnique;
+  String? partnerId;
+  String? partnerAvatar;
+  bool identityRevealed;
+  int revealLevel;
+  List<Item> accessories;
+  DateTime lastCared;
+  DateTime adoptedAt;
+  String ownerId;
+  String? prompt; // Para pets únicos
+  bool canInteract;
+}
+Inventory Collection:
+dartclass InventoryItem {
+  String id;
+  String userId;
+  Item item;
+  DateTime acquiredAt;
+}
+Missions Collection:
+dartclass UserMission {
+  String id;
+  String userId;
+  int missionId;
+  int progress;
+  bool completed;
+  DateTime lastUpdated;
+}
+Feed Collection:
+dartclass FeedPost {
+  String id;
+  String type; // adoption, death, level_up, collaboration, unique_generation
+  String content;
+  String? petId;
+  String userId;
+  DateTime timestamp;
+}
+Chats Collection:
+dartclass ChatMessage {
+  String id;
+  String petId;
+  String senderId;
+  String senderAvatar;
+  String message;
+  DateTime timestamp;
+}
+🎯 FUNCIONALIDADES CRÍTICAS
+Sistema de Morte:  verificar uma possivel alteração na funcionalidade para talves desmaio antes da morte validar e implantar melhor fluxo 
+dart// Background task: verificar pets não cuidados há 5 dias
+// Mover para deadPets collection
+// Penalizar usuário: -50 XP
+// Post no feed
+Matching System:
+dart// Queue de pending adoptions
+// Auto-match em background
+// Notificação quando match encontrado
+Geração IA:
+dartFuture<Pet> generateUniqueP et(String prompt, String apiUrl, String apiKey) async {
+  // HTTP request para API de IA
+  // Upload imagem para Firebase Storage
+  // Criar pet com imageUrl
+  // Post no feed
+}
+Notificações:
+
+Pet precisando cuidado
+Match encontrado
+Pet subiu nível
+Missão completada
+
+📱 TELAS OBRIGATÓRIAS
+
+Splash → Login (Google) → Home
+Home: 5 tabs + slots + pet central
+Bottom Sheets: Adoção, Chat, Inventário, Configurações, IA
+Perfil do usuário
+Listas: pets ativos/mortos/devolvidos/únicos
+
+🎨 ANIMAÇÕES OBRIGATÓRIAS
+
+Pet breathing: scale 1.0 ↔ 1.05 (2s)
+Partículas: spawn + movimento + fade
+Stats bars: animated width
+Barra XP: circular progress
+Page transitions: slide up/fade
+Hover effects: scale 1.0 → 1.05
+
+⚙️ CONFIGURAÇÕES
+Firebase Config:
+dart// firebase_options.dart
+// Configurar Android + iOS
+// Habilitar Auth, Firestore, Storage
+Google Sign-in:
+dart// SHA-1 fingerprints
+// OAuth 2.0 client IDs
+// Configurar android/app/google-services.json
+🚨 REGRAS CRÍTICAS
+
+Mobile-first: sem scroll horizontal desnecessário
+Performance: lazy loading, cached images
+Offline: funcionar sem internet (cached data)
+Real-time: streams para pets colaborativos
+Segurança: rules do Firestore
+Responsivo: adaptar a diferentes telas
+Acessibilidade: semantic labels
+
+🎯 DELIVERABLES
+Gere o projeto Flutter COMPLETO com:
+
+📁 Estrutura de pastas organizada
+🔧 pubspec.yaml com todas dependências
+🔥 Firebase setup completo
+📱 Todas as telas funcionais
+🎨 Theme system dark/light
+💾 State management global
+🌐 API integration (IA)
+📊 Modelos de dados completos
+🔔 Sistema notificações
+🎬 Animações implementadas
+
+O projeto deve ser 100% funcional e pronto para deploy na Play Store/App Store.
+
+💡 IMPORTANTE: Manter EXATAMENTE as mesmas funcionalidades, UX e design do React original. O app deve ser viciante, profissional e com todas as mecânicas de gamificação funcionando perfeitamente.
 
 
 
+voce agora e uma analista senior em desenvolvimento de aplicacao flutter e ira me ajudar nessa migração. Estou iniciando a migração de uma aplicação web desenvolvida em React  codigo disponivel na seja de conhecimento do porjeto , para Flutter, com o objetivo de manter 100% das funcionalidades atuais da aplicação. Já possuímos um roadmap definido disponivel tambem na seção de conhecimento para essa migração.
+
+Requisitos principais:
+
+Preservar toda a lógica funcional existente (fluxo de dados, integrações, estados, etc).
+
+Recriar a interface no Flutter, aproveitando as vantagens do framework para otimizar e aprimorar o layout e a experiência do usuário, respeitando a identidade visual atual, mas com ajustes para maior responsividade e performance.
+
+Garantir que todos os componentes da aplicação React sejam mapeados para equivalentes no Flutter, ou reconstruídos de forma a manter a usabilidade.
+
+Seguir o roadmap já definido para etapas de migração e validação.
+
+Preparar o código Flutter para facilitar manutenção futura e possíveis expansões.
+
+Gostaria de sugestões detalhadas para:
+
+Estrutura ideal do projeto Flutter considerando a complexidade da aplicação React atual.
+
+Estratégias para manter consistência entre lógica de negócios e UI durante a migração.
+
+Boas práticas para melhorar o layout e performance na transição para Flutter.
+
+Possíveis desafios técnicos e como mitigá-los.   nao utilizar build runner no projeto
 
 
-🧩 Diretrizes para a criação da feature
-
-assuma que agora voce e um analista senior em desenvolvimento de game , com vasta esperiencia em designa de games. UX entao focado na experiencia do usuario siga o roteiro
-baseados na documentacao sistema de adocao colaborativa e principais inovações , traçe um plano de execução para a implação da feature. 
-
-Siga rigorosamente a ordem de criação das classes de acordo com o que precisar conforme abaixo , para uma arquitetura limpa e escalável conforme ja esta no projeto:
-
-faça o mapeamento de toda a funcionalidade monte e valide e todo o fluxo antes de enviar os arquivo para evitar a refatoração das classes a todo momento gerando varias versoes  e consumindo mensagem
-crie uma otimização adequada para a geração de todo o fluxo sem erro de limite de mensagem , ou limite de caracter por mensagem. cade classe gerada deve conter no inicio o nome da mesma para facilitar
-quero receber antes da gerção do codigo um cript powersheel que crie todos os arquivos necessario ,todas as classes devem vir completas e sem erros  
-utilixe o maximo de sua inteligencia e experiencia para criar um otimo codigo 
+Ferramentas e bibliotecas recomendadas para auxiliar na migração e testes.
 
 
-core/classes iniciais
+utilize o desenvolvimento incremental , para evitar reescrita de codigo , faça o mais otimizado possivel para evitar desperdicio de mensagem 
+e evitar erro de limite de mensagem ou caracter 
 
-core/config
-
-core/enums
-
-core/rotas
-
-features/screens
-
-shared/widgets
-
-providers
-
-services
-
-Outros arquivos auxiliares
- 
-📦 Requisitos importantes:
-
-Não envie feedback parcial durante a execução para evitar desperdício de mensagens e estouro de limite.
-
-Não repita ou reenvie partes já feitas. Mantenha em memória todas as classes e arquivos gerados.
-
-se precisa podera excluir os codigos gerados anteriormente , apos minha autorização entao se precisar de espaco ou limite solicitacao a aprovação para esclusao de contedudo ou artefatos. gerando anteriormente
-
-O feedback geral do trabalho deve ser enviado apenas ao final, com:
-
-A lista completa das classes e arquivos gerados;
-
-Um relatório resumido das melhorias implementadas.
-
-Otimize o fluxo de execução para concluir toda a refatoração de forma contínua, sem exceder o limite de caracteres por mensagem. 
- use desenvolvimento incremental e use artefatos devidamente para evitar estourar limites  quando ja tiver 7 artefatos gerados  pause e aguarde confirmação para continuar.
+seguir com a analise de todo projeto em memoria e so depois iniciar a geração de codigo para evitar atualizacao de codigo  e esquecimento de linhas ou classes  
+antes de iniciar envie me uma script powershell criando toda a estrutura de pasta e arquivos na /lib
+toda classe devera ter o nome da classe comentado no inicio para facilitar identifcao da mesma e em que pasta devo colocar
+vamos trbalhar com paradas entao a cada 10 artefetos , solicite a continuacao , nao e necessario feedbacks , parciais , somente no final da migraçã desejo receber o feedbacks e sugestao de melhorias 
+se detctar que algum fluxo possa ser melhorado ou incrementado com alguma inovação questionar a mudanca para aprovação.    

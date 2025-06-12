@@ -1,0 +1,2405 @@
+import React, { useState, useEffect, createContext, useContext } from 'react';
+import { Bell, Settings, Home, Target, Gamepad2, Rss, Plus, Coins, Gem, Star, ShoppingBag, Users, Search, Filter, Package, Clock, Sparkles, LogOut, Trash2, User, MessageCircle, Heart, Skull, Eye, EyeOff, Zap, Wand2, Palette, Camera } from 'lucide-react';
+
+// Contexts
+const AppContext = createContext();
+const useApp = () => useContext(AppContext);
+
+// Mock Data
+const BASIC_PETS = [
+  { emoji: '🐕', name: 'Cachorro', cost: 50, rarity: 'comum', category: 'mamífero' },
+  { emoji: '🐱', name: 'Gato', cost: 45, rarity: 'comum', category: 'mamífero' },
+  { emoji: '🐹', name: 'Hamster', cost: 30, rarity: 'comum', category: 'roedor' },
+  { emoji: '🐰', name: 'Coelho', cost: 40, rarity: 'comum', category: 'mamífero' },
+  { emoji: '🐸', name: 'Sapo', cost: 25, rarity: 'comum', category: 'anfíbio' },
+  { emoji: '🐢', name: 'Tartaruga', cost: 60, rarity: 'incomum', category: 'réptil' },
+  { emoji: '🐦', name: 'Pássaro', cost: 35, rarity: 'comum', category: 'ave' },
+  { emoji: '🐠', name: 'Peixe', cost: 20, rarity: 'comum', category: 'aquático' },
+  { emoji: '🦔', name: 'Ouriço', cost: 55, rarity: 'incomum', category: 'mamífero' },
+];
+
+const COLLAB_PETS = [
+  { emoji: '🦄', name: 'Unicórnio', rarity: 'lendário', category: 'místico', hasMatch: false },
+  { emoji: '🐉', name: 'Dragão', rarity: 'épico', category: 'místico', hasMatch: true },
+  { emoji: '🦁', name: 'Leão', rarity: 'raro', category: 'felino', hasMatch: false },
+  { emoji: '🐺', name: 'Lobo', rarity: 'raro', category: 'canino', hasMatch: false },
+  { emoji: '🦅', name: 'Águia', rarity: 'épico', category: 'ave', hasMatch: false },
+  { emoji: '🐅', name: 'Tigre', rarity: 'épico', category: 'felino', hasMatch: false },
+  { emoji: '🦈', name: 'Tubarão', rarity: 'raro', category: 'aquático', hasMatch: false },
+  { emoji: '🦋', name: 'Borboleta Mágica', rarity: 'lendário', category: 'místico', hasMatch: false },
+];
+
+const SHOP_ITEMS = [
+  // Comidas
+  { id: 1, name: 'Ração Básica', emoji: '🥣', cost: 15, type: 'food', effect: '+15 fome', category: 'comida' },
+  { id: 2, name: 'Comida Premium', emoji: '🥩', cost: 30, type: 'food', effect: '+25 fome, +10 felicidade', category: 'comida' },
+  { id: 3, name: 'Petisco Especial', emoji: '🦴', cost: 20, type: 'food', effect: '+20 felicidade', category: 'comida' },
+  
+  // Brinquedos
+  { id: 4, name: 'Bola', emoji: '⚽', cost: 25, type: 'toy', effect: '+20 energia', category: 'brinquedo' },
+  { id: 5, name: 'Corda', emoji: '🧸', cost: 35, type: 'toy', effect: '+15 felicidade, +10 energia', category: 'brinquedo' },
+  
+  // Medicamentos
+  { id: 6, name: 'Vitamina', emoji: '💊', cost: 40, type: 'medicine', effect: '+25 saúde', category: 'medicina' },
+  { id: 7, name: 'Poção Cura', emoji: '🧪', cost: 60, type: 'medicine', effect: '+40 saúde, +10 energia', category: 'medicina' },
+  
+  // Acessórios
+  { id: 8, name: 'Chapéu Mágico', emoji: '🎩', cost: 100, type: 'accessory', effect: '+5 todas stats', category: 'acessório' },
+  { id: 9, name: 'Coleira Dourada', emoji: '🏆', cost: 80, type: 'accessory', effect: '+10 felicidade', category: 'acessório' },
+  { id: 10, name: 'Laço Rosa', emoji: '🎀', cost: 50, type: 'accessory', effect: '+15 felicidade', category: 'acessório' },
+  { id: 11, name: 'Óculos Cool', emoji: '🕶️', cost: 70, type: 'accessory', effect: '+20 energia', category: 'acessório' },
+  { id: 12, name: 'Coroa Real', emoji: '👑', cost: 150, type: 'accessory', effect: '+10 todas stats', category: 'acessório' },
+  { id: 13, name: 'Cachecol', emoji: '🧣', cost: 60, type: 'accessory', effect: '+15 saúde', category: 'acessório' },
+];
+
+const MISSIONS = [
+  { id: 1, title: 'Alimentar 3 vezes', desc: 'Alimente seu pet 3 vezes hoje', reward: 30, progress: 0, max: 3 },
+  { id: 2, title: 'Brincar 5 vezes', desc: 'Brinque com seu pet 5 vezes', reward: 50, progress: 0, max: 5 },
+  { id: 3, title: 'Cuidar 10 vezes', desc: 'Cuide do seu pet 10 vezes', reward: 40, progress: 0, max: 10 },
+  { id: 4, title: 'Usar 5 itens', desc: 'Use 5 itens do inventário', reward: 60, progress: 0, max: 5 },
+  { id: 5, title: 'Gerar pet único', desc: 'Gere seu primeiro pet único', reward: 200, progress: 0, max: 1 },
+  { id: 6, title: 'Alcançar Nível 5', desc: 'Evolua seu pet até o nível 5', reward: 100, progress: 1, max: 5 },
+];
+
+// App Provider
+const AppProvider = ({ children }) => {
+  const [isDark, setIsDark] = useState(false);
+  const [user, setUser] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [deadPets, setDeadPets] = useState([]);
+  const [returnedPets, setReturnedPets] = useState([]);
+  const [uniquePets, setUniquePets] = useState([]);
+  const [pendingAdoptions, setPendingAdoptions] = useState([]);
+  const [activePetIndex, setActivePetIndex] = useState(0);
+  const [coins, setCoins] = useState(200);
+  const [gems, setGems] = useState(20);
+  const [inventory, setInventory] = useState([]);
+  const [missions, setMissions] = useState(MISSIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [feedPosts, setFeedPosts] = useState([]);
+  const [chatMessages, setChatMessages] = useState({});
+  const [particles, setParticles] = useState([]);
+
+  // API Configuration for AI Pet Generation
+  const [aiConfig, setAiConfig] = useState({
+    apiUrl: '', // User will input this
+    apiKey: '', // User will input this
+    enabled: false
+  });
+
+  const maxSlots = 2 + Math.floor((user?.level || 1) / 5);
+  const unlockedSlots = Math.min(pets.length + 1, maxSlots);
+  const hasSoloPet = pets.some(pet => !pet.isCollab);
+  const activePet = pets[activePetIndex];
+
+  const generateAvatar = () => {
+    const avatars = ['👨', '👩', '🧑', '👱', '👨‍💻', '👩‍💻', '🧔', '👴', '👵'];
+    return avatars[Math.floor(Math.random() * avatars.length)];
+  };
+
+  const createParticle = (type, x, y) => {
+    const particle = {
+      id: Date.now() + Math.random(),
+      type, // 'heart', 'star', 'coins', 'sparkle'
+      x,
+      y,
+      opacity: 1,
+      scale: 1,
+      vx: (Math.random() - 0.5) * 4,
+      vy: -Math.random() * 6 - 2,
+    };
+    
+    setParticles(prev => [...prev, particle]);
+    
+    setTimeout(() => {
+      setParticles(prev => prev.filter(p => p.id !== particle.id));
+    }, 2000);
+  };
+
+  const addFeedPost = (type, content, petId = null) => {
+    const post = {
+      id: Date.now(),
+      type, // 'adoption', 'death', 'level_up', 'collaboration', 'unique_generation'
+      content,
+      petId,
+      timestamp: Date.now(),
+      userId: user?.id
+    };
+    setFeedPosts(prev => [post, ...prev.slice(0, 19)]);
+  };
+
+  const generateUniquePet = async (prompt) => {
+    if (gems < 10) return false;
+    
+    try {
+      setGems(prev => prev - 10);
+      
+      // Here you would call the AI API
+      // const response = await fetch(aiConfig.apiUrl, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${aiConfig.apiKey}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     prompt: `Generate a unique pet based on: ${prompt}`,
+      //     style: 'cute_cartoon_pet'
+      //   })
+      // });
+      
+      // Mock response for demo
+      const mockPet = {
+        id: Date.now(),
+        name: prompt.slice(0, 15) || 'Pet Único',
+        emoji: '✨', // Would be replaced with AI generated image
+        imageUrl: 'https://via.placeholder.com/150', // AI generated image URL
+        rarity: 'único',
+        level: 1,
+        xp: 0,
+        happiness: 60,
+        hunger: 60,
+        energy: 60,
+        health: 90,
+        isCollab: false,
+        isUnique: true,
+        generatedBy: user.id,
+        prompt: prompt,
+        status: 'adopted',
+        canInteract: true,
+        accessories: [],
+        lastCared: Date.now(),
+        adoptedAt: Date.now(),
+        traits: ['Místico', 'Raro', 'IA Generated'],
+      };
+      
+      setUniquePets(prev => [...prev, mockPet]);
+      setPets(prev => [...prev, mockPet]);
+      setActivePetIndex(pets.length);
+      
+      addNotification('✨ Pet único gerado com sucesso!');
+      addFeedPost('unique_generation', `🎨 ${user?.username} gerou um pet único: ${mockPet.name}!`, mockPet.id);
+      updateMissionProgress(5, 1);
+      
+      return true;
+    } catch (error) {
+      setGems(prev => prev + 10); // Refund on error
+      addNotification('❌ Erro ao gerar pet único');
+      return false;
+    }
+  };
+
+  const addPet = (petData) => {
+    const now = Date.now();
+    
+    // Check if pet was already adopted/returned/died
+    const isInDeadPets = deadPets.some(p => p.name === petData.name && p.emoji === petData.emoji);
+    const isInReturnedPets = returnedPets.some(p => p.name === petData.name && p.emoji === petData.emoji);
+    const isAlreadyOwned = pets.some(p => p.name === petData.name && p.emoji === petData.emoji);
+    
+    if (isInDeadPets || isInReturnedPets || isAlreadyOwned) {
+      addNotification('❌ Este pet não está mais disponível');
+      return;
+    }
+    
+    if (petData.type === 'solo') {
+      const newPet = {
+        ...petData,
+        id: Date.now(),
+        level: 1,
+        xp: 0,
+        happiness: 50,
+        hunger: 50,
+        energy: 50,
+        health: 80,
+        isCollab: false,
+        status: 'adopted',
+        canInteract: true,
+        accessories: [],
+        lastCared: now,
+        adoptedAt: now,
+      };
+      setPets(prev => [...prev, newPet]);
+      setActivePetIndex(pets.length);
+      addFeedPost('adoption', `🎉 ${user?.username} adotou ${newPet.name}!`, newPet.id);
+    } else {
+      if (!petData.hasMatch) {
+        const adoptionRequest = {
+          id: Date.now(),
+          pet: petData,
+          userId: user.id,
+          userAvatar: user.avatar,
+          expiresAt: now + (5 * 24 * 60 * 60 * 1000),
+          status: 'waiting'
+        };
+        setPendingAdoptions(prev => [...prev, adoptionRequest]);
+        addNotification('🦄 Solicitação de adoção enviada! Aguardando parceiro...');
+      } else {
+        const partnerAvatar = generateAvatar();
+        const newPet = {
+          ...petData,
+          id: Date.now(),
+          level: 1,
+          xp: 0,
+          happiness: 50,
+          hunger: 50,
+          energy: 50,
+          health: 80,
+          isCollab: true,
+          status: 'adopted',
+          partner: 'Usuário Anônimo',
+          partnerAvatar: partnerAvatar,
+          userAvatar: user.avatar,
+          canInteract: true,
+          accessories: [],
+          lastCared: now,
+          adoptedAt: now,
+          revealLevel: 5,
+          identityRevealed: false,
+        };
+        setPets(prev => [...prev, newPet]);
+        setActivePetIndex(pets.length);
+        addNotification('🎉 Match encontrado! Vocês adotaram um Dragão!');
+        addFeedPost('collaboration', `🤝 Colaboração iniciada! ${newPet.name} foi adotado em dupla`, newPet.id);
+      }
+    }
+  };
+
+  const killPet = (petId) => {
+    const pet = pets.find(p => p.id === petId);
+    if (pet) {
+      const deadPet = { ...pet, diedAt: Date.now(), deathReason: 'negligência' };
+      setDeadPets(prev => [...prev, deadPet]);
+      setPets(prev => prev.filter(p => p.id !== petId));
+      
+      setUser(prev => ({
+        ...prev,
+        xp: Math.max(0, prev.xp - 50)
+      }));
+      
+      setActivePetIndex(0);
+      addNotification(`💀 ${pet.name} faleceu por falta de cuidados`);
+      addFeedPost('death', `😢 ${pet.name} faleceu por negligência. ${user?.username} perdeu 50 XP`, petId);
+    }
+  };
+
+  const returnPet = (petId) => {
+    if (gems >= 3) {
+      const pet = pets.find(p => p.id === petId);
+      if (pet) {
+        setGems(prev => prev - 3);
+        setPets(prev => prev.filter(p => p.id !== petId));
+        setReturnedPets(prev => [...prev, { ...pet, returnedAt: Date.now() }]);
+        setActivePetIndex(0);
+        addNotification(`😢 ${pet.name} foi devolvido`);
+        addFeedPost('return', `🔄 ${user?.username} devolveu ${pet.name}`, petId);
+      }
+    }
+  };
+
+  const unlockSlot = () => {
+    if (gems >= 5) {
+      setGems(prev => prev - 5);
+      addNotification('✨ Novo slot desbloqueado!');
+    }
+  };
+
+  const updatePetStats = (petId, stats) => {
+    setPets(prev => prev.map(pet => 
+      pet.id === petId ? { ...pet, ...stats, lastCared: Date.now() } : pet
+    ));
+  };
+
+  const addPetXP = (petId, amount) => {
+    setPets(prev => prev.map(pet => {
+      if (pet.id === petId) {
+        const newXP = pet.xp + amount;
+        const newLevel = Math.floor(newXP / 100) + 1;
+        if (newLevel > pet.level) {
+          addNotification(`🎉 ${pet.name} subiu para nível ${newLevel}!`);
+          addFeedPost('level_up', `⭐ ${pet.name} alcançou nível ${newLevel}!`, petId);
+          
+          if (pet.isCollab && newLevel >= pet.revealLevel && !pet.identityRevealed) {
+            addNotification(`👁️ Identidade pode ser revelada para ${pet.name}!`);
+          }
+        }
+        return { ...pet, xp: newXP, level: newLevel };
+      }
+      return pet;
+    }));
+  };
+
+  const addUserXP = (amount) => {
+    setUser(prev => {
+      const newXP = prev.xp + amount;
+      const newLevel = Math.floor(newXP / 100) + 1;
+      if (newLevel > prev.level) {
+        addNotification(`🎉 Você subiu para nível ${newLevel}!`);
+      }
+      return { ...prev, xp: newXP, level: newLevel };
+    });
+  };
+
+  const buyItem = (item) => {
+    if (coins >= item.cost) {
+      setCoins(prev => prev - item.cost);
+      setInventory(prev => [...prev, { ...item, id: Date.now() }]);
+      addNotification(`🛍️ ${item.name} comprado!`);
+      return true;
+    }
+    return false;
+  };
+
+  const useItem = (item, petId) => {
+    const pet = pets.find(p => p.id === petId);
+    if (!pet) return false;
+
+    setInventory(prev => prev.filter(i => i.id !== item.id));
+    
+    let statUpdates = {};
+    
+    switch (item.type) {
+      case 'food':
+        if (item.name.includes('Premium')) {
+          statUpdates = { hunger: Math.min(100, pet.hunger + 25), happiness: Math.min(100, pet.happiness + 10) };
+        } else if (item.name.includes('Petisco')) {
+          statUpdates = { happiness: Math.min(100, pet.happiness + 20) };
+        } else {
+          statUpdates = { hunger: Math.min(100, pet.hunger + 15) };
+        }
+        break;
+      case 'toy':
+        statUpdates = { energy: Math.min(100, pet.energy + 20), happiness: Math.min(100, pet.happiness + 15) };
+        break;
+      case 'medicine':
+        if (item.name.includes('Poção')) {
+          statUpdates = { health: Math.min(100, pet.health + 40), energy: Math.min(100, pet.energy + 10) };
+        } else {
+          statUpdates = { health: Math.min(100, pet.health + 25) };
+        }
+        break;
+      case 'accessory':
+        setPets(prev => prev.map(p => 
+          p.id === petId ? { ...p, accessories: [...(p.accessories || []), item] } : p
+        ));
+        statUpdates = { happiness: Math.min(100, pet.happiness + 10) };
+        break;
+    }
+
+    updatePetStats(petId, statUpdates);
+    addPetXP(petId, 5);
+    addUserXP(3);
+    addNotification(`✨ ${item.name} usado em ${pet.name}!`);
+    updateMissionProgress(4, 1);
+    
+    return true;
+  };
+
+  const updateMissionProgress = (missionId, progress) => {
+    setMissions(prev => prev.map(mission => 
+      mission.id === missionId 
+        ? { ...mission, progress: Math.min(mission.max, mission.progress + progress) }
+        : mission
+    ));
+  };
+
+  const addNotification = (message) => {
+    const notification = {
+      id: Date.now(),
+      message,
+      timestamp: Date.now()
+    };
+    setNotifications(prev => [notification, ...prev.slice(0, 4)]);
+    
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== notification.id));
+    }, 5000);
+  };
+
+  const sendChatMessage = (petId, message) => {
+    const chatId = `pet_${petId}`;
+    const newMessage = {
+      id: Date.now(),
+      message,
+      sender: user.username,
+      senderAvatar: user.avatar,
+      timestamp: Date.now()
+    };
+    
+    setChatMessages(prev => ({
+      ...prev,
+      [chatId]: [...(prev[chatId] || []), newMessage]
+    }));
+  };
+
+  const revealIdentity = (petId) => {
+    setPets(prev => prev.map(pet => 
+      pet.id === petId ? { ...pet, identityRevealed: true } : pet
+    ));
+    addNotification('🎭 Identidades reveladas!');
+  };
+
+  const logout = () => {
+    setUser(null);
+    setPets([]);
+    setDeadPets([]);
+    setReturnedPets([]);
+    setUniquePets([]);
+    setPendingAdoptions([]);
+    setActivePetIndex(0);
+    setCoins(200);
+    setGems(20);
+    setInventory([]);
+    setMissions(MISSIONS);
+    setNotifications([]);
+    setFeedPosts([]);
+    setChatMessages({});
+    setParticles([]);
+  };
+
+  // Sistema de morte por negligência
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const fiveDays = 5 * 24 * 60 * 60 * 1000;
+      
+      pets.forEach(pet => {
+        if (now - pet.lastCared > fiveDays) {
+          killPet(pet.id);
+        }
+      });
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [pets]);
+
+  // Sistema de matching
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPendingAdoptions(prev => {
+        const now = Date.now();
+        return prev.map(adoption => {
+          if (adoption.status === 'waiting' && Math.random() < 0.1) {
+            const partnerAvatar = generateAvatar();
+            const newPet = {
+              ...adoption.pet,
+              id: Date.now(),
+              level: 1,
+              xp: 0,
+              happiness: 50,
+              hunger: 50,
+              energy: 50,
+              health: 80,
+              isCollab: true,
+              status: 'adopted',
+              partner: 'Usuário Anônimo',
+              partnerAvatar: partnerAvatar,
+              userAvatar: adoption.userAvatar,
+              canInteract: true,
+              accessories: [],
+              lastCared: now,
+              adoptedAt: now,
+              revealLevel: 5,
+              identityRevealed: false,
+            };
+            
+            setPets(current => {
+              const newPets = [...current, newPet];
+              setActivePetIndex(newPets.length - 1);
+              return newPets;
+            });
+            
+            addNotification(`🎉 Match encontrado! Vocês adotaram ${adoption.pet.name}!`);
+            addFeedPost('collaboration', `🤝 Colaboração iniciada! ${newPet.name} foi adotado em dupla`, newPet.id);
+            
+            return { ...adoption, status: 'matched' };
+          }
+          
+          if (now > adoption.expiresAt && adoption.status === 'waiting') {
+            addNotification(`⏰ Solicitação de adoção de ${adoption.pet.name} expirou`);
+            return { ...adoption, status: 'expired' };
+          }
+          
+          return adoption;
+        }).filter(adoption => adoption.status !== 'matched' && adoption.status !== 'expired');
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Particle animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setParticles(prev => prev.map(particle => ({
+        ...particle,
+        x: particle.x + particle.vx,
+        y: particle.y + particle.vy,
+        opacity: particle.opacity - 0.02,
+        scale: particle.scale * 0.98,
+        vy: particle.vy + 0.1, // gravity
+      })).filter(p => p.opacity > 0));
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <AppContext.Provider value={{
+      isDark, setIsDark: () => setIsDark(!isDark),
+      user, setUser, pets, setPets, addPet, returnPet, returnedPets, deadPets, uniquePets, activePet, activePetIndex, setActivePetIndex,
+      coins, setCoins, gems, setGems, inventory, buyItem, useItem, maxSlots, unlockedSlots, unlockSlot,
+      hasSoloPet, missions, setMissions, updateMissionProgress, notifications, pendingAdoptions, feedPosts,
+      updatePetStats, addUserXP, addPetXP, addNotification, logout, sendChatMessage, chatMessages,
+      revealIdentity, addFeedPost, generateUniquePet, aiConfig, setAiConfig, createParticle, particles
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+// Floating Particles Component
+const FloatingParticles = () => {
+  const { particles } = useApp();
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-30">
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="absolute text-2xl transition-all"
+          style={{
+            left: particle.x,
+            top: particle.y,
+            opacity: particle.opacity,
+            transform: `scale(${particle.scale})`,
+          }}
+        >
+          {particle.type === 'heart' && '💖'}
+          {particle.type === 'star' && '⭐'}
+          {particle.type === 'coins' && '💰'}
+          {particle.type === 'sparkle' && '✨'}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Enhanced Circular Progress with Glow Effect
+const CircularProgress = ({ progress, size = 200, strokeWidth = 8, glowing = false }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <svg width={size} height={size} className="transform -rotate-90">
+        <defs>
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#8B5CF6" />
+            <stop offset="50%" stopColor="#A855F7" />
+            <stop offset="100%" stopColor="#C084FC" />
+          </linearGradient>
+          {glowing && (
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          )}
+        </defs>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          className="text-gray-300 opacity-30"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="url(#progressGradient)"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          className="transition-all duration-300"
+          strokeLinecap="round"
+          filter={glowing ? "url(#glow)" : "none"}
+        />
+      </svg>
+    </div>
+  );
+};
+
+// AI Pet Generation Sheet
+const AIPetGenerationSheet = ({ show, onClose }) => {
+  const { generateUniquePet, gems, isDark, aiConfig, setAiConfig } = useApp();
+  const [prompt, setPrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    
+    setGenerating(true);
+    const success = await generateUniquePet(prompt.trim());
+    setGenerating(false);
+    
+    if (success) {
+      setPrompt('');
+      onClose();
+    }
+  };
+
+  const promptSuggestions = [
+    'Um dragão fofo de cristal azul',
+    'Gato ninja com poderes mágicos',
+    'Unicórnio cósmico das estrelas',
+    'Cachorro robótico futurista',
+    'Fenix de fogo dourado',
+    'Panda samurai guerreiro'
+  ];
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title="🎨 Gerar Pet Único" fullHeight>
+      <div className="space-y-6 h-full flex flex-col">
+        {/* Cost Info */}
+        <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-purple-800">Pet Único com IA</h3>
+              <p className="text-sm text-purple-600">Crie um pet personalizado usando inteligência artificial</p>
+            </div>
+            <div className="flex items-center bg-purple-500 text-white px-3 py-2 rounded-full">
+              <Gem className="w-4 h-4 mr-1" />
+              <span className="font-bold">10</span>
+            </div>
+          </div>
+        </div>
+
+        {/* API Configuration (if not set) */}
+        {!aiConfig.enabled && (
+          <div className={`${isDark ? 'bg-gray-700' : 'bg-yellow-50'} rounded-2xl p-4 border-l-4 border-yellow-500`}>
+            <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-yellow-800'} mb-2`}>⚙️ Configuração da IA</h4>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-yellow-700'} mb-3`}>
+              Configure a API de IA para gerar pets únicos
+            </p>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="URL da API de IA"
+                value={aiConfig.apiUrl}
+                onChange={(e) => setAiConfig(prev => ({ ...prev, apiUrl: e.target.value }))}
+                className={`w-full p-3 rounded-xl border-2 ${
+                  isDark ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-200'
+                } focus:border-purple-500 focus:outline-none`}
+              />
+              <input
+                type="password"
+                placeholder="Chave da API"
+                value={aiConfig.apiKey}
+                onChange={(e) => setAiConfig(prev => ({ ...prev, apiKey: e.target.value }))}
+                className={`w-full p-3 rounded-xl border-2 ${
+                  isDark ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-200'
+                } focus:border-purple-500 focus:outline-none`}
+              />
+              <button
+                onClick={() => setAiConfig(prev => ({ ...prev, enabled: true }))}
+                disabled={!aiConfig.apiUrl || !aiConfig.apiKey}
+                className="w-full bg-purple-500 text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+              >
+                Salvar Configuração
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Prompt Input */}
+        <div className="flex-1 space-y-4">
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-white' : 'text-gray-800'} mb-2`}>
+              Descreva seu pet ideal:
+            </label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ex: Um dragão fofo com asas de borboleta e olhos brilhantes..."
+              className={`w-full p-4 rounded-2xl border-2 h-24 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'
+              } focus:border-purple-500 focus:outline-none resize-none`}
+            />
+          </div>
+
+          {/* Prompt Suggestions */}
+          <div>
+            <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+              💡 Sugestões:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {promptSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => setPrompt(suggestion)}
+                  className={`p-3 rounded-xl text-left text-sm ${
+                    isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } transition-colors`}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Generate Button */}
+        <div className="flex-shrink-0 pt-4 border-t border-gray-200">
+          <button
+            onClick={handleGenerate}
+            disabled={!prompt.trim() || gems < 10 || generating || !aiConfig.enabled}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-2xl font-bold text-lg disabled:opacity-50 flex items-center justify-center space-x-2"
+          >
+            {generating ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Gerando...</span>
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-5 h-5" />
+                <span>Gerar Pet Único</span>
+                <div className="flex items-center bg-black/20 px-2 py-1 rounded-full">
+                  <Gem className="w-3 h-3 mr-1" />
+                  <span className="text-sm">10</span>
+                </div>
+              </>
+            )}
+          </button>
+          
+          <div className="flex items-center justify-center mt-2 text-sm">
+            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+              Você tem {gems} gemas
+            </span>
+          </div>
+        </div>
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Notification Bar
+const NotificationBar = () => {
+  const { notifications, isDark } = useApp();
+  
+  if (notifications.length === 0) return null;
+
+  return (
+    <div className="fixed top-20 left-4 right-4 z-40 space-y-2">
+      {notifications.slice(0, 2).map(notification => (
+        <div
+          key={notification.id}
+          className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} px-4 py-3 rounded-2xl shadow-lg border-l-4 border-purple-500 animate-slide-down`}
+        >
+          <p className="text-sm">{notification.message}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Confirmation Modal
+const ConfirmationModal = ({ show, onConfirm, onCancel, title, message, cost }) => {
+  const { isDark, gems } = useApp();
+  
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-3xl p-6 max-w-sm w-full`}>
+        <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>{title}</h3>
+        <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{message}</p>
+        
+        {cost && (
+          <div className="flex items-center justify-center mb-4 p-3 rounded-2xl bg-purple-100">
+            <Gem className="w-5 h-5 text-purple-500 mr-2" />
+            <span className="font-semibold text-purple-700">Custo: {cost} gemas</span>
+            <span className="ml-2 text-sm text-gray-600">(Você tem: {gems})</span>
+          </div>
+        )}
+        
+        <div className="flex space-x-3">
+          <button
+            onClick={onCancel}
+            className={`flex-1 py-3 rounded-2xl font-semibold ${
+              isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={cost && gems < cost}
+            className="flex-1 bg-purple-500 text-white py-3 rounded-2xl font-semibold disabled:opacity-50"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Chat Component
+const PetChatSheet = ({ show, onClose, pet }) => {
+  const { chatMessages, sendChatMessage, revealIdentity, isDark } = useApp();
+  const [message, setMessage] = useState('');
+  
+  if (!pet || !show) return null;
+  
+  const chatId = `pet_${pet.id}`;
+  const messages = chatMessages[chatId] || [];
+  const canReveal = pet.level >= pet.revealLevel && !pet.identityRevealed;
+
+  const handleSend = () => {
+    if (message.trim()) {
+      sendChatMessage(pet.id, message.trim());
+      setMessage('');
+    }
+  };
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title={`Chat - ${pet.name}`} fullHeight>
+      <div className="h-full flex flex-col">
+        <div className="flex items-center justify-center space-x-4 mb-4 p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl">
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-2xl shadow-lg">
+              {pet.userAvatar}
+            </div>
+            <span className="text-xs mt-1 font-medium">Você</span>
+          </div>
+          
+          <div className="text-3xl animate-pulse">{pet.emoji}</div>
+          
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-2xl shadow-lg">
+              {pet.identityRevealed ? pet.partnerAvatar : '❓'}
+            </div>
+            <span className="text-xs mt-1 font-medium">
+              {pet.identityRevealed ? 'Parceiro' : 'Anônimo'}
+            </span>
+          </div>
+        </div>
+
+        {canReveal && (
+          <button
+            onClick={() => revealIdentity(pet.id)}
+            className="mb-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl text-center border-2 border-yellow-300 hover:border-yellow-400 transition-colors"
+          >
+            <Eye className="w-6 h-6 mx-auto mb-2 text-yellow-600" />
+            <span className="text-sm font-bold text-yellow-800">Revelar Identidades</span>
+            <p className="text-xs text-yellow-600 mt-1">Nível {pet.revealLevel}+ alcançado!</p>
+          </button>
+        )}
+
+        <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+          {messages.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Nenhuma mensagem ainda
+              </p>
+            </div>
+          ) : (
+            messages.map(msg => (
+              <div key={msg.id} className="flex items-start space-x-2 animate-fade-in">
+                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm shadow">
+                  {msg.senderAvatar}
+                </div>
+                <div className={`flex-1 p-3 rounded-2xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'} shadow-sm`}>
+                  <p className={`text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{msg.message}</p>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Digite sua mensagem..."
+            className={`flex-1 p-4 rounded-2xl border-2 ${
+              isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'
+            } focus:border-purple-500 focus:outline-none`}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!message.trim()}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-2xl font-semibold disabled:opacity-50 shadow-lg"
+          >
+            Enviar
+          </button>
+        </div>
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Splash Screen
+const SplashScreen = ({ onFinish }) => {
+  useEffect(() => {
+    setTimeout(onFinish, 2000);
+  }, [onFinish]);
+
+  return (
+    <div className="fixed inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-teal-500 flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-8xl mb-4 animate-bounce">🐾</div>
+        <h1 className="text-4xl font-bold text-white mb-2">PetCare</h1>
+        <p className="text-white/80">Cuidado Colaborativo</p>
+        <div className="mt-8 w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+      </div>
+    </div>
+  );
+};
+
+// Login Screen
+const LoginScreen = ({ onLogin }) => {
+  const { isDark } = useApp();
+  const [username, setUsername] = useState('');
+
+  const handleLogin = () => {
+    if (username.trim()) {
+      const avatars = ['👨', '👩', '🧑', '👱', '👨‍💻', '👩‍💻'];
+      const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+      
+      onLogin({ 
+        username: username.trim(), 
+        avatar: randomAvatar,
+        level: 1,
+        xp: 0,
+        id: Date.now() 
+      });
+    }
+  };
+
+  return (
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-100 to-blue-100'} flex items-center justify-center p-6`}>
+      <div className={`w-full max-w-sm ${isDark ? 'bg-gray-800' : 'bg-white'} rounded-3xl p-8 shadow-2xl`}>
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4">🐾</div>
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>PetCare</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Entre com Google</p>
+        </div>
+        
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Nome de usuário (demo)"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={`w-full p-4 rounded-2xl border-2 ${
+              isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'
+            } focus:border-purple-500 focus:outline-none`}
+          />
+          
+          <button
+            onClick={handleLogin}
+            disabled={!username.trim()}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-2xl font-semibold disabled:opacity-50"
+          >
+            Entrar (Demo)
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Pet Slots Component
+const PetSlots = ({ onSlotClick }) => {
+  const { pets, activePetIndex, setActivePetIndex, unlockedSlots, isDark, pendingAdoptions } = useApp();
+  const [showUnlockConfirm, setShowUnlockConfirm] = useState(false);
+
+  return (
+    <>
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} px-4 py-3 shadow-sm`}>
+        <div className="flex space-x-3">
+          {Array.from({ length: unlockedSlots + 1 }).map((_, index) => {
+            const pet = pets[index];
+            const isActive = index === activePetIndex;
+            const isLocked = index >= unlockedSlots;
+            
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  if (isLocked) {
+                    setShowUnlockConfirm(true);
+                  } else if (pet) {
+                    setActivePetIndex(index);
+                  } else {
+                    onSlotClick();
+                  }
+                }}
+                className={`flex-shrink-0 w-16 h-16 rounded-2xl border-2 transition-all transform hover:scale-105 ${
+                  isActive 
+                    ? 'border-purple-500 bg-purple-50 shadow-lg shadow-purple-200' 
+                    : isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                } flex flex-col items-center justify-center relative`}
+              >
+                {isLocked ? (
+                  <>
+                    <div className="text-2xl">🔒</div>
+                    <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs animate-pulse">
+                      <Gem className="w-3 h-3" />
+                    </div>
+                  </>
+                ) : pet ? (
+                  <>
+                    <div className="text-2xl">{pet.isUnique ? '✨' : pet.emoji}</div>
+                    <div className={`absolute -top-1 -right-1 w-6 h-6 rounded-full ${
+                      isDark ? 'bg-gray-600' : 'bg-white'
+                    } flex items-center justify-center text-xs font-bold ${
+                      isDark ? 'text-white' : 'text-gray-800'
+                    } shadow`}>
+                      {pet.level}
+                    </div>
+                    {pet.isCollab && (
+                      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                        <Users className="w-2 h-2 text-white" />
+                      </div>
+                    )}
+                    {pet.isUnique && (
+                      <div className="absolute top-0 left-0 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-2 h-2 text-white" />
+                      </div>
+                    )}
+                    {pet.accessories?.length > 0 && (
+                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <Package className="w-2 h-2 text-white" />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Plus className={`w-6 h-6 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                )}
+              </button>
+            );
+          })}
+          
+          {pendingAdoptions.length > 0 && (
+            <div className={`flex-shrink-0 w-16 h-16 rounded-2xl border-2 border-dashed ${
+              isDark ? 'border-yellow-600 bg-yellow-900/20' : 'border-yellow-400 bg-yellow-50'
+            } flex flex-col items-center justify-center relative animate-pulse`}>
+              <Clock className="w-5 h-5 text-yellow-500" />
+              <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                {pendingAdoptions.length}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ConfirmationModal
+        show={showUnlockConfirm}
+        title="Desbloquear Slot"
+        message="Deseja desbloquear um novo slot para pets?"
+        cost={5}
+        onConfirm={() => {
+          const { unlockSlot } = useApp();
+          unlockSlot();
+          setShowUnlockConfirm(false);
+        }}
+        onCancel={() => setShowUnlockConfirm(false)}
+      />
+    </>
+  );
+};
+
+// Bottom Sheet Component
+const BottomSheet = ({ show, onClose, title, children, fullHeight = false }) => {
+  const { isDark } = useApp();
+  
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
+      <div className={`w-full ${isDark ? 'bg-gray-800' : 'bg-white'} rounded-t-3xl p-6 ${
+        fullHeight ? 'h-[90vh]' : 'max-h-[80vh]'
+      } flex flex-col animate-slide-up shadow-2xl`}>
+        <div className="flex items-center justify-between mb-6 flex-shrink-0">
+          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{title}</h2>
+          <button onClick={onClose} className={`w-8 h-8 rounded-full ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center transition-colors`}>
+            ✕
+          </button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Pet Tab with better UX
+const PetTab = () => {
+  const { activePet, isDark, createParticle } = useApp();
+  const [showActions, setShowActions] = useState(false);
+  const [showAIGeneration, setShowAIGeneration] = useState(false);
+  const [petAnimation, setPetAnimation] = useState('breathing');
+  const [petMood, setPetMood] = useState('happy');
+
+  useEffect(() => {
+    if (!activePet) return;
+    
+    // Determine pet mood based on stats
+    const avgStats = (activePet.happiness + activePet.hunger + activePet.energy + activePet.health) / 4;
+    if (avgStats >= 80) setPetMood('excited');
+    else if (avgStats >= 60) setPetMood('happy');
+    else if (avgStats >= 40) setPetMood('neutral');
+    else setPetMood('sad');
+
+    const interval = setInterval(() => {
+      setPetAnimation(prev => {
+        const animations = ['breathing', 'bounce', 'wiggle'];
+        return animations[Math.floor(Math.random() * animations.length)];
+      });
+      
+      // Random sparkles when pet is happy
+      if (avgStats >= 70 && Math.random() < 0.3) {
+        createParticle('sparkle', 200 + Math.random() * 100, 200 + Math.random() * 100);
+      }
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [activePet, createParticle]);
+
+  const getStatColor = (value) => {
+    if (value >= 80) return 'bg-gradient-to-r from-green-400 to-green-500';
+    if (value >= 60) return 'bg-gradient-to-r from-yellow-400 to-yellow-500';
+    if (value >= 40) return 'bg-gradient-to-r from-orange-400 to-orange-500';
+    return 'bg-gradient-to-r from-red-400 to-red-500';
+  };
+
+  const getAnimationClass = () => {
+    switch (petAnimation) {
+      case 'bounce': return 'animate-bounce';
+      case 'wiggle': return 'animate-pulse';
+      case 'breathing': return 'animate-pulse';
+      default: return '';
+    }
+  };
+
+  const getMoodEffects = () => {
+    switch (petMood) {
+      case 'excited': return 'filter drop-shadow-lg';
+      case 'happy': return '';
+      case 'neutral': return 'opacity-90';
+      case 'sad': return 'opacity-75 grayscale';
+      default: return '';
+    }
+  };
+
+  return (
+    <div className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50'} p-6 relative overflow-hidden`}>
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-100/20 via-transparent to-blue-100/20 pointer-events-none"></div>
+      
+      {activePet ? (
+        <div className="flex flex-col items-center justify-center h-full relative z-10">
+          {/* Pet Circle with Enhanced Progress */}
+          <div className="relative mb-6">
+            <CircularProgress progress={(activePet.xp % 100)} glowing={petMood === 'excited'} />
+            <button
+              onClick={() => {
+                setShowActions(true);
+                createParticle('heart', 250, 250);
+              }}
+              className={`w-48 h-48 rounded-full ${
+                isDark ? 'bg-gradient-to-br from-gray-700 to-gray-800' : 'bg-gradient-to-br from-white to-gray-50'
+              } flex items-center justify-center shadow-2xl relative transition-all duration-300 hover:scale-105 z-10 ${getMoodEffects()}`}
+              style={{
+                boxShadow: petMood === 'excited' ? '0 0 30px rgba(139, 92, 246, 0.5)' : ''
+              }}
+            >
+              <div className={`text-8xl transition-all duration-500 ${getAnimationClass()}`}>
+                {activePet.isUnique ? '✨' : activePet.emoji}
+              </div>
+              
+              {/* Level Badge with Glow */}
+              <div className={`absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold z-20 shadow-lg ${
+                petMood === 'excited' ? 'animate-pulse' : ''
+              }`}>
+                {activePet.level}
+              </div>
+              
+              {/* Unique Pet Badge */}
+              {activePet.isUnique && (
+                <div className="absolute -top-2 -left-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full w-10 h-10 flex items-center justify-center z-20 shadow-lg animate-pulse">
+                  <Wand2 className="w-5 h-5" />
+                </div>
+              )}
+              
+              {/* Accessories */}
+              {activePet.accessories?.length > 0 && (
+                <div className="absolute top-4 right-4 text-2xl z-20 animate-bounce">
+                  {activePet.accessories[0].emoji}
+                </div>
+              )}
+              
+              {/* Collaboration Avatars */}
+              {activePet.isCollab && (
+                <>
+                  <div className="absolute bottom-4 left-4 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-xl z-20 shadow-lg border-2 border-white">
+                    {activePet.userAvatar}
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-xl z-20 shadow-lg border-2 border-white">
+                    {activePet.identityRevealed ? activePet.partnerAvatar : '❓'}
+                  </div>
+                </>
+              )}
+
+              {/* Mood Indicator */}
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                {petMood === 'excited' && <span className="text-lg animate-bounce">🎉</span>}
+                {petMood === 'happy' && <span className="text-lg">😊</span>}
+                {petMood === 'neutral' && <span className="text-lg">😐</span>}
+                {petMood === 'sad' && <span className="text-lg animate-pulse">😢</span>}
+              </div>
+            </button>
+          </div>
+
+          {/* Pet Info Card */}
+          <div className={`${isDark ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl p-4 w-full max-w-sm mb-4 shadow-xl border ${
+            isDark ? 'border-gray-700' : 'border-gray-200'
+          }`}>
+            <div className="text-center">
+              <h3 className={`font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                {activePet.name} - Nível {activePet.level}
+                {activePet.isUnique && <span className="ml-2 text-yellow-500">✨</span>}
+              </h3>
+              <div className="mb-3">
+                <div className="flex items-center justify-center space-x-2 mb-1">
+                  <Zap className="w-4 h-4 text-purple-500" />
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    XP: {activePet.xp % 100}/100
+                  </span>
+                </div>
+                <div className={`w-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2`}>
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{width: `${(activePet.xp % 100)}%`}}
+                  ></div>
+                </div>
+              </div>
+              
+              {activePet.isCollab && !activePet.identityRevealed && (
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} flex items-center justify-center`}>
+                  <Eye className="w-3 h-3 mr-1" />
+                  Identidade revelada no nível {activePet.revealLevel}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Enhanced Pet Stats */}
+          <div className={`${isDark ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl p-4 w-full max-w-sm shadow-xl border ${
+            isDark ? 'border-gray-700' : 'border-gray-200'
+          }`}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {Object.entries({
+                '😊': { label: 'Felicidade', value: activePet.happiness },
+                '🍖': { label: 'Fome', value: activePet.hunger },
+                '⚡': { label: 'Energia', value: activePet.energy },
+                '❤️': { label: 'Saúde', value: activePet.health }
+              }).map(([emoji, stat]) => (
+                <div key={emoji} className="text-center">
+                  <span className="text-lg mb-1 block">{emoji}</span>
+                  <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>{stat.label}</p>
+                  <div className={`w-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-3 shadow-inner`}>
+                    <div 
+                      className={`${getStatColor(stat.value)} h-3 rounded-full transition-all duration-500 shadow-sm`} 
+                      style={{width: `${stat.value}%`}}
+                    ></div>
+                  </div>
+                  <span className={`text-xs font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'} mt-1 block`}>
+                    {Math.round(stat.value)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <PetActionsSheet
+            pet={activePet}
+            show={showActions}
+            onClose={() => setShowActions(false)}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className={`w-48 h-48 rounded-full border-4 border-dashed ${isDark ? 'border-gray-600' : 'border-gray-300'} flex flex-col items-center justify-center mb-6 transition-all hover:border-purple-400`}>
+            <div className="text-4xl mb-2">🐾</div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-3 text-center`}>Nenhum pet adotado</p>
+            <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'} text-center`}>Use os slots acima para adotar</p>
+          </div>
+          
+          {/* AI Generation Button */}
+          <button
+            onClick={() => setShowAIGeneration(true)}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center space-x-2"
+          >
+            <Wand2 className="w-5 h-5" />
+            <span>Gerar Pet Único com IA</span>
+          </button>
+        </div>
+      )}
+
+      <AIPetGenerationSheet 
+        show={showAIGeneration} 
+        onClose={() => setShowAIGeneration(false)} 
+      />
+    </div>
+  );
+};
+
+// Continue with other components... (due to length limit, I'll provide the remaining components in the next part)
+
+// Adoption Flow with bug fix
+const AdoptionFlow = ({ show, onClose }) => {
+  const { addPet, coins, setCoins, hasSoloPet, deadPets, returnedPets } = useApp();
+  const [step, setStep] = useState('type');
+  const [adoptionType, setAdoptionType] = useState(null);
+
+  useEffect(() => {
+    if (show) {
+      setStep('type');
+      setAdoptionType(null);
+    }
+  }, [show]);
+
+  const handleTypeSelect = (type) => {
+    setAdoptionType(type);
+    setStep('list');
+  };
+
+  const handlePetAdopt = (pet) => {
+    if (adoptionType === 'solo' && coins >= pet.cost) {
+      setCoins(prev => prev - pet.cost);
+      addPet({ ...pet, type: 'solo' });
+    } else if (adoptionType === 'collab') {
+      addPet({ ...pet, type: 'collab' });
+    }
+    onClose();
+  };
+
+  const handleClose = () => {
+    setStep('type');
+    setAdoptionType(null);
+    onClose();
+  };
+
+  // Filter out pets that were returned or died
+  const getAvailablePets = (pets) => {
+    return pets.filter(pet => {
+      const isDead = deadPets.some(deadPet => 
+        deadPet.name === pet.name && deadPet.emoji === pet.emoji
+      );
+      const isReturned = returnedPets.some(returnedPet => 
+        returnedPet.name === pet.name && returnedPet.emoji === pet.emoji
+      );
+      return !isDead && !isReturned;
+    });
+  };
+
+  if (step === 'type') {
+    return (
+      <BottomSheet show={show} onClose={handleClose} title="Tipo de Adoção">
+        <div className="space-y-4">
+          <button 
+            onClick={() => handleTypeSelect('solo')} 
+            disabled={hasSoloPet}
+            className={`w-full p-6 rounded-2xl border-2 transition-all ${
+              hasSoloPet 
+                ? 'opacity-50 cursor-not-allowed border-gray-300' 
+                : 'border-gray-200 hover:border-purple-500 hover:shadow-lg'
+            }`}
+          >
+            <div className="text-4xl mb-2">🐕</div>
+            <h3 className="font-bold">Pet Solo</h3>
+            <p className="text-sm text-gray-600">Cuide sozinho</p>
+            {hasSoloPet && (
+              <p className="text-xs text-red-500 mt-2">Você já tem um pet solo</p>
+            )}
+          </button>
+          
+          <button 
+            onClick={() => handleTypeSelect('collab')} 
+            className="w-full p-6 rounded-2xl border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg transition-all"
+          >
+            <div className="text-4xl mb-2">🦄</div>
+            <h3 className="font-bold">Pet Colaborativo</h3>
+            <p className="text-sm text-gray-600">Cuide com um parceiro</p>
+          </button>
+          
+          <button 
+            onClick={() => { onClose(); /* Open AI generation */ }} 
+            className="w-full p-6 rounded-2xl border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all"
+          >
+            <div className="text-4xl mb-2">✨</div>
+            <h3 className="font-bold text-purple-700">Pet Único com IA</h3>
+            <p className="text-sm text-purple-600">Gere com inteligência artificial</p>
+            <div className="flex items-center justify-center mt-2">
+              <Gem className="w-4 h-4 text-purple-500 mr-1" />
+              <span className="text-sm text-purple-700">10 gemas</span>
+            </div>
+          </button>
+        </div>
+      </BottomSheet>
+    );
+  }
+
+  const allPets = adoptionType === 'solo' ? BASIC_PETS : COLLAB_PETS;
+  const availablePets = getAvailablePets(allPets);
+
+  return (
+    <BottomSheet show={show} onClose={handleClose} title={adoptionType === 'solo' ? 'Pets Básicos' : 'Pets Especiais'} fullHeight>
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-3">
+            {availablePets.map((pet, index) => (
+              <button
+                key={index}
+                onClick={() => handlePetAdopt(pet)}
+                disabled={adoptionType === 'solo' && coins < pet.cost}
+                className={`p-3 rounded-2xl border-2 transition-all ${
+                  adoptionType === 'solo' && coins < pet.cost
+                    ? 'opacity-50 cursor-not-allowed border-gray-300'
+                    : 'hover:border-purple-500 border-gray-200 hover:shadow-lg'
+                }`}
+              >
+                <div className="text-3xl mb-2">{pet.emoji}</div>
+                <h3 className="font-semibold text-sm">{pet.name}</h3>
+                <p className="text-xs text-gray-500 mb-1">{pet.rarity}</p>
+                {adoptionType === 'solo' && (
+                  <div className="flex items-center justify-center">
+                    <Coins className="w-3 h-3 text-yellow-500 mr-1" />
+                    <span className="text-xs">{pet.cost}</span>
+                  </div>
+                )}
+                {adoptionType === 'collab' && pet.hasMatch && (
+                  <div className="text-xs text-green-600 mt-1">✅ Match disponível</div>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {availablePets.length === 0 && (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-4">😔</div>
+              <p className="text-gray-600">Todos os pets desta categoria foram adotados ou não estão mais disponíveis</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Rest of components remain the same but I'll need to continue in next message due to length...
+
+// Inventory Sheet (only for accessories)
+const InventorySheet = ({ show, onClose, pet }) => {
+  const { inventory, useItem, isDark } = useApp();
+  
+  const accessories = inventory.filter(item => item.type === 'accessory');
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title="Acessórios" fullHeight>
+      <div className="h-full flex flex-col">
+        {accessories.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <Package className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Nenhum acessório encontrado
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-3 gap-3">
+              {accessories.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    useItem(item, pet.id);
+                    onClose();
+                  }}
+                  className={`p-3 rounded-2xl border-2 transition-all hover:border-purple-500 hover:shadow-lg ${
+                    isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{item.emoji}</div>
+                  <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{item.name}</h3>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.effect}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Enhanced Pet Actions Bottom Sheet
+const PetActionsSheet = ({ pet, show, onClose }) => {
+  const { updatePetStats, addUserXP, addPetXP, updateMissionProgress, isDark, returnPet, createParticle } = useApp();
+  const [showInventory, setShowInventory] = useState(false);
+  const [showReturnConfirm, setShowReturnConfirm] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+
+  if (!pet) return null;
+
+  const handleAction = (actionFn, particleType, x = 250, y = 250) => {
+    actionFn();
+    createParticle(particleType, x, y);
+    onClose();
+  };
+
+  const actions = [
+    {
+      emoji: '🍖',
+      name: 'Alimentar',
+      description: 'Saciar a fome do pet',
+      color: 'from-orange-500 to-red-500',
+      action: () => handleAction(() => {
+        updatePetStats(pet.id, { 
+          hunger: Math.min(100, pet.hunger + 25),
+          happiness: Math.min(100, pet.happiness + 10)
+        });
+        addPetXP(pet.id, 10);
+        addUserXP(5);
+        updateMissionProgress(1, 1);
+      }, 'heart')
+    },
+    {
+      emoji: '🎾',
+      name: 'Brincar',
+      description: 'Aumentar felicidade',
+      color: 'from-blue-500 to-purple-500',
+      action: () => handleAction(() => {
+        updatePetStats(pet.id, {
+          happiness: Math.min(100, pet.happiness + 20),
+          energy: Math.max(0, pet.energy - 10)
+        });
+        addPetXP(pet.id, 15);
+        addUserXP(8);
+        updateMissionProgress(2, 1);
+      }, 'star')
+    },
+    {
+      emoji: '💤',
+      name: 'Cuidar',
+      description: 'Restaurar energia e saúde',
+      color: 'from-green-500 to-teal-500',
+      action: () => handleAction(() => {
+        updatePetStats(pet.id, {
+          energy: Math.min(100, pet.energy + 30),
+          health: Math.min(100, pet.health + 15)
+        });
+        addPetXP(pet.id, 12);
+        addUserXP(10);
+        updateMissionProgress(3, 1);
+      }, 'sparkle')
+    },
+    {
+      emoji: '💝',
+      name: 'Carinho',
+      description: 'Demonstrar amor',
+      color: 'from-pink-500 to-rose-500',
+      action: () => handleAction(() => {
+        updatePetStats(pet.id, {
+          happiness: Math.min(100, pet.happiness + 15),
+          health: Math.min(100, pet.health + 5)
+        });
+        addPetXP(pet.id, 8);
+        addUserXP(3);
+      }, 'heart')
+    }
+  ];
+
+  return (
+    <>
+      <BottomSheet show={show} onClose={onClose} title={`Cuidar de ${pet.name}`}>
+        <div className="space-y-6">
+          {/* Collaboration Info */}
+          {pet.isCollab && (
+            <div className={`${isDark ? 'bg-gray-700' : 'bg-gradient-to-r from-purple-50 to-blue-50'} rounded-2xl p-4 border-2 border-purple-200`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-xl shadow-lg">
+                    {pet.userAvatar}
+                  </div>
+                  <span className="text-3xl animate-pulse">{pet.emoji}</span>
+                  <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-xl shadow-lg">
+                    {pet.identityRevealed ? pet.partnerAvatar : '❓'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowChat(true)}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </button>
+              </div>
+              <p className={`text-center text-sm mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                {pet.identityRevealed ? 'Identidades reveladas' : `Anônimo até nível ${pet.revealLevel}`}
+              </p>
+            </div>
+          )}
+
+          {/* Enhanced Actions */}
+          <div>
+            <h3 className={`font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>Ações</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {actions.map((action, index) => (
+                <button
+                  key={index}
+                  onClick={action.action}
+                  disabled={!pet.canInteract}
+                  className={`p-4 rounded-2xl border-2 transition-all transform hover:scale-105 ${
+                    pet.canInteract
+                      ? 'border-gray-200 hover:border-purple-500 hover:shadow-lg' 
+                      : 'border-gray-300 opacity-50 cursor-not-allowed'
+                  } ${isDark ? 'bg-gray-700' : 'bg-white'} relative overflow-hidden`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-r ${action.color} opacity-10`}></div>
+                  <div className="relative z-10">
+                    <div className="text-4xl mb-2">{action.emoji}</div>
+                    <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{action.name}</h3>
+                    <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{action.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Accessory Button */}
+          <div>
+            <h3 className={`font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>Usar Item</h3>
+            <button
+              onClick={() => setShowInventory(true)}
+              className={`w-full p-4 rounded-2xl border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg transition-all ${
+                isDark ? 'bg-gray-700' : 'bg-white'
+              }`}
+            >
+              <div className="text-3xl mb-2">👑</div>
+              <h3 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>Acessórios</h3>
+              <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Equipar acessórios no pet</p>
+            </button>
+          </div>
+
+          {/* Return Pet */}
+          <div>
+            <button
+              onClick={() => setShowReturnConfirm(true)}
+              className="w-full p-4 rounded-2xl border-2 border-red-200 hover:border-red-500 bg-red-50 text-red-700 transition-all"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Trash2 className="w-5 h-5" />
+                <span className="font-semibold">Devolver Pet</span>
+              </div>
+              <p className="text-xs mt-1">Custa 3 gemas</p>
+            </button>
+          </div>
+          
+          {!pet.canInteract && pet.isCollab && (
+            <div className={`p-4 rounded-2xl ${isDark ? 'bg-gray-700' : 'bg-yellow-50'} text-center border-2 border-yellow-300`}>
+              <Clock className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                🔒 Aguardando outro usuário para liberar interações
+              </p>
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+
+      <InventorySheet
+        show={showInventory}
+        onClose={() => setShowInventory(false)}
+        pet={pet}
+      />
+
+      <PetChatSheet
+        show={showChat}
+        onClose={() => setShowChat(false)}
+        pet={pet}
+      />
+
+      <ConfirmationModal
+        show={showReturnConfirm}
+        title="Devolver Pet"
+        message={`Tem certeza que deseja devolver ${pet.name}? Esta ação não pode ser desfeita.`}
+        cost={3}
+        onConfirm={() => {
+          returnPet(pet.id);
+          setShowReturnConfirm(false);
+          onClose();
+        }}
+        onCancel={() => setShowReturnConfirm(false)}
+      />
+    </>
+  );
+};
+
+// User Profile Sheet
+const UserProfileSheet = ({ show, onClose }) => {
+  const { user, isDark } = useApp();
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title="Perfil do Usuário">
+      <div className="text-center space-y-6">
+        <div className="text-8xl mb-4">{user?.avatar}</div>
+        <div>
+          <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{user?.username}</h2>
+          <div className="flex items-center justify-center space-x-2 mt-2">
+            <Star className="w-5 h-5 text-yellow-500" />
+            <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Nível {user?.level}
+            </span>
+          </div>
+        </div>
+
+        <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-2xl p-4`}>
+          <p className={`text-sm mb-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Experiência: {user?.xp % 100}/100
+          </p>
+          <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-3`}>
+            <div 
+              className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all"
+              style={{width: `${(user?.xp % 100)}%`}}
+            ></div>
+          </div>
+          <p className={`text-xs mt-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            XP Total: {user?.xp || 0}
+          </p>
+        </div>
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Continue with remaining components in next part due to length...
+
+// Dashboard Sheet Components
+const PetsListSheet = ({ show, onClose, pets, title }) => {
+  const { isDark } = useApp();
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title={title} fullHeight>
+      <div className="h-full overflow-y-auto">
+        {pets.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4">🐾</div>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Nenhum pet encontrado
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {pets.map(pet => (
+              <div key={pet.id} className={`${isDark ? 'bg-gray-700' : 'bg-white'} rounded-2xl p-4 border-2 ${isDark ? 'border-gray-600' : 'border-gray-200'} shadow-lg`}>
+                <div className="flex items-center space-x-4">
+                  <div className="text-4xl relative">
+                    {pet.isUnique ? '✨' : pet.emoji}
+                    {pet.status === 'dead' && <span className="absolute -top-1 -right-1 text-lg">💀</span>}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                      {pet.name}
+                      {pet.isUnique && <span className="ml-2 text-yellow-500">✨</span>}
+                    </h3>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Nível {pet.level} • {pet.isCollab ? 'Colaborativo' : pet.isUnique ? 'Único' : 'Solo'}
+                    </p>
+                    {pet.diedAt && (
+                      <p className="text-xs text-red-500">
+                        Faleceu em {new Date(pet.diedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                    {pet.returnedAt && (
+                      <p className="text-xs text-orange-500">
+                        Devolvido em {new Date(pet.returnedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                    {pet.isUnique && pet.prompt && (
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+                        Prompt: "{pet.prompt}"
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      XP: {pet.xp || 0}
+                    </p>
+                    {pet.accessories?.length > 0 && (
+                      <div className="flex space-x-1 mt-1">
+                        {pet.accessories.slice(0, 3).map((acc, i) => (
+                          <span key={i} className="text-sm">{acc.emoji}</span>
+                        ))}
+                      </div>
+                    )}
+                    {pet.isUnique && (
+                      <div className="mt-1">
+                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                          IA
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </BottomSheet>
+  );
+};
+
+const InventoryFullSheet = ({ show, onClose }) => {
+  const { inventory, isDark } = useApp();
+  const [filter, setFilter] = useState('todos');
+  
+  const categories = ['todos', ...new Set(inventory.map(item => item.category))];
+  const filteredItems = filter === 'todos' ? inventory : inventory.filter(item => item.category === filter);
+
+  return (
+    <BottomSheet show={show} onClose={onClose} title="Meu Inventário" fullHeight>
+      <div className="h-full flex flex-col space-y-4">
+        {/* Filtros */}
+        <div className="flex space-x-2 overflow-x-auto">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setFilter(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex-shrink-0 ${
+                filter === category
+                  ? 'bg-purple-500 text-white shadow-lg'
+                  : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        {/* Items */}
+        <div className="flex-1 overflow-y-auto">
+          {filteredItems.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Package className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Nenhum item encontrado
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {filteredItems.map(item => (
+                <div key={item.id} className={`${isDark ? 'bg-gray-700' : 'bg-white'} rounded-2xl p-3 border-2 ${isDark ? 'border-gray-600' : 'border-gray-200'} shadow-lg`}>
+                  <div className="text-3xl mb-2 text-center">{item.emoji}</div>
+                  <h3 className={`font-semibold text-sm text-center ${isDark ? 'text-white' : 'text-gray-800'}`}>{item.name}</h3>
+                  <p className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.effect}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </BottomSheet>
+  );
+};
+
+// Other tabs with updates
+const MissionsTab = () => {
+  const { missions, isDark } = useApp();
+
+  return (
+    <div className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 to-blue-50'} p-6`}>
+      <div className="space-y-4">
+        {missions.map(mission => {
+          const isCompleted = mission.progress >= mission.max;
+          return (
+            <div key={mission.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-lg border-2 ${
+              isCompleted ? 'border-green-300 bg-green-50' : isDark ? 'border-gray-700' : 'border-gray-200'
+            } ${isCompleted ? 'opacity-75' : ''}`}>
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                    {isCompleted ? '✅ ' : ''}{mission.title}
+                  </h3>
+                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{mission.desc}</p>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Coins className="w-4 h-4 text-yellow-500" />
+                  <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{mission.reward}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className={`flex-1 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-3 mr-3 shadow-inner`}>
+                  <div className={`${isCompleted ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-purple-500 to-blue-500'} h-3 rounded-full transition-all duration-500 shadow-sm`} style={{width: `${(mission.progress / mission.max) * 100}%`}}></div>
+                </div>
+                <span className={`text-xs font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {mission.progress}/{mission.max}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ShopTab = () => {
+  const { buyItem, coins, isDark } = useApp();
+  const [filter, setFilter] = useState('todos');
+  
+  const categories = ['todos', ...new Set(SHOP_ITEMS.map(item => item.category))];
+  const filteredItems = filter === 'todos' ? SHOP_ITEMS : SHOP_ITEMS.filter(item => item.category === filter);
+
+  return (
+    <div className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 to-blue-50'} p-6`}>
+      <div className="space-y-4 h-full flex flex-col">
+        <div className="flex space-x-2 overflow-x-auto">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setFilter(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex-shrink-0 ${
+                filter === category
+                  ? 'bg-purple-500 text-white shadow-lg'
+                  : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-3">
+            {filteredItems.map(item => (
+              <div key={item.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-3 shadow-lg border-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className="text-3xl mb-2 text-center">{item.emoji}</div>
+                <h3 className={`font-bold text-center text-sm ${isDark ? 'text-white' : 'text-gray-800'}`}>{item.name}</h3>
+                <p className={`text-xs text-center ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>{item.effect}</p>
+                <button 
+                  onClick={() => buyItem(item)}
+                  disabled={coins < item.cost}
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center text-sm shadow-lg hover:shadow-xl transition-all"
+                >
+                  <Coins className="w-3 h-3 mr-1" />
+                  {item.cost}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Feed Tab (substitui Colaboradores)
+const FeedTab = () => {
+  const { feedPosts, isDark } = useApp();
+
+  const getPostIcon = (type) => {
+    switch (type) {
+      case 'adoption': return '🎉';
+      case 'death': return '💀';
+      case 'level_up': return '⭐';
+      case 'collaboration': return '🤝';
+      case 'return': return '🔄';
+      case 'unique_generation': return '🎨';
+      default: return '📢';
+    }
+  };
+
+  const getPostColor = (type) => {
+    switch (type) {
+      case 'adoption': return 'border-green-300 bg-green-50';
+      case 'death': return 'border-red-300 bg-red-50';
+      case 'level_up': return 'border-yellow-300 bg-yellow-50';
+      case 'collaboration': return 'border-purple-300 bg-purple-50';
+      case 'unique_generation': return 'border-pink-300 bg-pink-50';
+      default: return isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white';
+    }
+  };
+
+  return (
+    <div className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 to-blue-50'} p-6`}>
+      <div className="space-y-4">
+        {feedPosts.length === 0 ? (
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 text-center shadow-lg`}>
+            <Rss className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+            <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} mb-2`}>Feed de Notícias</h2>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Acompanhe as atividades da comunidade
+            </p>
+          </div>
+        ) : (
+          feedPosts.map(post => (
+            <div key={post.id} className={`${isDark ? 'bg-gray-800 border-gray-700' : getPostColor(post.type)} rounded-2xl p-4 border-2 shadow-lg`}>
+              <div className="flex items-start space-x-3">
+                <div className="text-2xl">{getPostIcon(post.type)}</div>
+                <div className="flex-1">
+                  <p className={`${isDark ? 'text-white' : 'text-gray-800'} mb-1`}>{post.content}</p>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {new Date(post.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const DashboardTab = () => {
+  const { isDark, user, pets, inventory, returnedPets, deadPets, uniquePets } = useApp();
+  const [showPetsActive, setShowPetsActive] = useState(false);
+  const [showPetsDead, setShowPetsDead] = useState(false);
+  const [showPetsReturned, setShowPetsReturned] = useState(false);
+  const [showPetsUnique, setShowPetsUnique] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
+
+  return (
+    <>
+      <div className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-purple-50 to-blue-50'} p-6`}>
+        <div className="space-y-6">
+          {/* User Profile Card */}
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 shadow-lg border-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div className="flex items-center space-x-4">
+              <div className="text-6xl">{user?.avatar}</div>
+              <div className="flex-1">
+                <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{user?.username}</h2>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    Nível {user?.level}
+                  </span>
+                </div>
+                
+                <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-100'} rounded-full h-3 mb-2 shadow-inner`}>
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-300 shadow-sm"
+                    style={{width: `${(user?.xp % 100)}%`}}
+                  ></div>
+                </div>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {user?.xp % 100}/100 XP • Total: {user?.xp || 0} XP
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setShowPetsActive(true)}
+              className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-lg border-2`}
+            >
+              <div className="text-3xl mb-2">🐾</div>
+              <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{pets.length}</h3>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Pets Ativos</p>
+            </button>
+            
+            <button
+              onClick={() => setShowInventory(true)}
+              className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-lg border-2`}
+            >
+              <div className="text-3xl mb-2">📦</div>
+              <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{inventory.length}</h3>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Inventário</p>
+            </button>
+          </div>
+
+          {/* Detailed Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setShowPetsUnique(true)}
+              className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-lg border-2 relative overflow-hidden`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/20 to-pink-100/20"></div>
+              <div className="relative z-10">
+                <div className="text-3xl mb-2">✨</div>
+                <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{uniquePets.length}</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Pets Únicos</p>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setShowPetsReturned(true)}
+              className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-lg border-2`}
+            >
+              <div className="text-3xl mb-2">🔄</div>
+              <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{returnedPets.length}</h3>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Devolvidos</p>
+            </button>
+          </div>
+
+          {/* Achievement Summary */}
+          <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-4 shadow-lg border-2`}>
+            <h3 className={`font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>Resumo Geral</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="text-center">
+                <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Total Adotados</p>
+                <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                  {pets.length + returnedPets.length + deadPets.length}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Taxa de Sucesso</p>
+                <p className={`text-lg font-bold ${
+                  pets.length / Math.max(1, pets.length + deadPets.length) > 0.7 ? 'text-green-500' : 
+                  pets.length / Math.max(1, pets.length + deadPets.length) > 0.4 ? 'text-yellow-500' : 'text-red-500'
+                }`}>
+                  {Math.round((pets.length / Math.max(1, pets.length + deadPets.length)) * 100)}%
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowPetsDead(true)}
+              className={`w-full mt-4 p-3 rounded-xl ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors flex items-center justify-center space-x-2`}
+            >
+              <Skull className="w-4 h-4" />
+              <span>Ver pets falecidos ({deadPets.length})</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <PetsListSheet
+        show={showPetsActive}
+        onClose={() => setShowPetsActive(false)}
+        pets={pets}
+        title="Pets Ativos"
+      />
+      
+      <PetsListSheet
+        show={showPetsDead}
+        onClose={() => setShowPetsDead(false)}
+        pets={deadPets}
+        title="Pets Falecidos"
+      />
+      
+      <PetsListSheet
+        show={showPetsReturned}
+        onClose={() => setShowPetsReturned(false)}
+        pets={returnedPets}
+        title="Pets Devolvidos"
+      />
+      
+      <PetsListSheet
+        show={showPetsUnique}
+        onClose={() => setShowPetsUnique(false)}
+        pets={uniquePets}
+        title="Pets Únicos"
+      />
+      
+      <InventoryFullSheet
+        show={showInventory}
+        onClose={() => setShowInventory(false)}
+      />
+    </>
+  );
+};
+
+// Main App
+const PetCareApp = () => {
+  const { isDark, setIsDark, user, setUser, coins, gems, logout } = useApp();
+  const [currentScreen, setCurrentScreen] = useState('splash');
+  const [activeTab, setActiveTab] = useState('pet');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAdoption, setShowAdoption] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showAIGeneration, setShowAIGeneration] = useState(false);
+
+  if (currentScreen === 'splash') {
+    return <SplashScreen onFinish={() => setCurrentScreen('login')} />;
+  }
+
+  if (currentScreen === 'login') {
+    return <LoginScreen onLogin={(userData) => { setUser(userData); setCurrentScreen('home'); }} />;
+  }
+
+  const tabs = [
+    { id: 'feed', label: 'Feed', icon: Rss, component: FeedTab },
+    { id: 'missions', label: 'Missões', icon: Target, component: MissionsTab },
+    { id: 'pet', label: 'Pet', icon: '🐾', component: PetTab, isCenter: true },
+    { id: 'shop', label: 'Loja', icon: ShoppingBag, component: ShopTab },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, component: DashboardTab },
+  ];
+
+  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || PetTab;
+
+  return (
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+      <FloatingParticles />
+      <NotificationBar />
+
+      {/* App Bar */}
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} shadow-lg px-4 py-3 flex items-center justify-between border-b-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <button 
+          onClick={() => setShowProfile(true)}
+          className="flex items-center space-x-3 hover:bg-gray-100 rounded-xl p-2 transition-colors"
+        >
+          <div className="text-3xl">{user?.avatar}</div>
+          <div>
+            <h1 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{user?.username}</h1>
+            <div className="flex items-center space-x-2">
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                Nível {user?.level} • {user?.xp % 100}/100 XP
+              </span>
+            </div>
+          </div>
+        </button>
+        
+        <div className="flex items-center space-x-4">
+          {/* AI Generation Button */}
+          <button
+            onClick={() => setShowAIGeneration(true)}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all"
+            title="Gerar Pet Único com IA"
+          >
+            <Wand2 className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 bg-yellow-100 px-3 py-1 rounded-full">
+              <Coins className="w-4 h-4 text-yellow-600" />
+              <span className={`font-semibold text-yellow-800`}>{coins}</span>
+            </div>
+            <div className="flex items-center space-x-1 bg-purple-100 px-3 py-1 rounded-full">
+              <Gem className="w-4 h-4 text-purple-600" />
+              <span className={`font-semibold text-purple-800`}>{gems}</span>
+            </div>
+          </div>
+          
+          <button onClick={() => setShowSettings(true)} className={`w-10 h-10 rounded-full ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center transition-colors`}>
+            <Settings className={`w-5 h-5 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Pet Slots */}
+      <PetSlots onSlotClick={() => setShowAdoption(true)} />
+
+      {/* Main Content */}
+      <ActiveComponent />
+
+      {/* Bottom Navigation */}
+      <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-lg border-t-2 relative`}>
+        <div className="flex items-center justify-around py-2 px-4">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            if (tab.isCenter) {
+              return (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="relative -top-6">
+                  <div className={`w-16 h-16 rounded-full ${isActive ? 'bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg shadow-purple-300' : isDark ? 'bg-gray-700' : 'bg-gray-200'} flex items-center justify-center shadow-xl transition-all`}>
+                    <span className="text-2xl">{tab.icon}</span>
+                  </div>
+                </button>
+              );
+            }
+            
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-center py-2 px-3 transition-colors ${isActive ? isDark ? 'text-purple-400' : 'text-purple-600' : isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}>
+                <Icon className="w-6 h-6" />
+                <span className="text-xs mt-1">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Modals */}
+      <AdoptionFlow show={showAdoption} onClose={() => setShowAdoption(false)} />
+      
+      <AIPetGenerationSheet show={showAIGeneration} onClose={() => setShowAIGeneration(false)} />
+      
+      <UserProfileSheet show={showProfile} onClose={() => setShowProfile(false)} />
+
+      {showSettings && (
+        <BottomSheet show={showSettings} onClose={() => setShowSettings(false)} title="Configurações">
+          <div className="space-y-4">
+            <div className={`p-4 rounded-2xl ${isDark ? 'bg-gray-700' : 'bg-gray-50'} flex items-center justify-between border-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+              <div>
+                <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Tema Escuro</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Alternar tema</p>
+              </div>
+              <button onClick={setIsDark} className={`w-12 h-6 rounded-full ${isDark ? 'bg-purple-600' : 'bg-gray-300'} relative transition-colors`}>
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${isDark ? 'translate-x-6' : 'translate-x-0.5'} shadow-lg`}></div>
+              </button>
+            </div>
+            
+            <button
+              onClick={() => {
+                logout();
+                setCurrentScreen('login');
+                setShowSettings(false);
+              }}
+              className="w-full p-4 rounded-2xl border-2 border-red-200 hover:border-red-500 bg-red-50 text-red-700 flex items-center justify-center space-x-2 transition-all"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-semibold">Sair da Conta</span>
+            </button>
+          </div>
+        </BottomSheet>
+      )}
+
+      <style jsx>{`
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+    </div>
+  );
+};
+
+const App = () => (
+  <AppProvider>
+    <PetCareApp />
+  </AppProvider>
+);
+
+export default App;

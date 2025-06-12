@@ -1,0 +1,2760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Game - Correção Final de Layout e Slots</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Estilos Globais e Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+      /* Evita scroll indesejado no body */
+    }
+
+    /* Frame do Celular */
+    .phone-frame {
+      width: 375px;
+      height: 667px;
+      background: #1a1a1a;
+      border-radius: 40px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      /* Para centralizar o app-structure */
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Estrutura do Aplicativo (Flex Container Principal) */
+    .app-structure {
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      /* Organiza os elementos verticalmente */
+    }
+
+    /* AppBar */
+    .app-bar {
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      color: white;
+      z-index: 20;
+      /* Fica acima de tudo */
+      border-radius: 30px 30px 0 0;
+      /* Arredondamento superior */
+      flex-shrink: 0;
+      /* Não permite que encolha */
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .user-stats {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stat-item:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .coins {
+      color: #ffd700;
+    }
+
+    .xp {
+      color: #00ff88;
+    }
+
+    .gems {
+      color: #ff6b9d;
+    }
+
+    /* Contêiner das Telas */
+    .screens-wrapper {
+      flex-grow: 1;
+      /* Ocupa todo o espaço vertical restante entre AppBar e BottomNav */
+      position: relative;
+      /* Base para o posicionamento absoluto de modais/notificações */
+      overflow: hidden;
+      /* Garante que as telas não transbordem */
+    }
+
+    /* Telas (gerenciadas por z-index e opacidade) */
+    .screen {
+      position: absolute;
+      /* Para sobrepor umas às outras */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      /* Permite scroll se o conteúdo for grande */
+      flex-direction: column;
+      /* Para organizar seu próprio conteúdo interno com flexbox */
+      justify-content: flex-start;
+      align-items: center;
+      background: #f8f9fa;
+      /* Fundo padrão para telas não-pet */
+
+      /* Controle de visibilidade: */
+      display: flex;
+      /* Mantém como flex para layout interno */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      /* Transição suave */
+      pointer-events: none;
+      /* Impede interações quando invisível */
+      z-index: 1;
+      /* Z-index padrão para telas inativas */
+    }
+
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      /* Permite interações quando ativa */
+      z-index: 2;
+      /* Garante que a tela ativa esteja por cima */
+    }
+
+    /* Game Screen - Pet (Layout Flexbox Interno) */
+    .pet-screen {
+      background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+      position: relative;
+      /* Para o sistema de partículas */
+      overflow: hidden;
+      display: flex;
+      /* Permanece flex para layout interno */
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: stretch;
+      height: 100%;
+      /* Ocupa 100% da altura do screens-wrapper */
+    }
+
+    /* Cabeçalho da tela Pet */
+    .pet-screen-header {
+      height: 60px;
+      /* Altura fixa para o cabeçalho */
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 10;
+      flex-shrink: 0;
+      /* Previne que encolha */
+    }
+
+    /* Área Principal do Pet */
+    .pet-screen-main-content {
+      flex-grow: 1;
+      /* Ocupa todo o espaço restante */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      /* Adiciona um padding para conteúdo */
+      z-index: 5;
+      /* Abaixo do header/footer */
+      position: relative;
+      /* PARA POSICIONAR O AVATAR DO COLABORADOR E O BUBBLE */
+    }
+
+    /* NOVO: Avatar do Colaborador */
+    .collaborator-avatar-display {
+      position: absolute;
+      top: 20px;
+      /* Posição relativa ao pet-screen-main-content */
+      right: 20px;
+      /* Posição relativa ao pet-screen-main-content */
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      opacity: 0;
+      /* Hidden by default */
+      visibility: hidden;
+      /* Hidden by default */
+      pointer-events: none;
+      /* Not clickable by default */
+    }
+
+    .collaborator-avatar-display.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* NOVO: Balão de Fala do Pet */
+    .pet-speech-bubble {
+      position: absolute;
+      top: 15px;
+      /* Ajustar conforme a posição do pet */
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 12px;
+      border-radius: 15px;
+      font-size: 14px;
+      color: #2c3e50;
+      white-space: nowrap;
+      /* Evita quebra de linha */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 15;
+      /* Acima do pet */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+      /* Não clicável por padrão */
+    }
+
+    .pet-speech-bubble.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-10px);
+      /* Sobe um pouco ao aparecer */
+    }
+
+    .pet-speech-bubble::after {
+      /* Ponta do balão */
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid rgba(255, 255, 255, 0.9);
+    }
+
+    /* NOVO: Indicador de carregamento */
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease;
+    }
+
+    .loading-indicator.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+
+    /* Rodapé da tela Pet (status-hud) - AGORA UM SLIDE */
+    .pet-screen-footer {
+      max-height: 140px;
+      /* Altura máxima para o rodapé */
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 20px 20px 0 0;
+      padding: 16px;
+      z-index: 10;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      /* Garante que o conteúdo seja cortado ao recolher */
+      transition: max-height 0.5s ease-out, opacity 0.5s ease-out, padding 0.5s ease-out;
+      /* Animação de slide */
+      opacity: 1;
+      /* Por padrão, visível se tiver conteúdo */
+
+      /* Estado recolhido (hidden) */
+      max-height: 0;
+      opacity: 0;
+      padding: 0;
+      pointer-events: none;
+      /* Não clicável quando recolhido */
+    }
+
+    .pet-screen-footer.visible {
+      max-height: 140px;
+      /* Altura expandida */
+      opacity: 1;
+      padding: 16px;
+      /* Padding visível */
+      pointer-events: auto;
+      /* Clicável quando visível */
+    }
+
+    /* Painel de Cuidados (Status e Ações) */
+    .pet-care-panel {
+      width: 100%;
+      height: 100%;
+      /* Ocupa toda a altura do footer */
+      display: flex;
+      /* NOVO: Para ser explicitamente flex */
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .pet-care-panel.hidden {
+      opacity: 0;
+      display: none;
+      /* NOVO: Oculta completamente */
+    }
+
+    /* Painel de Informações de Adoção (NOVO) */
+    .adoption-info-panel {
+      width: 100%;
+      height: 100%;
+      /* Ocupa toda a altura do footer */
+      display: flex;
+      /* NOVO: Para ser explicitamente flex */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      /* Adiciona padding */
+      box-sizing: border-box;
+      /* Inclui padding na largura/altura */
+      color: white;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      transform: translateY(20px);
+      /* Começa um pouco abaixo para animação */
+    }
+
+    .adoption-info-panel.visible {
+      opacity: 1;
+      transform: translateY(0);
+      /* Sube para a posição final */
+    }
+
+    .adoption-info-panel.hidden {
+      /* NOVO: Oculta completamente */
+      display: none;
+    }
+
+    .adoption-info-panel h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .adoption-info-panel p {
+      margin: 0 auto 10px auto;
+      /* Centraliza e adiciona margem inferior */
+      max-width: 90%;
+      /* Ajusta para se adaptar melhor */
+    }
+
+    .adoption-info-panel button {
+      background: linear-gradient(45deg, #00C4FF, #007bff);
+      /* Azul para botão de adoção */
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .adoption-info-panel button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+
+    /* Títulos de Tela (para Dashboard, Shop, Ranking, Feed) */
+    .screen-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 20px;
+      /* Espaço abaixo do título */
+      padding-top: 20px;
+      /* Padding para não grudar no topo da tela */
+    }
+
+    .screen-content {
+      text-align: center;
+      color: #7f8c8d;
+      max-width: 280px;
+      margin-bottom: 20px;
+    }
+
+    /* Dashboard Specific Styles */
+    .dashboard-content {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 320px;
+      padding-bottom: 20px;
+      /* Ensure content doesn't get cut by bottom nav */
+    }
+
+    .dashboard-content .card {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #2c3e50;
+      display: flex;
+      /* Permite ícone e texto lado a lado */
+      align-items: flex-start;
+      /* Alinha o conteúdo ao topo */
+      gap: 10px;
+      /* Espaço entre ícone e texto */
+    }
+
+    .dashboard-content .card .icon {
+      font-size: 30px;
+      line-height: 1;
+      /* Garante que o ícone não ocupe muito espaço vertical */
+      color: #667eea;
+      /* Cor padrão do ícone */
+      flex-shrink: 0;
+      /* Impede que o ícone encolha */
+    }
+
+    .dashboard-content .card.player-stats-card .icon {
+      color: #4CAF50;
+    }
+
+    /* Verde para Perfil */
+    .dashboard-content .card.pet-overview-card .icon {
+      color: #FFC107;
+    }
+
+    /* Laranja para Pets */
+    .dashboard-content .card.missions-events-card .icon {
+      color: #03A9F4;
+    }
+
+    /* Azul para Missões */
+
+
+    .dashboard-content .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+      flex-grow: 1;
+      /* Faz o título ocupar o espaço restante */
+    }
+
+    .dashboard-content .card p,
+    .dashboard-content .card ul {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 5px;
+    }
+
+    .dashboard-content .card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .dashboard-content .card ul li {
+      margin-bottom: 4px;
+    }
+
+    /* Slots colaborativos */
+    .collaboration-slots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .slot {
+      width: 35px;
+      height: 35px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .slot:hover {
+      transform: scale(1.1);
+    }
+
+    .slot.occupied {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      border-color: rgba(255, 255, 255, 0.8);
+      color: white;
+      /* Garante que o emoji fique visível */
+    }
+
+    .slot.waiting {
+      /* Estilo para pet em adoção colaborativa */
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      /* Amarelo/Laranja */
+      border-color: rgba(255, 255, 255, 0.8);
+      color: white;
+      animation: pulse-waiting 1.5s infinite alternate;
+    }
+
+    @keyframes pulse-waiting {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+    }
+
+    .slot.available {
+      background: rgba(255, 255, 255, 0.2);
+      color: #666;
+    }
+
+    .level-badge {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-weight: bold;
+      color: #333;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .level-badge:hover {
+      background: white;
+      transform: scale(1.05);
+    }
+
+    /* Área central do pet */
+    .pet-container {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .pet-container:hover {
+      transform: scale(1.05);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .pet-avatar {
+      font-size: 65px;
+      animation: bounce 2s ease-in-out infinite;
+      transition: all 0.3s ease;
+    }
+
+    .pet-info {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .pet-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    .pet-type {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Status Grid */
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+      /* Garante que o ícone seja visível */
+    }
+
+    .status-bar-container {
+      flex: 1;
+    }
+
+    .status-label {
+      color: #fff;
+      font-size: 11px;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .status-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .status-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Botões de ação */
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .action-btn {
+      flex: 1;
+      height: 42px;
+      border-radius: 12px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .action-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(0.7);
+      /* Efeito de desabilitado */
+    }
+
+    .action-btn.disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Cores específicas */
+    .happiness {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    }
+
+    .hunger {
+      background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    }
+
+    .energy {
+      background: linear-gradient(45deg, #45b7d1, #3742fa);
+    }
+
+    .health {
+      background: linear-gradient(45deg, #96ceb4, #2ed573);
+    }
+
+    .btn-feed {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    }
+
+    .btn-play {
+      background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    }
+
+    .btn-sleep {
+      background: linear-gradient(45deg, #45b7d1, #3742fa);
+    }
+
+    .btn-heal {
+      background: linear-gradient(45deg, #96ceb4, #2ed573);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      height: 70px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      border-top: 1px solid #e0e0e0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 20;
+      /* Fica acima de tudo */
+      border-radius: 0 0 30px 30px;
+      /* Arredondamento inferior */
+      flex-shrink: 0;
+      /* Não permite que encolha */
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .nav-item:not(.active) {
+      color: #666;
+    }
+
+    .nav-item:hover:not(.active) {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    /* Animações */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
+
+    @keyframes happy {
+
+      0%,
+      100% {
+        transform: scale(1) rotate(0deg);
+      }
+
+      50% {
+        transform: scale(1.1) rotate(5deg);
+      }
+    }
+
+    .pet-hungry {
+      animation: shake 0.5s ease-in-out infinite;
+    }
+
+    .pet-happy {
+      animation: happy 0.8s ease-in-out 3;
+    }
+
+    .pet-sleepy {
+      opacity: 0.7;
+      filter: blur(1px);
+    }
+
+    /* Sistema de Partículas */
+    .particle-system {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      /* Não interfere com cliques */
+      z-index: 1;
+      /* Abaixo dos elementos principais do pet-screen */
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: moveParticle 4s linear forwards;
+      /* Animação de movimento, forwards para parar no final */
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    @keyframes moveParticle {
+      0% {
+        opacity: 0;
+        transform: translate(var(--x-start), var(--y-start)) scale(0);
+      }
+
+      20% {
+        opacity: 1;
+        transform: translate(var(--x-mid), var(--y-mid)) scale(1);
+      }
+
+      80% {
+        opacity: 1;
+        transform: translate(var(--x-end), var(--y-end)) scale(0.5);
+      }
+
+      100% {
+        transform: translate(var(--x-end), var(--y-end)) scale(0);
+      }
+    }
+
+    /* Notificações (toast) */
+    .notification {
+      position: absolute;
+      top: 80px;
+      /* Abaixo da AppBar */
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      /* Começa um pouco acima */
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 1000;
+      /* Acima de tudo */
+      opacity: 0;
+      transition: all 0.3s ease-out;
+      /* Transição suave */
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      /* Não bloqueia cliques */
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      /* Desliza para baixo */
+    }
+
+    /* Modal Customizado */
+    .custom-modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      /* Fundo escuro semi-transparente */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+      /* Acima de tudo, incluindo notificações */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+
+    .custom-modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .custom-modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: 300px;
+      width: 90%;
+      color: #333;
+      transform: translateY(-20px);
+      /* Começa um pouco acima */
+      transition: transform 0.3s ease;
+      max-height: 90%;
+      /* Aumentado para mais espaço */
+      overflow-y: visible;
+      /* Remover a barra de rolagem do modal, deixá-la no conteúdo */
+    }
+
+    .custom-modal-overlay.show .custom-modal-content {
+      transform: translateY(0);
+      /* Desliza para a posição */
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #667eea;
+    }
+
+    .modal-body {
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+      /* Preserva quebras de linha no texto */
+    }
+
+    .modal-buttons button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 0 5px;
+    }
+
+    .modal-buttons button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .modal-buttons button.cancel {
+      background: #ccc;
+      color: #333;
+    }
+
+    .modal-buttons button.cancel:hover {
+      background: #bbb;
+    }
+
+    /* Novo: Estilos para lista de pets no modal (agora para inventário também) */
+    .adopt-list {
+      /* Usado para lista de adoção e inventário */
+      display: grid;
+      /* Mudei para grid */
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      /* Grid responsivo */
+      gap: 15px;
+      /* Mais espaço entre os itens */
+      margin-top: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .adopt-item {
+      /* Estilos para cards de itens no modal */
+      display: flex;
+      flex-direction: column;
+      /* Ícone em cima, texto em baixo */
+      align-items: center;
+      gap: 8px;
+      /* Espaço entre ícone e texto */
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      /* Mais arredondado */
+      background: #fdfdfd;
+      /* Fundo mais claro */
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      /* Sombra mais suave */
+    }
+
+    .adopt-item:hover {
+      background: #eef;
+      transform: translateY(-3px);
+      /* Levanta um pouco mais no hover */
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .adopt-item-avatar {
+      font-size: 36px;
+      /* Ícone maior */
+      margin-right: 5px;
+    }
+
+    .adopt-item-info {
+      text-align: center;
+      /* Centraliza info do item */
+      flex-grow: 1;
+    }
+
+    .adopt-item-name {
+      font-weight: bold;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .adopt-item-type {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .adopt-action-btn {
+      background: linear-gradient(45deg, #4CAF50, #8BC34A);
+      /* Verde para ação */
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+      /* Espaço do botão */
+    }
+
+    .adopt-action-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .adopt-action-btn.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .waiting-adoptions-list {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px dashed #eee;
+    }
+
+    .waiting-adoptions-list h4 {
+      color: #667eea;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .waiting-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border: 1px solid #FFE0B2;
+      /* Cor mais clara para o item */
+      border-radius: 8px;
+      background: #FFF3E0;
+      /* Fundo suave */
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .waiting-item:hover {
+      background: #FFECB3;
+      transform: scale(1.02);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .waiting-item-avatar {
+      font-size: 20px;
+    }
+
+    .waiting-item-info {
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .waiting-item-name {
+      font-weight: bold;
+      color: #F57C00;
+      /* Laranja mais escuro */
+    }
+
+    .waiting-item-owner {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* Loja */
+    .shop-items {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
+      max-width: 300px;
+      margin-top: 20px;
+      /* Espaço para o título da tela */
+    }
+
+    .shop-item {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .shop-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .shop-item-icon {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .shop-item-name {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+
+    .shop-item-price {
+      color: #f39c12;
+      font-weight: bold;
+    }
+
+    /* Ranking */
+    .ranking-list {
+      width: 100%;
+      max-width: 300px;
+      margin-top: 20px;
+      /* Espaço para o título da tela */
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .ranking-position {
+      font-weight: bold;
+      color: #f39c12;
+      margin-right: 12px;
+      font-size: 18px;
+    }
+
+    .ranking-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+
+    .ranking-info {
+      flex: 1;
+    }
+
+    .ranking-name {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .ranking-score {
+      color: #7f8c8d;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone-frame">
+    <div class="app-structure">
+      <!-- AppBar -->
+      <div class="app-bar">
+        <div class="user-avatar" onclick="showProfile()">👤</div>
+        <div class="user-stats">
+          <div class="stat-item coins" onclick="earnCoins()">
+            🪙 <span id="coins">1250</span>
+          </div>
+          <div class="stat-item xp" onclick="earnXP()">
+            ⭐ <span id="xp">2850</span>
+          </div>
+          <div class="stat-item gems" onclick="earnGems()">
+            💎 <span id="gems">45</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contêiner para todas as telas -->
+      <div class="screens-wrapper">
+        <!-- Dashboard Screen (antiga Home) -->
+        <div class="screen dashboard-screen" id="dashboard">
+          <div class="screen-title">📊 Dashboard</div>
+          <div class="dashboard-content">
+            <div class="card player-stats-card">
+              <span class="icon">👤</span>
+              <div>
+                <h3>Seu Perfil</h3>
+                <p>Nível: <span id="dashboardLevel"></span></p>
+                <p>XP: <span id="dashboardXP"></span></p>
+                <p>Moedas: <span id="dashboardCoins"></span></p>
+                <p>Gemas: <span id="dashboardGems"></span></p>
+              </div>
+            </div>
+            <div class="card pet-overview-card">
+              <span class="icon">🐾</span>
+              <div>
+                <h3>Visão Geral dos Pets</h3>
+                <p>Total de Pets: <span id="dashboardTotalPets"></span></p>
+                <p>Pets Colaborativos: <span id="dashboardCollabPetsCount"></span></p>
+                <p>Pet Ativo: <span id="dashboardActivePetName">N/A</span></p>
+                <p>Humor do Pet Ativo: <span id="dashboardActivePetMood">N/A</span></p>
+              </div>
+            </div>
+            <div class="card missions-events-card">
+              <span class="icon">✨</span>
+              <div>
+                <h3>Missões & Eventos</h3>
+                <ul>
+                  <li>✅ Alimente seu pet 5 vezes (Recompensa: 50 🪙)</li>
+                  <li>⭐ Participe do Evento Semanal (Recompensa: 1 💎)</li>
+                  <li>🤝 Colabore na adoção de um pet (Recompensa: 100 XP)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pet Screen -->
+        <div class="screen pet-screen active" id="pets">
+          <!-- Sistema de Partículas (será preenchido por JS) -->
+          <div class="particle-system" id="particle-system"></div>
+
+          <!-- Cabeçalho da Tela Pet -->
+          <div class="pet-screen-header">
+            <div class="collaboration-slots" id="collaborationSlots">
+              <!-- Slots serão preenchidos dinamicamente por JS -->
+              <!-- O slot inicial hardcoded foi removido do HTML -->
+            </div>
+            <div class="level-badge" onclick="showLevelInfo()">Nível <span id="level">5</span></div>
+          </div>
+
+          <!-- Área Principal do Conteúdo do Pet -->
+          <div class="pet-screen-main-content">
+            <div class="pet-container" onclick="petClick()">
+              <div class="pet-avatar" id="petAvatar">🐱</div>
+            </div>
+            <div class="pet-info">
+              <div class="pet-name" onclick="changePetName()" id="petName">Miau</div>
+              <div class="pet-type" id="petType">Gato Fofo</div>
+            </div>
+            <!-- NOVO: Avatar do Colaborador Anónimo -->
+            <div class="collaborator-avatar-display" id="collaboratorAvatarDisplay">❓</div>
+            <!-- NOVO: Balão de Fala do Pet -->
+            <div class="pet-speech-bubble" id="petSpeechBubble"></div>
+            <!-- NOVO: Indicador de carregamento -->
+            <div class="loading-indicator" id="loadingIndicator">Carregando...</div>
+          </div>
+
+          <!-- Rodapé da Tela Pet (com status e ações) -->
+          <div class="pet-screen-footer" id="petScreenFooter">
+            <!-- Painel de Cuidados (Status e Ações) -->
+            <div class="pet-care-panel" id="petCarePanel">
+              <div class="status-grid">
+                <div class="status-item">
+                  <div class="status-icon happiness">❤️</div>
+                  <div class="status-bar-container">
+                    <div class="status-label">
+                      <span>Felicidade</span>
+                      <span id="happinessValue">85%</span>
+                    </div>
+                    <div class="status-bar">
+                      <div class="status-fill happiness" id="happinessBar" style="width: 85%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-item">
+                  <div class="status-icon hunger">🍖</div>
+                  <div class="status-bar-container">
+                    <div class="status-label">
+                      <span>Fome</span>
+                      <span id="hungerValue">45%</span>
+                    </div>
+                    <div class="status-bar">
+                      <div class="status-fill hunger" id="hungerBar" style="width: 45%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-item">
+                  <div class="status-icon energy">⚡</div>
+                  <div class="status-bar-container">
+                    <div class="status-label">
+                      <span>Energia</span>
+                      <span id="energyValue">70%</span>
+                    </div>
+                    <div class="status-bar">
+                      <div class="status-fill energy" id="energyBar" style="width: 70%"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-item">
+                  <div class="status-icon health">💊</div>
+                  <div class="status-bar-container">
+                    <div class="status-label">
+                      <span>Saúde</span>
+                      <span id="healthValue">90%</span>
+                    </div>
+                    <div class="status-bar">
+                      <div class="status-fill health" id="healthBar" style="width: 90%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-buttons">
+                <button class="action-btn btn-feed" onclick="handlePetAction('food')">
+                  🍖
+                  <span>Alimentar</span>
+                </button>
+                <button class="action-btn btn-play" onclick="handlePetAction('toy')">
+                  🎮
+                  <span>Brincar</span>
+                </button>
+                <button class="action-btn btn-sleep" onclick="handlePetAction('sleep')">
+                  😴
+                  <span>Descansar</span>
+                </button>
+                <button class="action-btn btn-heal" onclick="handlePetAction('medicine')" id="healBtn">
+                  💊
+                  <span>Medicar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Painel de Informações de Adoção (NOVO) -->
+            <div class="adoption-info-panel" id="adoptionInfoPanel">
+              <h6>Adote um Novo Companheiro!</h6>
+              <p>Comece a sua jornada de cuidado com pets adotando um amigo peludo, escamoso ou com penas!</p>
+              <p>Você pode adotar sozinho ou em parceria com outro jogador para cuidar do seu pet em conjunto.</p>
+              <button onclick="addPet()">Adotar Agora!</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div class="screen shop-screen" id="shop">
+          <div class="screen-title">🛍️ Loja de Itens</div>
+          <div class="shop-items">
+            <div class="shop-item" onclick="buyItem('food', 50, '🍎 Comida Premium')">
+              <div class="shop-item-icon">🍎</div>
+              <div class="shop-item-name">Comida Premium</div>
+              <div class="shop-item-price">50 🪙</div>
+            </div>
+            <div class="shop-item" onclick="buyItem('toy', 75, '🎾 Brinquedo')">
+              <div class="shop-item-icon">🎾</div>
+              <div class="shop-item-name">Brinquedo</div>
+              <div class="shop-item-price">75 🪙</div>
+            </div>
+            <div class="shop-item" onclick="buyItem('medicine', 100, '💊 Remédio')">
+              <div class="shop-item-icon">💊</div>
+              <div class="shop-item-name">Remédio</div>
+              <div class="shop-item-price">100 🪙</div>
+            </div>
+            <div class="shop-item" onclick="buyItem('accessory', 200, '🎀 Acessório')">
+              <div class="shop-item-icon">🎀</div>
+              <div class="shop-item-name">Acessório</div>
+              <div class="shop-item-price">200 🪙</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ranking Screen -->
+        <div class="screen ranking-screen" id="ranking">
+          <div class="screen-title">🏆 Ranking de Jogadores</div>
+          <div class="ranking-list">
+            <div class="ranking-item">
+              <div class="ranking-position">1º</div>
+              <div class="ranking-avatar">🥇</div>
+              <div class="ranking-info">
+                <div class="ranking-name">PetMaster2024</div>
+                <div class="ranking-score">15,430 XP</div>
+              </div>
+            </div>
+            <div class="ranking-item">
+              <div class="ranking-position">2º</div>
+              <div class="ranking-avatar">🥈</div>
+              <div class="ranking-info">
+                <div class="ranking-name">CatLover99</div>
+                <div class="ranking-score">12,890 XP</div>
+              </div>
+            </div>
+            <div class="ranking-item">
+              <div class="ranking-position">3º</div>
+              <div class="ranking-avatar">🥉</div>
+              <div class="ranking-info">
+                <div class="ranking-name">DogFriend</div>
+                <div class="ranking-score"><span id="playerXP">2,850</span> XP</div>
+              </div>
+            </div>
+            <div class="ranking-item">
+              <div class="ranking-position">4º</div>
+              <div class="ranking-avatar">👤</div>
+              <div class="ranking-info">
+                <div class="ranking-name">Você</div>
+                <div class="ranking-score"><span id="playerXP">2,850</span> XP</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feed Screen (News, Events, Missions) -->
+        <div class="screen feed-screen" id="feed">
+          <div class="screen-title">📰 Notícias do Mundo Pet</div>
+          <div class="screen-content" style="max-width: 320px;">
+            <h3>Últimas Notícias:</h3>
+            <p class="news-item">🐾 Um novo evento de caça ao tesouro começa na Floresta Encantada!</p>
+            <p class="news-item">🌟 "Estrelinha" atingiu o Nível 10 e se tornou um pet lendário!</p>
+            <p class="news-item">🎉 Desconto de 50% em todos os brinquedos da loja esta semana!</p>
+            <br>
+            <h3>Eventos Próximos:</h3>
+            <ul>
+              <li class="event-item">📅 15/06: Festival de Natação dos Peixes</li>
+              <li class="event-item">📅 20/06: Corrida Anual de Hamsters</li>
+            </ul>
+            <br>
+            <h3>Missões Ativas:</h3>
+            <ul>
+              <li class="mission-item">✅ Alimente seu pet 5 vezes (Recompensa: 50 🪙)</li>
+              <li class="mission-item">✅ Brinque com outro pet (Recompensa: 1 💎)</li>
+            </ul>
+            <div style="margin-top: 20px;">
+              <button class="action-btn" onclick="generateNews()">Gerar Notícia ✨</button>
+            </div>
+            <div id="generatedNewsContainer"
+              style="margin-top: 15px; text-align: left; background: #e0f2f7; padding: 10px; border-radius: 8px; color: #333; font-size: 13px; display: none;">
+              <!-- Notícias geradas pelo LLM aqui -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Navigation -->
+      <div class="bottom-nav">
+        <div class="nav-item" data-screen="dashboard" onclick="switchScreen(this)">
+          <div class="nav-icon">📊</div>
+          <div class="nav-label">Dashboard</div>
+        </div>
+        <div class="nav-item active" data-screen="pets" onclick="switchScreen(this)">
+          <div class="nav-icon">🐾</div>
+          <div class="nav-label">Pets</div>
+        </div>
+        <div class="nav-item" data-screen="shop" onclick="switchScreen(this)">
+          <div class="nav-icon">🛍️</div>
+          <div class="nav-label">Loja</div>
+        </div>
+        <div class="nav-item" data-screen="ranking" onclick="switchScreen(this)">
+          <div class="nav-icon">🏆</div>
+          <div class="nav-label">Ranking</div>
+        </div>
+        <div class="nav-item" data-screen="feed" onclick="switchScreen(this)">
+          <div class="nav-icon">📰</div>
+          <div class="nav-label">Notícias</div>
+        </div>
+      </div>
+
+      <!-- Notificação (Toast) -->
+      <div class="notification" id="notification"></div>
+
+      <!-- Custom Modal Structure -->
+      <div class="custom-modal-overlay" id="customModalOverlay">
+        <div class="custom-modal-content">
+          <div class="modal-title" id="modalTitle"></div>
+          <div class="modal-body" id="modalBody"></div>
+          <div class="modal-buttons" id="modalButtons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define o nível em que colaboradores podem ser "conhecidos"
+    const MEET_LEVEL_THRESHOLD = 3;
+
+    // Game State (Estado do Jogo)
+    let gameState = {
+      coins: 1250,
+      xp: 2850,
+      gems: 45,
+      level: 5,
+      userPets: [], // Começa sem pets para testar adoção solo
+      activePetId: null, // Nenhum pet ativo inicialmente
+      collaborativeAdoptions: [], // Pets aguardando segundo adotante (inicialmente vazio para teste)
+      userId: 'user123', // Simulação de ID do usuário atual
+      inventory: { // Inventário para itens comprados
+        food: 5, // Mais comida
+        toys: 3, // Mais brinquedos
+        medicine: 2, // Mais remédios
+        accessories: 0,
+        food_premium: 1 // Adicionado um item de ração especial no inventário
+      },
+      purchasedSlots: 0 // NOVO: Contador de slots comprados com gemas
+    };
+
+    // Lista de pets disponíveis para adoção
+    const adoptablePetsList = [
+      { id: 'pet_dog1', name: 'Rex', type: 'Cachorro Forte', avatar: '🐶', adoptionCost: 200 },
+      { id: 'pet_hamster1', name: 'Pipoca', type: 'Hamster Pequeno', avatar: '🐹', adoptionCost: 100 },
+      { id: 'pet_bird1', name: 'Piu', type: 'Pássaro Cantador', avatar: '🐦', adoptionCost: 150 },
+      { id: 'pet_fish1', name: 'Nemo', type: 'Peixe Dourado', avatar: '🐠', adoptionCost: 80 },
+      { id: 'food_premium', name: 'Ração Especial', type: 'Comida', avatar: '🥩', adoptionCost: 75 } // Novo tipo de comida
+    ];
+
+    // Mapeamento de itens para seus ícones
+    const itemIcons = {
+      food: '🍎',
+      toy: '🎾',
+      medicine: '💊',
+      accessory: '🎀',
+      sleep: '😴',
+      news: '📰',
+      food_premium: '🥩'
+    };
+
+    const particleSystem = document.getElementById('particle-system');
+    const customModalOverlay = document.getElementById('customModalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalButtons = document.getElementById('modalButtons');
+    const collaborationSlotsContainer = document.getElementById('collaborationSlots');
+    const petCarePanel = document.getElementById('petCarePanel');
+    const adoptionInfoPanel = document.getElementById('adoptionInfoPanel');
+    const petScreenFooter = document.getElementById('petScreenFooter');
+    const collaboratorAvatarDisplay = document.getElementById('collaboratorAvatarDisplay');
+    const petSpeechBubble = document.getElementById('petSpeechBubble');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const generatedNewsContainer = document.getElementById('generatedNewsContainer');
+
+    // Automatic Status Update (Simulação de Passagem do Tempo)
+    setInterval(() => {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (activePet) {
+        // Decreases status gradually
+        if (activePet.hunger > 0) activePet.hunger = Math.max(0, activePet.hunger - 0.5);
+        if (activePet.energy > 0) activePet.energy = Math.max(0, activePet.energy - 0.3);
+        if (activePet.happiness > 0) activePet.happiness = Math.max(0, activePet.happiness - 0.2);
+
+        // If health is low, decreases faster
+        if (activePet.health < 30) {
+          activePet.happiness = Math.max(0, activePet.happiness - 0.5);
+        }
+
+        // If hunger is too high, affects health
+        if (activePet.hunger < 20) {
+          activePet.health = Math.max(0, activePet.health - 0.3);
+        }
+      }
+      updateUI();
+      checkPetState();
+    }, 3000); // Updates every 3 seconds
+
+    /**
+     * Switches between different screens of the application.
+     * @param {HTMLElement} navItem - The navigation item element that was clicked.
+     */
+    function switchScreen(navItem) {
+      const screenName = navItem.dataset.screen;
+
+      // Remove 'active' class from all screens
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+
+      // Remove 'active' class from all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Activate the selected screen
+      document.getElementById(screenName).classList.add('active');
+
+      // Activate the corresponding nav item
+      navItem.classList.add('active');
+    }
+
+    /* --- Pet Actions --- */
+
+    // NOVO: Função para lidar com ações do pet, abrindo o modal de inventário
+    function handlePetAction(actionType) {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) {
+        showNotification('❌ Adote um pet primeiro!');
+        return;
+      }
+
+      // Ação de dormir não usa inventário, vai direto
+      if (actionType === 'sleep') {
+        petSleep(); // Chama a função direta para dormir
+        return;
+      }
+
+      // Mostra o modal de inventário para outros tipos de ação
+      showInventoryModal(actionType);
+    }
+
+    // REMOVIDAS: As funções feedPet, playWithPet, healPet não são mais chamadas diretamente pelos botões.
+    // Elas agora são chamadas pela função useItemOnPet após a seleção do item.
+
+    function petSleep() {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) return; // Should not happen if handlePetAction checks
+
+      activePet.energy = Math.min(100, activePet.energy + 40);
+      activePet.health = Math.min(100, activePet.health + 10);
+      gameState.xp += 10;
+
+      showNotification('😴 Pet descansou bem! +10 XP');
+      addPetAnimation('pet-sleepy');
+      spawnParticles(10, 'rgba(100, 100, 255, 0.5)'); // Blue particles for sleep
+      updateUI();
+    }
+
+    /**
+     * NOVO: Gera uma resposta do pet usando o Gemini API.
+     */
+    async function petClick() {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) {
+        showNotification('❌ Adote um pet primeiro!');
+        return;
+      }
+
+      // Show loading indicator
+      loadingIndicator.textContent = 'Pet a pensar...';
+      loadingIndicator.classList.add('visible');
+      petSpeechBubble.classList.remove('visible'); // Hide previous speech bubble
+
+      try {
+        const prompt = `Gere uma curta e fofa frase que meu animal de estimação diria. Ele é um ${activePet.type} chamado ${activePet.name}. Sua felicidade é ${activePet.happiness.toFixed(0)}%, fome é ${activePet.hunger.toFixed(0)}%, e energia é ${activePet.energy.toFixed(0)}%. Responda apenas com a frase do pet.`;
+
+        let chatHistory = [];
+        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+        const payload = { contents: chatHistory };
+        const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+          const petResponse = result.candidates[0].content.parts[0].text;
+          petSpeechBubble.textContent = petResponse;
+          petSpeechBubble.classList.add('visible');
+
+          // Hide speech bubble after a few seconds
+          setTimeout(() => {
+            petSpeechBubble.classList.remove('visible');
+          }, 5000);
+
+        } else {
+          petSpeechBubble.textContent = '... (sem resposta)';
+          petSpeechBubble.classList.add('visible');
+          setTimeout(() => {
+            petSpeechBubble.classList.remove('visible');
+          }, 3000);
+          console.error('Gemini API response was empty or malformed:', result);
+        }
+      } catch (error) {
+        console.error('Erro ao chamar Gemini API:', error);
+        showNotification('🚫 Erro ao gerar resposta do pet.');
+      } finally {
+        // Hide loading indicator
+        loadingIndicator.classList.remove('visible');
+      }
+
+      activePet.happiness = Math.min(100, activePet.happiness + 5);
+      gameState.xp += 2;
+      showNotification(`✨ Carinho! +2 XP`); // Keep a basic notification as well
+      addPetAnimation('pet-happy');
+      spawnParticles(5, 'rgba(255, 255, 255, 0.5)'); // White particles for click
+      updateUI();
+    }
+
+    /* --- Inventory & Item Usage --- */
+
+    /**
+     * Exibe um modal com os itens do inventário relevantes para uma ação.
+     * @param {string} actionType - O tipo de ação (ex: 'food', 'toy', 'medicine').
+     */
+    function showInventoryModal(actionType) {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) {
+        showNotification('❌ Adote um pet primeiro!');
+        return;
+      }
+
+      let itemsHtml = '';
+      let relevantItems = [];
+
+      // Define quais itens são relevantes para cada tipo de ação
+      if (actionType === 'food') {
+        // Inclui todos os itens de comida do inventário
+        if (gameState.inventory.food > 0) relevantItems.push({ type: 'food', name: 'Comida Padrão', count: gameState.inventory.food, effect: 'normal' });
+        if (gameState.inventory.food_premium > 0) relevantItems.push({ type: 'food_premium', name: 'Ração Especial', count: gameState.inventory.food_premium, effect: 'premium' });
+      } else if (actionType === 'toy') {
+        relevantItems = [{ type: 'toy', name: 'Brinquedo', count: gameState.inventory.toys, effect: 'normal' }];
+      } else if (actionType === 'medicine') {
+        relevantItems = [{ type: 'medicine', name: 'Remédio', count: gameState.inventory.medicine, effect: 'normal' }];
+      }
+
+      if (relevantItems.length === 0 || relevantItems.every(item => item.count === 0)) {
+        showCustomModal('Inventário Vazio', `Você não tem itens de ${actionType} no inventário. Visite a loja!`, false, hideCustomModal);
+        return;
+      }
+
+      relevantItems.forEach(item => {
+        if (item.count > 0) {
+          itemsHtml += `
+                        <div class="adopt-item" onclick="useItemOnPet('${item.type}', '${activePet.id}', '${actionType}', '${item.effect}')">
+                            <span class="adopt-item-avatar">${itemIcons[item.type]}</span>
+                            <div class="adopt-item-info">
+                                <div class="adopt-item-name">${item.name}</div>
+                                <div class="adopt-item-type">Qtd: ${item.count}</div>
+                            </div>
+                            <button class="adopt-action-btn">Usar</button>
+                        </div>
+                    `;
+        }
+      });
+
+      const modalContent = `
+                <p>Selecione um item do inventário para usar:</p>
+                <div class="adopt-list">
+                    ${itemsHtml || '<p>Nenhum item disponível para esta ação.</p>'}
+                </div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button class="action-btn cancel" onclick="hideCustomModal()">Fechar</button>
+                </div>
+            `;
+      showCustomModal('Seu Inventário', modalContent, false, null, null, false, '', null, true);
+    }
+
+    /**
+     * Usa um item do inventário no pet ativo.
+     * @param {string} itemType - O tipo de item (food, toy, medicine, food_premium).
+     * @param {string} petId - O ID do pet no qual usar o item.
+     * @param {string} actionType - Ação acionada (ex: 'food', 'toy', 'medicine').
+     * @param {string} [itemEffect='normal'] - O efeito específico do item (ex: 'normal', 'premium').
+     */
+    function useItemOnPet(itemType, petId, actionType, itemEffect = 'normal') {
+      const activePet = gameState.userPets.find(p => p.id === petId);
+      if (!activePet) return;
+
+      let itemProperty = itemType; // Agora o itemType mapeia diretamente para a propriedade do inventário (ex: 'food', 'food_premium', 'toys', 'medicine')
+      let effectMessage = '';
+      let particleColor = '';
+
+      if (gameState.inventory[itemProperty] > 0) {
+        gameState.inventory[itemProperty]--; // Consome o item
+
+        // Aplica os efeitos ao pet
+        if (actionType === 'food') {
+          activePet.hunger = Math.min(100, activePet.hunger + (itemEffect === 'premium' ? 50 : 30)); // Mais fome para premium
+          activePet.happiness = Math.min(100, activePet.happiness + (itemEffect === 'premium' ? 20 : 10)); // Mais felicidade para premium
+          gameState.xp += (itemEffect === 'premium' ? 25 : 15); // Mais XP para premium
+          effectMessage = `🍖 Pet alimentado com ${itemEffect === 'premium' ? 'Ração Especial' : 'Comida Padrão'}! +${itemEffect === 'premium' ? 25 : 15} XP`;
+          particleColor = 'rgba(255, 165, 0, 0.7)';
+        } else if (actionType === 'toy') {
+          activePet.energy = Math.max(0, activePet.energy - 15);
+          activePet.happiness = Math.min(100, activePet.happiness + 25);
+          gameState.xp += 20;
+          effectMessage = '🎮 Que divertido! +20 XP';
+          particleColor = 'rgba(0, 255, 255, 0.7)';
+        } else if (actionType === 'medicine') {
+          activePet.health = Math.min(100, activePet.health + 50);
+          activePet.happiness = Math.min(100, activePet.happiness + 15);
+          gameState.xp += 25;
+          effectMessage = '💊 Pet curado! +25 XP';
+          particleColor = 'rgba(0, 255, 0, 0.7)';
+        }
+
+        showNotification(effectMessage);
+        addPetAnimation('pet-happy');
+        spawnParticles(20, particleColor);
+        updateUI();
+        hideCustomModal(); // Fecha o modal após usar o item
+      } else {
+        showNotification(`❌ Você não tem mais ${itemProperty === 'toys' ? 'brinquedos' : itemProperty === 'food' ? 'comida' : 'remédios'}!`);
+      }
+    }
+
+    /* --- Shop Functions --- */
+    function buyItem(itemType, price, itemName) {
+      if (gameState.coins >= price) {
+        showCustomModal('Comprar Item', `Deseja comprar ${itemName} por ${price} moedas?`, true, () => {
+          gameState.coins -= price;
+          // Aumenta a contagem do item no inventário
+          if (itemType === 'food') gameState.inventory.food++;
+          else if (itemType === 'toy') gameState.inventory.toys++;
+          else if (itemType === 'medicine') gameState.inventory.medicine++;
+          else if (itemType === 'food_premium') gameState.inventory.food_premium = (gameState.inventory.food_premium || 0) + 1; // Para novo item
+          else if (itemType === 'accessory') gameState.inventory.accessories++;
+
+          showNotification(`✅ ${itemName} comprado!`);
+          updateUI();
+          hideCustomModal();
+        }, () => {
+          showNotification('🚫 Compra cancelada.');
+          hideCustomModal();
+        });
+      } else {
+        showNotification('❌ Moedas insuficientes!');
+      }
+    }
+
+    /* --- Interaction Functions --- */
+    function earnCoins() {
+      gameState.coins += 50;
+      showNotification('🪙 +50 moedas de bônus!');
+      updateUI();
+    }
+
+    function earnXP() {
+      gameState.xp += 25;
+      showNotification('⭐ +25 XP de bônus!');
+      updateUI();
+    }
+
+    function earnGems() {
+      gameState.gems += 2;
+      showNotification('💎 +2 gemas de bônus!');
+      updateUI();
+    }
+
+    function changePetName() {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) return;
+
+      showCustomModal('Mudar Nome do Pet', 'Digite o novo nome do seu pet:', true, (confirmed, input) => {
+        if (confirmed && input && input.trim()) {
+          activePet.name = input.trim();
+          updateUI();
+          showNotification(`✨ Nome alterado para ${activePet.name}!`);
+        } else if (confirmed) {
+          showNotification('🚫 Nome inválido.');
+        }
+        hideCustomModal();
+      }, null, true, activePet.name); // Pass true for input field, and current name as placeholder
+    }
+
+    /**
+     * Inicia o fluxo de adoção de um novo pet.
+     */
+    function addPet() {
+      const hasPets = gameState.userPets.length > 0;
+      showAdoptionTypeModal(hasPets);
+    }
+
+    /**
+     * Exibe um modal para escolher o tipo de adoção (Solo ou Colaborativa).
+     * @param {boolean} disableSolo - Se true, desabilita a opção de adoção solo.
+     */
+    function showAdoptionTypeModal(disableSolo) {
+      let soloBtnHtml = `<button class="action-btn" onclick="showAdoptablePetsModal(false)">Solo</button>`;
+      if (disableSolo) {
+        soloBtnHtml = `<button class="action-btn disabled" disabled>Solo (Apenas 1º Pet)</button>`;
+      }
+
+      const buttonsHtml = `
+                ${soloBtnHtml}
+                <button class="action-btn" onclick="showAdoptablePetsModal(true)">Colaborativa</button>
+                <button class="action-btn cancel" onclick="hideCustomModal()">Cancelar</button>
+            `;
+
+      showCustomModal('Escolha o Tipo de Adoção', 'Deseja adotar um pet sozinho ou em modo colaborativo?', false, null, null, false, '', buttonsHtml);
+    }
+
+    /**
+     * Exibe um modal com a lista de pets disponíveis para adoção.
+     * @param {boolean} isCollaborative - Se true, a adoção será colaborativa.
+     */
+    function showAdoptablePetsModal(isCollaborative) {
+      let petsHtml = '';
+      let waitingAdoptionsHtml = '';
+      let availableForNewCollabHtml = '';
+
+      // Pets atualmente esperando por um parceiro (em adoções colaborativas já iniciadas)
+      const waitingPets = gameState.collaborativeAdoptions.filter(
+        collab => adoptablePetsList.some(p => p.id === collab.petId)
+      );
+
+      // Pets disponíveis para iniciar uma NOVA adoção (solo ou colaborativa)
+      const petsAvailableForNewAdoption = adoptablePetsList.filter(pet =>
+        !gameState.collaborativeAdoptions.some(collab => collab.petId === pet.id) && // Not already in a collab queue
+        !gameState.userPets.some(userPet => userPet.id === pet.id) // Not already adopted by this user
+      );
+
+      if (isCollaborative && waitingPets.length > 0) {
+        waitingAdoptionsHtml += `
+                    <h4>Pets Aguardando Parceiro:</h4>
+                    <div class="adopt-list">
+                `;
+        waitingPets.forEach(adoption => {
+          const pet = adoptablePetsList.find(p => p.id === adoption.petId);
+          if (pet) {
+            const isFirstAdopter = adoption.adopter1Id === gameState.userId;
+            const buttonText = isFirstAdopter ? 'Aguardando seu parceiro...' : 'Juntar-se (Grátis)';
+            const buttonClass = isFirstAdopter ? 'adopt-action-btn disabled' : 'adopt-action-btn';
+            const buttonAction = isFirstAdopter ? '' : `onclick="joinCollaborativeAdoption('${adoption.id}')"`;
+
+            waitingAdoptionsHtml += `
+                            <div class="adopt-item">
+                                <span class="adopt-item-avatar">${pet.avatar}</span>
+                                <div class="adopt-item-info">
+                                    <div class="adopt-item-name">${pet.name}</div>
+                                    <div class="adopt-item-type">Adotante: ${isFirstAdopter ? 'Você' : adoption.adopter1Id}</div>
+                                </div>
+                                <button class="${buttonClass}" ${buttonAction}>${buttonText}</button>
+                            </div>
+                        `;
+          }
+        });
+        waitingAdoptionsHtml += `</div>`;
+      } else if (isCollaborative) {
+        waitingAdoptionsHtml = `<p style="margin-top:15px; margin-bottom:15px;">Nenhum pet aguardando parceiro. Seja o primeiro a iniciar uma adoção colaborativa!</p>`;
+      }
+
+      // Pets disponíveis para iniciar uma nova adoção (solo ou colaborativa)
+      if (isCollaborative) {
+        availableForNewCollabHtml += `
+                    <h4 style="margin-top:20px;">Inicie uma Nova Adoção Colaborativa:</h4>
+                    <div class="adopt-list">
+                `;
+      } else {
+        availableForNewCollabHtml += `<div class="adopt-list">`;
+      }
+
+      if (petsAvailableForNewAdoption.length > 0) {
+        petsAvailableForNewAdoption.forEach(pet => {
+          availableForNewCollabHtml += `
+                        <div class="adopt-item" onclick="startNewAdoption('${pet.id}', ${isCollaborative})">
+                            <span class="adopt-item-avatar">${pet.avatar}</span>
+                            <div class="adopt-item-info">
+                                <div class="adopt-item-name">${pet.name}</div>
+                                <div class="adopt-item-type">${pet.type}</div>
+                            </div>
+                            <button class="adopt-action-btn">Adotar (${pet.adoptionCost}🪙)</button>
+                        </div>
+                    `;
+        });
+      } else {
+        availableForNewCollabHtml += `<p>Todos os pets disponíveis para adoção já foram iniciados ou adotados!</p>`;
+      }
+      availableForNewCollabHtml += `</div>`;
+
+
+      const modalContent = `
+                ${isCollaborative ? waitingAdoptionsHtml : ''}
+                ${availableForNewCollabHtml}
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button class="action-btn cancel" onclick="hideCustomModal()">Fechar</button>
+                </div>
+            `;
+      showCustomModal(isCollaborative ? 'Adotar (Colaborativa)' : 'Adotar (Solo)', modalContent, false, null, null, false, '', null, true); // Último parâmetro é para conteúdo HTML customizado
+    }
+
+    /**
+     * Inicia uma nova adoção (solo ou colaborativa).
+     * @param {string} petId - ID do pet a ser adotado.
+     * @param {boolean} isCollaborative - Se a adoção é colaborativa.
+     */
+    function startNewAdoption(petId, isCollaborative) {
+      const petToAdopt = adoptablePetsList.find(p => p.id === petId);
+      if (!petToAdopt) {
+        showNotification('❌ Pet não encontrado para adoção.');
+        return;
+      }
+
+      if (gameState.coins < petToAdopt.adoptionCost) {
+        showNotification(`❌ Moedas insuficientes para adotar ${petToAdopt.name}! (${petToAdopt.adoptionCost}🪙 necessários)`);
+        return;
+      }
+
+      showCustomModal('Confirmar Adoção', `Deseja adotar ${petToAdopt.name} por ${petToAdopt.adoptionCost} moedas?`, true, () => {
+        gameState.coins -= petToAdopt.adoptionCost;
+
+        if (isCollaborative) {
+          // Adiciona o pet à fila de adoção colaborativa
+          const adoptionId = `collab_${Date.now()}`;
+          gameState.collaborativeAdoptions.push({
+            id: adoptionId,
+            petId: petToAdopt.id,
+            adopter1Id: gameState.userId, // Marca o usuário atual como o primeiro adotante
+            status: 'waiting_for_partner'
+          });
+          showNotification(`🤝 Você iniciou a adoção colaborativa de ${petToAdopt.name}! Aguardando parceiro.`);
+        } else {
+          // Adoção solo
+          const newPet = { ...petToAdopt, happiness: 70, hunger: 30, energy: 60, health: 80, ownerId: gameState.userId, level: 1, isCollaborative: false, collaboratorMet: false };
+          gameState.userPets.push(newPet);
+          gameState.activePetId = newPet.id; // Define o novo pet como ativo
+          showNotification(`🎉 Você adotou ${newPet.name}!`);
+        }
+        updateUI();
+        hideCustomModal();
+      }, () => {
+        showNotification('🚫 Adoção cancelada.');
+        hideCustomModal();
+      });
+    }
+
+    /**
+     * Permite que o usuário se junte a uma adoção colaborativa existente.
+     * @param {string} adoptionId - ID da adoção colaborativa a ser juntada.
+     */
+    function joinCollaborativeAdoption(adoptionId) {
+      const adoptionIndex = gameState.collaborativeAdoptions.findIndex(a => a.id === adoptionId);
+      if (adoptionIndex === -1) {
+        showNotification('❌ Adoção colaborativa não encontrada.');
+        return;
+      }
+
+      const adoption = gameState.collaborativeAdoptions[adoptionIndex];
+      const petToAdopt = adoptablePetsList.find(p => p.id === adoption.petId);
+
+      showCustomModal('Juntar-se à Adoção', `Deseja se juntar à adoção de ${petToAdopt.name} com ${adoption.adopter1Id}? (Sem custo adicional para você)`, true, () => {
+        // Remove da fila de colaborativa e adiciona aos pets do usuário
+        gameState.collaborativeAdoptions.splice(adoptionIndex, 1);
+        const newPet = { ...petToAdopt, happiness: 70, hunger: 30, energy: 60, health: 80, ownerId: `${adoption.adopter1Id},${gameState.userId}`, level: 1, isCollaborative: true, collaboratorMet: false }; // Dono agora é colaborativo
+        gameState.userPets.push(newPet);
+        gameState.activePetId = newPet.id; // Define o novo pet como ativo
+
+        showNotification(`🎉 Você se juntou e adotou ${newPet.name} com ${adoption.adopter1Id}!`);
+        updateUI();
+        hideCustomModal();
+      }, () => {
+        showNotification('🚫 Você não se juntou à adoção.');
+        hideCustomModal();
+      });
+    }
+
+
+    function unlockSlot() {
+      // Calcula o número de slots "visíveis" que o usuário já tem (ocupados ou esperando)
+      // A ideia é que o primeiro slot '+' não custa para aparecer, mas slots adicionais sim
+      let currentVisibleSlots = gameState.userPets.length + gameState.collaborativeAdoptions.length;
+
+      // Se já tem pets, adicione os slots comprados ao cálculo de "visíveis"
+      if (currentVisibleSlots > 0) {
+        currentVisibleSlots += gameState.purchasedSlots;
+      } else {
+        // Se não tem pets, o primeiro '+' é gratuito, então já conta como 1
+        currentVisibleSlots = 1 + gameState.purchasedSlots;
+      }
+
+
+      const maxAllowedSlots = 4; // Exemplo: 4 slots no total
+
+      if (currentVisibleSlots >= maxAllowedSlots) {
+        showNotification('Você já atingiu o número máximo de slots disponíveis!');
+        return;
+      }
+
+      if (gameState.gems >= 10) {
+        showCustomModal('Desbloquear Slot', 'Deseja desbloquear um novo slot de pet por 10 gemas?', true, () => {
+          gameState.gems -= 10;
+          gameState.purchasedSlots++; // Incrementa o contador de slots comprados
+          showNotification('🔓 Slot desbloqueado!');
+          updateUI(); // Re-renderiza os slots para mostrar o novo '+' ou '🔒'
+          hideCustomModal();
+        }, () => {
+          showNotification('🚫 Ação cancelada.');
+          hideCustomModal();
+        });
+      } else {
+        showNotification('❌ Precisa de 10 gemas para desbloquear um slot!');
+      }
+    }
+
+    function showProfile() {
+      const profileText = `👤 Perfil do Jogador\n\nLevel: ${gameState.level}\nXP Total: ${gameState.xp}\nMoedas: ${gameState.coins}\nGemas: ${gameState.gems}\n\n`;
+      let petsInfo = '🐾 Seus Pets:\n';
+      if (gameState.userPets.length === 0) {
+        petsInfo += 'Nenhum pet adotado ainda.\n';
+      } else {
+        gameState.userPets.forEach(pet => {
+          const collabStatus = pet.isCollaborative ? (pet.collaboratorMet ? ` (Colab. com ${pet.ownerId.split(',').find(id => id !== gameState.userId)})` : ' (Colab. Anónima)') : '';
+          petsInfo += `- ${pet.name} (${pet.type}) - Nível ${pet.level} - Status: ${getPetMood(pet)}${collabStatus}\n`;
+        });
+      }
+      showCustomModal('Perfil do Jogador', profileText + petsInfo);
+    }
+
+    function showLevelInfo() {
+      const xpToNextLevel = (gameState.level * 1000) + (gameState.level > 1 ? 500 : 0); // Exemplo de escala de XP
+      const currentLevelXP = gameState.xp % 1000; // XP dentro do nível atual
+      const progress = ((currentLevelXP / 1000) * 100).toFixed(1);
+
+      const levelInfoText = `🏆 Informações de Nível\n\nNível Atual: ${gameState.level}\nXP Atual: ${gameState.xp}\nPróximo Nível: ${xpToNextLevel} XP\nProgresso para o próximo nível: ${progress}%`;
+      showCustomModal('Informações de Nível', levelInfoText);
+    }
+
+    /**
+     * Exibe informações de um slot de pet.
+     * @param {number} petIndex - Índice do pet no array userPets.
+     */
+    function showSlotInfo(petIndex) {
+      const pet = gameState.userPets[petIndex];
+      if (pet) {
+        let slotInfoText = `🐱 Informações do Pet\n\nNome: ${pet.name}\nTipo: ${pet.type}\nNível: ${pet.level}\nFelicidade: ${Math.round(pet.happiness)}%\nSaúde: ${Math.round(pet.health)}%\nEnergia: ${Math.round(pet.energy)}%\nFome: ${Math.round(pet.hunger)}%`;
+
+        let buttonsHtml = `<button class="action-btn" onclick="setActivePet('${pet.id}'); hideCustomModal();">Tornar Ativo</button>`;
+
+        if (pet.isCollaborative) {
+          const otherAdopter = pet.ownerId.split(',').find(id => id !== gameState.userId);
+          slotInfoText += `\n\nParceiro: ${pet.collaboratorMet ? otherAdopter : 'Anónimo'}`;
+          if (!pet.collaboratorMet && pet.level >= MEET_LEVEL_THRESHOLD) {
+            buttonsHtml += `<button class="action-btn" onclick="meetCollaborator('${pet.id}')">Conhecer Parceiro</button>`;
+          } else if (pet.collaboratorMet) {
+            buttonsHtml += `<button class="action-btn disabled" disabled>Parceiro Conhecido</button>`;
+          } else {
+            buttonsHtml += `<button class="action-btn disabled" disabled>Atingir Nível ${MEET_LEVEL_THRESHOLD} para Conhecer</button>`;
+          }
+        }
+
+        showCustomModal('Informações do Pet', slotInfoText, false, null, null, false, '', buttonsHtml);
+      } else {
+        showNotification('Slot vazio!');
+      }
+    }
+
+    /**
+     * Permite ao utilizador "conhecer" o parceiro de adoção colaborativa.
+     * @param {string} petId - O ID do pet colaborativo.
+     */
+    function meetCollaborator(petId) {
+      const pet = gameState.userPets.find(p => p.id === petId);
+      if (pet && pet.isCollaborative && !pet.collaboratorMet && pet.level >= MEET_LEVEL_THRESHOLD) {
+        pet.collaboratorMet = true;
+        showNotification(`🎉 Você conheceu seu parceiro de adoção para ${pet.name}!`);
+        updateUI();
+        hideCustomModal();
+      } else {
+        showNotification('❌ Não é possível conhecer o parceiro agora.');
+      }
+    }
+
+
+    /**
+     * Define um pet como o pet ativo na tela principal.
+     * @param {string} petId - ID do pet a ser ativado.
+     */
+    function setActivePet(petId) {
+      gameState.activePetId = petId;
+      updateUI();
+      const activePet = gameState.userPets.find(p => p.id === petId);
+      showNotification(`✨ Agora você está cuidando de ${activePet.name}!`);
+    }
+
+    /* --- UI Update Functions --- */
+    function updateUI() {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+
+      // Updates resources in AppBar
+      document.getElementById('coins').textContent = gameState.coins;
+      document.getElementById('xp').textContent = gameState.xp;
+      document.getElementById('gems').textContent = gameState.gems;
+      document.getElementById('level').textContent = gameState.level;
+      document.getElementById('playerXP').textContent = gameState.xp; // Updates XP in ranking screen
+
+      // Update Dashboard Stats
+      document.getElementById('dashboardLevel').textContent = gameState.level;
+      document.getElementById('dashboardXP').textContent = gameState.xp;
+      document.getElementById('dashboardCoins').textContent = gameState.coins;
+      document.getElementById('dashboardGems').textContent = gameState.gems;
+      document.getElementById('dashboardTotalPets').textContent = gameState.userPets.length;
+      document.getElementById('dashboardCollabPetsCount').textContent = gameState.userPets.filter(p => p.isCollaborative).length;
+      if (activePet) {
+        document.getElementById('dashboardActivePetName').textContent = activePet.name;
+        document.getElementById('dashboardActivePetMood').textContent = getPetMood(activePet);
+      } else {
+        document.getElementById('dashboardActivePetName').textContent = 'N/A';
+        document.getElementById('dashboardActivePetMood').textContent = 'N/A';
+      }
+
+
+      if (activePet) {
+        // Updates pet information
+        document.getElementById('petName').textContent = activePet.name;
+        document.getElementById('petType').textContent = activePet.type;
+
+        // Avatar for collaborative pets
+        document.getElementById('petAvatar').textContent = activePet.avatar; // Pet's own avatar
+
+        // Controls collaborator avatar display
+        if (activePet.isCollaborative) {
+          if (!activePet.collaboratorMet) {
+            collaboratorAvatarDisplay.textContent = '❓'; // Anonymous collaborator
+            collaboratorAvatarDisplay.classList.add('visible');
+          } else {
+            collaboratorAvatarDisplay.textContent = '🤝'; // Known collaborator
+            collaboratorAvatarDisplay.classList.add('visible');
+          }
+        } else {
+          collaboratorAvatarDisplay.classList.remove('visible'); // Hide if not collaborative
+        }
+
+        // Updates status bars
+        updateStatusBar('happiness', activePet.happiness);
+        updateStatusBar('hunger', activePet.hunger);
+        updateStatusBar('energy', activePet.energy);
+        updateStatusBar('health', activePet.health);
+
+        // Enable/disable action buttons based on inventory & pet state
+        // Heal button: requires pet to not be full health AND have medicine
+        const healBtn = document.getElementById('healBtn');
+        if (activePet.health < 100 && gameState.inventory.medicine > 0) {
+          healBtn.classList.remove('disabled');
+        } else {
+          healBtn.classList.add('disabled');
+        }
+        // Feed button: requires food in inventory
+        document.querySelector('.action-btn.btn-feed').classList.toggle('disabled', gameState.inventory.food === 0 && gameState.inventory.food_premium === 0);
+        // Play button: requires toys in inventory
+        document.querySelector('.action-btn.btn-play').classList.toggle('disabled', gameState.inventory.toys === 0);
+
+        // Sleep button is always active as it uses no items
+        document.querySelector('.action-btn.btn-sleep').classList.remove('disabled');
+
+        // NOVO: Esconde o painel de adoção e mostra o painel de cuidados
+        petCarePanel.classList.remove('hidden');
+        petCarePanel.classList.add('visible');
+        adoptionInfoPanel.classList.remove('visible');
+        adoptionInfoPanel.classList.add('hidden');
+        petScreenFooter.classList.remove('collapsed'); // Expande o footer
+        petScreenFooter.classList.add('visible'); // Garante que o footer seja visível
+
+      } else {
+        // If no active pet, hide pet info and disable all action buttons
+        document.getElementById('petName').textContent = 'Nenhum Pet';
+        document.getElementById('petType').textContent = 'Adote um!';
+        document.getElementById('petAvatar').textContent = '❓'; // Default avatar when no pet
+        updateStatusBar('happiness', 0);
+        updateStatusBar('hunger', 0);
+        updateStatusBar('energy', 0);
+        updateStatusBar('health', 0);
+        document.querySelectorAll('.action-btn').forEach(btn => btn.classList.add('disabled'));
+
+        // NOVO: Mostra o painel de adoção e esconde o painel de cuidados
+        petCarePanel.classList.add('hidden');
+        petCarePanel.classList.remove('visible');
+        adoptionInfoPanel.classList.add('visible');
+        adoptionInfoPanel.classList.remove('hidden');
+        petScreenFooter.classList.add('collapsed'); // Recolhe o footer
+        petScreenFooter.classList.remove('visible'); // Garante que o footer esteja invisível
+
+        collaboratorAvatarDisplay.classList.remove('visible'); // Hide collaborator avatar when no pet is active
+      }
+
+      // Checks for level up
+      const xpForNextLevel = gameState.level * 1000; // Simplified XP needed for next level
+      if (gameState.xp >= xpForNextLevel) {
+        gameState.level++;
+        showNotification(`🎉 Level Up! Now you are Level ${gameState.level}!`);
+        // You might want to reset XP to 0 or subtract xpForNextLevel from total XP
+        // gameState.xp -= xpForNextLevel; // If XP resets per level
+      }
+
+      // Updates collaboration slots
+      updateCollaborationSlots();
+    }
+
+    /**
+     * Atualiza os slots de colaboração no cabeçalho da tela do pet.
+     */
+    function updateCollaborationSlots() {
+      collaborationSlotsContainer.innerHTML = ''; // Limpa os slots existentes
+
+      // Adiciona pets do usuário
+      gameState.userPets.forEach((pet, index) => {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = `slot occupied`;
+        slotDiv.textContent = pet.avatar; // Default to pet avatar
+        if (pet.isCollaborative && !pet.collaboratorMet) {
+          slotDiv.textContent = '❓'; // Show anonymous for un-met collaborative pets
+        }
+        slotDiv.onclick = () => showSlotInfo(index);
+        collaborationSlotsContainer.appendChild(slotDiv);
+      });
+
+      // Adiciona pets em adoção colaborativa (aguardando)
+      gameState.collaborativeAdoptions.forEach(adoption => {
+        const pet = adoptablePetsList.find(p => p.id === adoption.petId);
+        if (pet) {
+          const slotDiv = document.createElement('div');
+          slotDiv.className = `slot waiting`; // Adiciona classe 'waiting'
+          slotDiv.textContent = pet.avatar; // Ícone do pet
+          slotDiv.onclick = () => showNotification(`Adoção Colaborativa: ${pet.name} aguardando parceiro...`);
+          collaborationSlotsContainer.appendChild(slotDiv);
+        }
+      });
+
+      // Lógica para o número de slots disponíveis ('+') e bloqueados ('🔒')
+      const maxSlots = 4; // Total de slots visíveis (incluindo ocupados, esperando, disponíveis e bloqueados)
+      const numInitialFreeSlots = 2; // O usuário tem 2 slots "gratuitos" para usar (contando os que já têm pets)
+
+      let slotsCurrentlyUsedOrPending = gameState.userPets.length + gameState.collaborativeAdoptions.length;
+      let availableSlotsToRender = 0; // Quantos slots '+' vamos renderizar
+
+      // Se ainda não usamos os slots gratuitos iniciais
+      if (slotsCurrentlyUsedOrPending < numInitialFreeSlots) {
+        availableSlotsToRender = numInitialFreeSlots - slotsCurrentlyUsedOrPending;
+      }
+
+      // Adiciona slots comprados com gemas
+      availableSlotsToRender += gameState.purchasedSlots;
+
+      // Renderiza os slots disponíveis ('+')
+      for (let i = 0; i < availableSlotsToRender; i++) {
+        if ((slotsCurrentlyUsedOrPending + i) < maxSlots) { // Verifica se ainda há espaço no display
+          const availableSlotDiv = document.createElement('div');
+          availableSlotDiv.className = 'slot available';
+          availableSlotDiv.textContent = '+';
+          availableSlotDiv.onclick = addPet; // Chama a função para iniciar a adoção
+          collaborationSlotsContainer.appendChild(availableSlotDiv);
+        } else {
+          break; // Sai do loop se atingiu o máximo de slots visíveis
+        }
+      }
+
+      // Renderiza os slots bloqueados ('🔒')
+      let currentDisplayCount = gameState.userPets.length + gameState.collaborativeAdoptions.length + Math.min(availableSlotsToRender, maxSlots - slotsCurrentlyUsedOrPending);
+
+      while (currentDisplayCount < maxSlots) {
+        const lockedSlotDiv = document.createElement('div');
+        lockedSlotDiv.className = 'slot';
+        lockedSlotDiv.style.background = 'linear-gradient(45deg, #ffa502, #ff6348)';
+        lockedSlotDiv.style.opacity = '0.5';
+        lockedSlotDiv.textContent = '🔒';
+        lockedSlotDiv.onclick = unlockSlot;
+        collaborationSlotsContainer.appendChild(lockedSlotDiv);
+        currentDisplayCount++;
+      }
+    }
+
+
+    /**
+     * Updates a specific status bar and its value display.
+     * @param {string} type - The type of status (e.g., 'happiness', 'hunger').
+     * @param {number} value - The current value of the status (0-100).
+     */
+    function updateStatusBar(type, value) {
+      const bar = document.getElementById(type + 'Bar');
+      const valueElement = document.getElementById(type + 'Value');
+
+      bar.style.width = value + '%';
+      valueElement.textContent = Math.round(value) + '%';
+    }
+
+    /**
+     * Displays a temporary notification (toast).
+     * @param {string} message - The message to display.
+     */
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 2000);
+    }
+
+    /**
+     * Adds a temporary animation class to the pet avatar.
+     * @param {string} animationClass - The CSS class for the animation.
+     */
+    function addPetAnimation(animationClass) {
+      const petAvatar = document.getElementById('petAvatar');
+      petAvatar.classList.add(animationClass);
+
+      setTimeout(() => {
+        petAvatar.classList.remove(animationClass);
+      }, 2000);
+    }
+
+    /**
+     * Checks the pet's state and applies appropriate visual indicators.
+     */
+    function checkPetState() {
+      const activePet = gameState.userPets.find(p => p.id === gameState.activePetId);
+      if (!activePet) { // If no active pet, remove all state classes
+        const petAvatarElement = document.getElementById('petAvatar');
+        petAvatarElement.classList.remove('pet-hungry', 'pet-sleepy');
+        return;
+      }
+
+      const petAvatarElement = document.getElementById('petAvatar');
+
+      // Checks if pet is hungry
+      if (activePet.hunger < 30) {
+        petAvatarElement.classList.add('pet-hungry');
+      } else {
+        petAvatarElement.classList.remove('pet-hungry');
+      }
+
+      // Checks if pet is low on energy
+      if (activePet.energy < 20) {
+        petAvatarElement.classList.add('pet-sleepy');
+      } else {
+        petAvatarElement.classList.remove('pet-sleepy');
+      }
+    }
+
+    /**
+     * Determines the pet's general mood based on average stats.
+     * @param {object} pet - O objeto pet para verificar o humor.
+     * @returns {string} - A string describing the pet's mood.
+     */
+    function getPetMood(pet) {
+      // Note: Hunger is inverted for average calculation (higher hunger = worse mood, so 100 - hunger)
+      const avg = (pet.happiness + pet.health + pet.energy + (100 - pet.hunger)) / 4;
+
+      if (avg >= 80) return '😸 Muito Feliz';
+      if (avg >= 60) return '😊 Feliz';
+      if (avg >= 40) return '😐 Neutro';
+      if (avg >= 20) return '😔 Triste';
+      return '😿 Muito Triste';
+    }
+
+    /**
+     * Displays a custom modal.
+     * @param {string} title - The title of the modal.
+     * @param {string} body - The main content/message of the modal.
+     * @param {boolean} [isConfirm=false] - If true, shows 'Yes'/'No' buttons. Otherwise, 'OK'.
+     * @param {Function} [onConfirm=null] - Callback function for 'Yes' or 'OK'.
+     * @param {Function} [onCancel=null] - Callback function for 'No'.
+     * @param {boolean} [showInput=false] - If true, shows an input field in the modal.
+     * @param {string} [inputValue=''] - Initial value for the input field.
+     * @param {string} [customButtonsHtml=null] - HTML customizado para os botões.
+     * @param {boolean} [isHtmlContent=false] - Se o 'body' é HTML customizado.
+     */
+    function showCustomModal(title, body, isConfirm = false, onConfirm = null, onCancel = null, showInput = false, inputValue = '', customButtonsHtml = null, isHtmlContent = false) {
+      modalTitle.textContent = title;
+      if (isHtmlContent) {
+        modalBody.innerHTML = body; // Use innerHTML for custom HTML content
+      } else {
+        modalBody.textContent = body; // Use textContent for plain text with line breaks
+      }
+
+
+      // Clear previous buttons
+      modalButtons.innerHTML = '';
+
+      let inputField;
+      if (showInput) {
+        inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.value = inputValue;
+        inputField.className = 'modal-input';
+        inputField.style.width = '100%';
+        inputField.style.padding = '8px';
+        inputField.style.marginBottom = '15px';
+        inputField.style.borderRadius = '5px';
+        inputField.style.border = '1px solid #ddd';
+        modalBody.appendChild(inputField);
+      }
+
+      if (customButtonsHtml) {
+        modalButtons.innerHTML = customButtonsHtml;
+      } else if (isConfirm) {
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = 'Sim';
+        confirmBtn.addEventListener('click', () => {
+          const value = showInput ? inputField.value : null;
+          if (onConfirm) onConfirm(true, value); // Pass true for confirmed, and input value
+          hideCustomModal(); // FECHAR MODAL APÓS CONFIRMAR
+        });
+        modalButtons.appendChild(confirmBtn);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Não';
+        cancelBtn.className = 'cancel';
+        cancelBtn.addEventListener('click', () => {
+          if (onCancel) onCancel();
+          hideCustomModal();
+        });
+        modalButtons.appendChild(cancelBtn);
+      } else {
+        const okBtn = document.createElement('button');
+        okBtn.textContent = 'OK';
+        okBtn.addEventListener('click', () => {
+          if (onConfirm) onConfirm(); // Just confirm, no input value
+          hideCustomModal(); // FECHAR MODAL APÓS OK
+        });
+        modalButtons.appendChild(okBtn);
+      }
+
+      // NOVO: Adiciona listener para fechar o modal ao clicar fora do conteúdo
+      customModalOverlay.addEventListener('click', (event) => {
+        // Verifica se o clique foi diretamente no overlay e e o clique não é um botão dentro do modal
+        if (event.target === customModalOverlay || event.target.closest('.modal-buttons')) { // Use closest for better button detection
+          hideCustomModal();
+        }
+      });
+
+      customModalOverlay.classList.add('show');
+    }
+
+    /**
+     * Hides the custom modal.
+     */
+    function hideCustomModal() {
+      customModalOverlay.classList.remove('show');
+      // Reset content to avoid showing old info briefly
+      modalTitle.textContent = '';
+      modalBody.innerHTML = '';
+      modalButtons.innerHTML = '';
+    }
+
+    /**
+     * Creates and animates particles in the particle system.
+     * @param {number} count - Number of particles to create.
+     * @param {string} color - Color of the particles (e.g., 'rgba(255, 255, 0, 0.7)').
+     */
+    function spawnParticles(count, color) {
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+
+        // Random size
+        const size = Math.random() * 3 + 2; // 2px to 5px
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+
+        // Random color if not specified
+        particle.style.background = color || `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`;
+
+        // Random starting position (e.g., from bottom)
+        const startX = Math.random() * window.innerWidth;
+        const startY = window.innerHeight; // Start from bottom of screen
+
+        // Random end position (e.g., towards top)
+        const endX = startX + (Math.random() - 0.5) * 100; // +/- 50px horizontal drift
+        const endY = -50; // Go off screen at the top
+
+        // Set CSS custom properties for animation
+        particle.style.setProperty('--x-start', `${startX}px`);
+        particle.style.setProperty('--y-start', `${startY}px`);
+        particle.style.setProperty('--x-mid', `${startX + (Math.random() - 0.5) * 50}px`); // Slight drift in middle
+        particle.style.setProperty('--y-mid', `${startY * 0.5}px`); // Middle of the screen
+        particle.style.setProperty('--x-end', `${endX}px`);
+        particle.style.setProperty('--y-end', `${endY}px`);
+
+        particle.style.animationDuration = `${Math.random() * 3 + 2}s`; // Random duration: 2s to 5s
+        particle.style.animationDelay = `${Math.random() * 0.5}s`; // Small random delay for staggered effect
+
+        particleSystem.appendChild(particle);
+
+        // Remove particle after animation ends to prevent DOM clutter
+        particle.addEventListener('animationend', () => {
+          particle.remove();
+        });
+      }
+    }
+
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', function () {
+      // Garante que todas as telas comecem inativas
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      // Garante que todos os itens de navegação estejam inativos no início
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+
+      // Define activePetId se não houver pets
+      if (gameState.userPets.length > 0) {
+        gameState.activePetId = gameState.userPets[0].id;
+      } else {
+        gameState.activePetId = null; // Nenhum pet ativo se não houver pets
+      }
+
+      updateUI();
+      showNotification('🎮 Bem-vindo de volta!');
+      // Ativa a tela 'pets' e o seu item de navegação ao carregar
+      document.getElementById('pets').classList.add('active');
+      document.querySelector('.nav-item[data-screen="pets"]').classList.add('active');
+
+      // Se não houver pets, mostra o modal de adoção automaticamente
+      if (gameState.userPets.length === 0) {
+        showAdoptionTypeModal(false); // Permite adoção solo para o primeiro pet
+      }
+    });
+
+    // Auto-save (simulação)
+    setInterval(() => {
+      // Here you would typically save to localStorage or a server
+      console.log('Jogo salvo automaticamente!');
+    }, 30000);
+  </script>
+</body>
+
+</html>

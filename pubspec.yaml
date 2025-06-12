@@ -204,6 +204,9 @@ dependencies:
 
   # Icons
   cupertino_icons: ^1.0.6
+  flutter_inappwebview: ^6.1.5
+  webview_flutter: ^4.13.0
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:
@@ -234,3 +237,4 @@ flutter:
     - .env.dev
     - .env.prod
     - .env.example
+    - assets/index.html
