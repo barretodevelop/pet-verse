@@ -7,6 +7,7 @@ import 'package:petverse/providers/app_provider.dart';
 import 'package:petverse/providers/pet_provider.dart';
 import 'package:petverse/providers/theme_provider.dart';
 import 'package:petverse/providers/user_provider.dart';
+import 'package:petverse/widgets/adoption_flow.dart';
 import 'package:petverse/widgets/pet_circle.dart';
 
 class PetScreen extends ConsumerWidget {
@@ -85,7 +86,42 @@ class PetScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
+
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Adotar Pet Sozinho'),
+                    onPressed: () {
+                      final isDark = ref.read(
+                          themeProvider); // Obtenha o tema para estilizar o modal
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled:
+                            true, // Permite que o sheet ocupe mais altura
+                        backgroundColor: Colors
+                            .transparent, // Para usar o fundo do AdoptionFlow
+                        builder: (bContext) {
+                          return Container(
+                            // Define a altura máxima ou uma fração da altura da tela
+                            height: MediaQuery.of(bContext).size.height *
+                                0.9, // Ajuste conforme necessário
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1F2937)
+                                  : Colors.white,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(24),
+                                topRight: Radius.circular(24),
+                              ),
+                            ),
+                            child:
+                                const AdoptionFlow(), // Chame o AdoptionFlow refatorado
+                          );
+                        },
+                      );
+                    },
+                  ),
                   // ✅ CORREÇÃO 2: Botão IA com navegação funcional
+                  const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => _navigateToAIGeneration(context, ref),
                     icon: const Icon(Icons.auto_awesome),

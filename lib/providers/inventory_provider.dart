@@ -1,4 +1,4 @@
-﻿// InventoryProvider
+﻿﻿// InventoryProvider
 // lib/providers/inventory_provider.dart - InventoryProvider
 import 'dart:async';
 
@@ -36,7 +36,25 @@ class InventoryNotifier extends StateNotifier<List<InventoryUserItem>> {
       (inventoryItems) {
         // Mapeia InventoryUserItem para ItemModel se necessário, ou mantenha InventoryUserItem
         // Para simplificar, vamos manter InventoryUserItem e popular o baseItem
-        final populatedItems = inventoryItems.map((invItem) {
+
+        // ✅ NOVO: Agrupar itens por itemId e somar quantidades
+        final Map<String, InventoryUserItem> groupedItemsMap = {};
+        for (var invItem in inventoryItems) {
+          if (groupedItemsMap.containsKey(invItem.itemId)) {
+            // If item already exists in our grouped map, update its quantity
+            final existingItem = groupedItemsMap[invItem.itemId]!;
+            groupedItemsMap[invItem.itemId] = existingItem.copyWith(
+                quantity: existingItem.quantity + invItem.quantity);
+          } else {
+            // Otherwise, add the item to the grouped map
+            // We use the docId of the first occurrence for simplicity,
+            // as the quantity is now aggregated.
+            groupedItemsMap[invItem.itemId] = invItem;
+          }
+        }
+
+        // Now populate baseItem for the grouped items (using the aggregated items from the map)
+        final populatedItems = groupedItemsMap.values.map((invItem) {
           final baseItemDetails = Constants.shopItems.firstWhere(
             (shopItem) => shopItem.id == invItem.itemId,
             orElse: () => ItemModel(
@@ -92,7 +110,8 @@ class InventoryNotifier extends StateNotifier<List<InventoryUserItem>> {
     }
   }
 
-  Future<void> removeItem(InventoryUserItem inventoryUserItem) async {
+  Future<void> removeItem(InventoryUserItem inventoryUserItem,
+      {int quantityToRemove = 1}) async {
     if (_userId == null) {
       print(
           '❌ InventoryProvider: Não é possível remover item, usuário não logado.');
@@ -101,7 +120,8 @@ class InventoryNotifier extends StateNotifier<List<InventoryUserItem>> {
     try {
       // Remove do Firestore. O listener atualizará o estado local.
       await _firestoreService.removeUserInventoryItem(
-          _userId!, inventoryUserItem.docId);
+          _userId!, inventoryUserItem.docId,
+          quantityToRemove: quantityToRemove);
       print(
           '✅ InventoryProvider: Solicitação para remover ${inventoryUserItem.itemId} enviada ao Firestore.');
     } catch (e) {

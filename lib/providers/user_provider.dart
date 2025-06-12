@@ -81,4 +81,23 @@ class UserNotifier extends StateNotifier<UserModel?> {
       }
     }
   }
+
+  Future<void> incrementPurchasedSlots() async {
+    if (state != null) {
+      // Assumindo que UserModel tem um campo purchasedSlotsCount, inicializado com 2.
+      final currentSlots = state!.purchasedSlotsCount;
+      final newSlotsCount = currentSlots + 1;
+      try {
+        await _firestoreService
+            .updateUser(state!.id, {'purchasedSlotsCount': newSlotsCount});
+        state = state!.copyWith(purchasedSlotsCount: newSlotsCount);
+        print(
+            '✅ UserProvider: Contagem de slots comprados incrementada para $newSlotsCount e salva no Firebase.');
+      } catch (e) {
+        print(
+            '❌ UserProvider: Falha ao incrementar slots comprados no Firebase: $e');
+        rethrow;
+      }
+    }
+  }
 }

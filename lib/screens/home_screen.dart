@@ -26,7 +26,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 2;
-  bool _showAdoption = false;
 
   final List<Widget> _screens = [
     const FeedScreen(),
@@ -35,6 +34,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const ShopScreen(),
     const DashboardScreen(),
   ];
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Ouvir mudanças na lista de pets
+  //   // Usamos WidgetsBinding.instance.addPostFrameCallback para garantir que o ref está disponível
+  //   // ESTE LISTENER FOI MOVIDO PARA DENTRO DO AppNotifier PARA UMA LÓGICA MAIS CENTRALIZADA
+  //   // WidgetsBinding.instance.addPostFrameCallback((_) {
+  //   //   ref.listen<List<PetModel>>(petProvider, (previousPets, newPets) {
+  //   //     final appNotifier = ref.read(appProvider.notifier);
+  //   //     final currentActiveIndex = ref.read(appProvider).activePetIndex;
+
+  //   //     // Se um pet foi removido (lista diminuiu)
+  //   //     if (previousPets != null && newPets.length < previousPets.length) {
+  //   //       print(
+  //   //           'HomeScreen: Pet removido detectado. Reavaliando activePetIndex.');
+  //   //       appNotifier.setActivePetIndex(currentActiveIndex);
+  //   //     }
+  //   //   });
+  //   // });
+  // }
+
+  // Método para abrir o AdoptionFlow como um modal
+  void _openAdoptionFlow() {
+    final isDark = ref.read(themeProvider);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bContext) {
+        return Container(
+          height: MediaQuery.of(bContext).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          child: const AdoptionFlow(),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,17 +191,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: Stack(
         children: [
+          // Stack não é mais necessário se AdoptionFlow é um modal
           Column(
+            // Conteúdo principal da HomeScreen
             children: [
-              PetSlots(onSlotClick: () => setState(() => _showAdoption = true)),
+              PetSlots(
+                  onSlotClick:
+                      _openAdoptionFlow), // Passa o método para abrir o modal
               Expanded(child: _screens[_currentIndex]),
             ],
           ),
-          if (_showAdoption)
-            AdoptionFlow(
-              show: _showAdoption,
-              onClose: () => setState(() => _showAdoption = false),
-            ),
+          // AdoptionFlow não é mais renderizado condicionalmente aqui
         ],
       ),
       bottomNavigationBar: Container(

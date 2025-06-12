@@ -2,7 +2,11 @@
 // UserModel
 class UserModel {
   final String id, username, avatar, email;
-  final int level, xp, coins, gems;
+  final int level,
+      xp,
+      coins,
+      gems,
+      purchasedSlotsCount; // ✅ Added purchasedSlotsCount
   final DateTime createdAt;
   final List<String> ownedPetIds;
   final Map<String, dynamic> aiConfig;
@@ -19,6 +23,7 @@ class UserModel {
     required this.createdAt,
     required this.ownedPetIds,
     required this.aiConfig,
+    this.purchasedSlotsCount = 2, // ✅ Default to 2 slots
   });
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +38,7 @@ class UserModel {
         'createdAt': createdAt.millisecondsSinceEpoch,
         'ownedPetIds': ownedPetIds,
         'aiConfig': aiConfig,
+        'purchasedSlotsCount': purchasedSlotsCount, // ✅ Add to JSON
       };
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -47,6 +53,8 @@ class UserModel {
         createdAt: DateTime.fromMillisecondsSinceEpoch(json['createdAt']),
         ownedPetIds: List<String>.from(json['ownedPetIds'] ?? []),
         aiConfig: json['aiConfig'] ?? {},
+        purchasedSlotsCount: json['purchasedSlotsCount'] as int? ??
+            2, // ✅ Read from JSON, default to 2
       );
 
   // ✅ COMPLETO
@@ -62,6 +70,7 @@ class UserModel {
     DateTime? createdAt,
     List<String>? ownedPetIds,
     Map<String, dynamic>? aiConfig,
+    int? purchasedSlotsCount, // ✅ Add to copyWith
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -75,6 +84,8 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       ownedPetIds: ownedPetIds ?? this.ownedPetIds,
       aiConfig: aiConfig ?? this.aiConfig,
+      purchasedSlotsCount: purchasedSlotsCount ??
+          this.purchasedSlotsCount, // ✅ Handle in copyWith
     );
   }
 }

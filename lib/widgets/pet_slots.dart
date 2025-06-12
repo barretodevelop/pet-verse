@@ -20,13 +20,31 @@ class PetSlots extends ConsumerWidget {
     final appState = ref.watch(appProvider);
     final isDark = ref.watch(themeProvider);
 
-    final maxSlots = 2 + ((user?.level ?? 1) ~/ 5);
-    final unlockedSlots =
-        pets.length + 1; // +1 para sempre ter um slot vazio disponível
-    final totalSlots = maxSlots.clamp(unlockedSlots, 10); // Máximo 10 slots
+    // final maxSlots = 2 + ((user?.level ?? 1) ~/ 5);
+    // final unlockedSlots =
+    //     pets.length + 1; // +1 para sempre ter um slot vazio disponível
+    // final totalSlots = maxSlots.clamp(unlockedSlots, 10); // Máximo 10 slots
+// Número de slots que o usuário comprou/desbloqueou permanentemente.
+    // Assumindo que UserModel tem `purchasedSlotsCount`, inicializado com 2.
+    final purchasedSlots = user?.purchasedSlotsCount ?? 2;
+
+    // Número máximo de slots que o usuário pode ter, baseado no nível (ou um limite fixo).
+    final maxPossibleSlotsByLevel = 3 +
+        ((user?.level ?? 1) ~/
+            5); // ✅ Ajuste: Base 3 para permitir o 3º slot desde o nível 1
+    final absoluteMaxSlots = 10; // Limite rígido global
+
+    // Número de slots a serem exibidos na UI:
+    // Mostra os slots comprados + 1 para o próximo bloqueado (se houver espaço para mais).
+    // Não deve exceder o máximo permitido pelo nível ou o limite absoluto.
+    int displaySlotsCount = purchasedSlots;
+    if (purchasedSlots < maxPossibleSlotsByLevel &&
+        purchasedSlots < absoluteMaxSlots) {
+      displaySlotsCount = purchasedSlots + 1;
+    }
 
     print(
-        '✅ PetSlots: ${pets.length} pets, $unlockedSlots desbloqueados, $totalSlots total, max: $maxSlots'); // Debug
+        '✅ PetSlots: ${pets.length} pets, Purchased: $purchasedSlots, Displaying: $displaySlotsCount, MaxByLevel: $maxPossibleSlotsByLevel');
 
     return Container(
       height: 80,
@@ -43,11 +61,11 @@ class PetSlots extends ConsumerWidget {
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: totalSlots,
+        itemCount: displaySlotsCount,
         itemBuilder: (context, index) {
           final pet = index < pets.length ? pets[index] : null;
           final isActive = index == appState.activePetIndex;
-          final isLocked = index >= unlockedSlots;
+          final isLocked = index >= purchasedSlots;
 
           return Container(
             margin: const EdgeInsets.only(right: 12),
@@ -82,7 +100,7 @@ class PetSlots extends ConsumerWidget {
                     Center(
                       child: pet != null
                           ? Text(
-                              pet.isUnique ? '✨' : pet.emoji,
+                              pet.emoji, // ✅ Sempre mostrar o emoji do pet
                               style: const TextStyle(fontSize: 28),
                             )
                           : isLocked
@@ -292,8 +310,9 @@ class PetSlots extends ConsumerWidget {
 
   // ✅ CORREÇÃO CRÍTICA: Dialog completo de desbloqueio de slot
   void _showUnlockDialog(BuildContext context, WidgetRef ref, int slotIndex) {
-    final user = ref.read(userProvider);
-    final isDark = ref.read(themeProvider);
+    final user = ref.watch(
+        userProvider); // Usar watch para reatividade se o dialog depender de estado que muda
+    final isDark = ref.watch(themeProvider);
     const gemCost = 5;
 
     showDialog(
@@ -481,14 +500,14 @@ class PetSlots extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.diamond, size: 18),
-                const SizedBox(width: 6),
+                Icon(Icons.diamond, size: 18),
+                SizedBox(width: 6),
                 Text('Desbloquear',
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -511,8 +530,8 @@ class PetSlots extends ConsumerWidget {
       try {
         // Agora o UserNotifier lida com a persistência e atualização do estado
         await userNotifier.updateGems(newGemAmount);
-
-        // Lógica de UI (fechar dialog, mostrar SnackBar) permanece aqui
+        // Incrementar o número de slots comprados (este método precisa ser adicionado ao UserNotifier)
+        await userNotifier.incrementPurchasedSlots();
 
         // Fechar dialog
         if (context.mounted) Navigator.of(context).pop();

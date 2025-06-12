@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+﻿﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/models/inventory_user_item_model.dart'; // ✅ ADICIONADO: Import para InventoryUserItem
 import 'package:petverse/models/item_model.dart'; // To cast item.baseItem
@@ -161,6 +161,28 @@ class InventorySheet extends ConsumerWidget {
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              // Exibir quantidade do item
+                              if (invItem.quantity >
+                                  1) // ✅ Mostrar quantidade se > 1, para QUALQUER tipo de item
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.6),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'x${invItem.quantity}',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+
                               Text(baseItem.emoji,
                                   style: const TextStyle(fontSize: 32)),
                               const SizedBox(height: 8),
@@ -303,6 +325,7 @@ class InventorySheet extends ConsumerWidget {
             energy: newEnergy,
             health: newHealth);
         await inventoryNotifier.removeItem(invItem); // Consumir item
+        // O removeItem agora remove 1 por padrão
         snackBarMessage = "${item.name} usado em ${pet.name}!";
         await petNotifier.addPetXP(pet.id, 5); // Exemplo de XP
         if (user != null)
@@ -319,7 +342,7 @@ class InventorySheet extends ConsumerWidget {
         await petNotifier.addPetXP(pet.id, 8);
         if (user != null) await userNotifier.updateXP(user.xp + 3);
         // Brinquedos podem ou não ser removidos do inventário
-        // await inventoryNotifier.removeItem(invItem);
+        // Se brinquedos forem consumíveis ou tiverem "usos", chame removeItem aqui.
       }
 
       if (snackBarMessage.isNotEmpty && context.mounted) {

@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/models/pet_model.dart';
-import 'package:petverse/providers/mission_provider.dart';
 import 'package:petverse/providers/pet_provider.dart';
 import 'package:petverse/providers/theme_provider.dart';
 import 'package:petverse/providers/user_provider.dart';
@@ -110,18 +109,20 @@ class _PetActionsSheetState extends ConsumerState<PetActionsSheet> {
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   children: [
+                    _buildActionCard('🍖', 'Alimentar', 'Usar comida',
+                        () => _openInventorySheet(context, ref, 'comida')),
                     _buildActionCard(
-                        '🍖', 'Alimentar', 'Saciar a fome', _feedPet),
-                    _buildActionCard(
-                        // Mantido como exemplo, mas idealmente abriria InventorySheet com category 'brinquedo'
                         '🎾',
                         'Brincar',
-                        'Aumentar felicidade',
-                        _playWithPet),
+                        'Usar brinquedo', // Descrição atualizada
+                        () => _openInventorySheet(context, ref, 'brinquedo')),
                     _buildActionCard(
-                        '💤', 'Cuidar', 'Restaurar energia', _carePet),
-                    _buildActionCard(
-                        '💝', 'Carinho', 'Demonstrar amor', _showLove),
+                        '💤',
+                        'Cuidar',
+                        'Usar medicamento', // Descrição atualizada
+                        () => _openInventorySheet(context, ref, 'medicina')),
+                    _buildActionCard('💝', 'Carinho', 'Demonstrar amor',
+                        _showLove), // Mantém _showLove se não usar item
                   ],
                 ),
 
@@ -160,6 +161,9 @@ class _PetActionsSheetState extends ConsumerState<PetActionsSheet> {
             ),
           ),
         ),
+        // Diálogo de confirmação para devolver o pet
+        if (_showReturnConfirm)
+          _buildReturnConfirmationDialog(context, ref, isDark),
       ],
     );
   }
@@ -381,68 +385,164 @@ class _PetActionsSheetState extends ConsumerState<PetActionsSheet> {
     );
   }
 
-  void _feedPet() {
-    final petNotifier = ref.read(petProvider.notifier);
-    final userNotifier = ref.read(userProvider.notifier);
-    final missionNotifier = ref.read(missionProvider.notifier);
-    final user = ref.read(userProvider);
+  // Novo método para construir o diálogo de confirmação
+  Widget _buildReturnConfirmationDialog(
+      BuildContext context, WidgetRef ref, bool isDark) {
+    final user = ref.watch(userProvider);
+    const returnCost = 3; // Custo em gemas para devolver o pet
 
-    petNotifier.updatePetStats(
-      widget.pet.id,
-      hunger: (widget.pet.hunger + 25).clamp(0, 100),
-      happiness: (widget.pet.happiness + 10).clamp(0, 100),
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () =>
+            setState(() => _showReturnConfirm = false), // Fecha ao clicar fora
+        child: Container(
+          color: Colors.black.withOpacity(0.6),
+          child: Center(
+            child: Material(
+              type: MaterialType.transparency,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.85,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded,
+                        color: Color(0xFFEF4444), size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Devolver ${widget.pet.name}?',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1F2937),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Esta ação não pode ser desfeita. O pet será removido permanentemente.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? const Color(0xFF9CA3AF)
+                            : const Color(0xFF6B7280),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Custo: $returnCost gemas',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? const Color(0xFF8B5CF6)
+                            : const Color(0xFF7C3AED),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _showReturnConfirm = false),
+                          child: Text('Cancelar',
+                              style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54)),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _performReturnPet(context, ref),
+                          icon: const Icon(Icons.delete_forever),
+                          label: const Text('Devolver'),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFEF4444),
+                              foregroundColor: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
-    petNotifier.addPetXP(widget.pet.id, 10);
-
-    if (user != null) {
-      userNotifier.updateXP(user.xp + 5);
-    }
-    missionNotifier.updateMissionProgress(1, 1);
-    if (mounted) Navigator.pop(context); // Fecha o modal
-    // widget.onClose(); // Removido
   }
 
-  void _playWithPet() {
-    final petNotifier = ref.read(petProvider.notifier);
-    final userNotifier = ref.read(userProvider.notifier);
-    final missionNotifier = ref.read(missionProvider.notifier);
-    final user = ref.read(userProvider);
+  // Os métodos _feedPet, _playWithPet e _carePet agora são tratados
+  // pela lógica dentro de InventorySheet._handleItemAction quando um item é selecionado.
+  // Eles podem ser removidos ou mantidos se houver alguma ação padrão
+  // que não envolva itens do inventário.
 
-    petNotifier.updatePetStats(
-      widget.pet.id,
-      happiness: (widget.pet.happiness + 20).clamp(0, 100),
-      energy: (widget.pet.energy - 10).clamp(0, 100),
-    );
-    petNotifier.addPetXP(widget.pet.id, 15);
+  // void _feedPet() {
+  //   final petNotifier = ref.read(petProvider.notifier);
+  //   final userNotifier = ref.read(userProvider.notifier);
+  //   final missionNotifier = ref.read(missionProvider.notifier);
+  //   final user = ref.read(userProvider);
 
-    if (user != null) {
-      userNotifier.updateXP(user.xp + 8);
-    }
-    missionNotifier.updateMissionProgress(2, 1);
-    if (mounted) Navigator.pop(context); // Fecha o modal
-    // widget.onClose(); // Removido
-  }
+  //   petNotifier.updatePetStats(
+  //     widget.pet.id,
+  //     hunger: (widget.pet.hunger + 25).clamp(0, 100),
+  //     happiness: (widget.pet.happiness + 10).clamp(0, 100),
+  //   );
+  //   petNotifier.addPetXP(widget.pet.id, 10);
 
-  void _carePet() {
-    final petNotifier = ref.read(petProvider.notifier);
-    final userNotifier = ref.read(userProvider.notifier);
-    final missionNotifier = ref.read(missionProvider.notifier);
-    final user = ref.read(userProvider);
+  //   if (user != null) {
+  //     userNotifier.updateXP(user.xp + 5);
+  //   }
+  //   missionNotifier.updateMissionProgress(1, 1);
+  //   if (mounted) Navigator.pop(context); // Fecha o modal
+  // }
 
-    petNotifier.updatePetStats(
-      widget.pet.id,
-      energy: (widget.pet.energy + 30).clamp(0, 100),
-      health: (widget.pet.health + 15).clamp(0, 100),
-    );
-    petNotifier.addPetXP(widget.pet.id, 12);
+  // void _playWithPet() {
+  //   // Se "Brincar" puder ser uma ação sem item, mantenha uma lógica aqui.
+  //   // Caso contrário, esta ação é agora via inventário.
+  //   final petNotifier = ref.read(petProvider.notifier);
+  //   final userNotifier = ref.read(userProvider.notifier);
+  //   final missionNotifier = ref.read(missionProvider.notifier);
+  //   final user = ref.read(userProvider);
 
-    if (user != null) {
-      userNotifier.updateXP(user.xp + 10);
-    }
-    missionNotifier.updateMissionProgress(3, 1);
-    if (mounted) Navigator.pop(context); // Fecha o modal
-    // widget.onClose(); // Removido
-  }
+  //   petNotifier.updatePetStats(
+  //     widget.pet.id,
+  //     happiness: (widget.pet.happiness + 20).clamp(0, 100),
+  //     energy: (widget.pet.energy - 10).clamp(0, 100),
+  //   );
+  //   petNotifier.addPetXP(widget.pet.id, 15);
+
+  //   if (user != null) {
+  //     userNotifier.updateXP(user.xp + 8);
+  //   }
+  //   missionNotifier.updateMissionProgress(2, 1);
+  //   if (mounted) Navigator.pop(context); // Fecha o modal
+  // }
+
+  // void _carePet() {
+  //   final petNotifier = ref.read(petProvider.notifier);
+  //   final userNotifier = ref.read(userProvider.notifier);
+  //   final missionNotifier = ref.read(missionProvider.notifier);
+  //   final user = ref.read(userProvider);
+
+  //   petNotifier.updatePetStats(
+  //     widget.pet.id,
+  //     energy: (widget.pet.energy + 30).clamp(0, 100),
+  //     health: (widget.pet.health + 15).clamp(0, 100),
+  //   );
+  //   petNotifier.addPetXP(widget.pet.id, 12);
+
+  //   if (user != null) {
+  //     userNotifier.updateXP(user.xp + 10);
+  //   }
+  //   missionNotifier.updateMissionProgress(3, 1);
+  //   if (mounted) Navigator.pop(context); // Fecha o modal
+  // }
 
   void _showLove() {
     final petNotifier = ref.read(petProvider.notifier);
@@ -466,5 +566,55 @@ class _PetActionsSheetState extends ConsumerState<PetActionsSheet> {
   void _revealIdentity() {
     final petNotifier = ref.read(petProvider.notifier);
     petNotifier.updatePetData(widget.pet.copyWith(identityRevealed: true));
+  }
+
+  Future<void> _performReturnPet(BuildContext context, WidgetRef ref) async {
+    final user = ref.read(userProvider);
+    final userNotifier = ref.read(userProvider.notifier);
+    final petNotifier = ref.read(petProvider.notifier);
+    const returnCost = 3;
+
+    setState(() {
+      _showReturnConfirm = false; // Fecha o diálogo de confirmação
+    });
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro: Usuário não encontrado.')),
+      );
+      return;
+    }
+
+    if (user.gems < returnCost) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Gemas insuficientes! Você precisa de $returnCost gemas.')),
+      );
+      return;
+    }
+
+    try {
+      // Deduzir gemas
+      await userNotifier.updateGems(user.gems - returnCost);
+
+      // Remover o pet
+      await petNotifier.removePet(widget.pet.id);
+
+      if (mounted) {
+        Navigator.pop(context); // Fecha o PetActionsSheet
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('${widget.pet.name} foi devolvido com sucesso!')),
+        );
+      }
+    } catch (e) {
+      print('Erro ao devolver o pet: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao devolver o pet: ${e.toString()}')),
+        );
+      }
+    }
   }
 }

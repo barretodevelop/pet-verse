@@ -224,46 +224,72 @@ class FirestoreService {
   }
 
   // Inventory operations (as a subcollection under 'users')
-  Future<DocumentReference> addUserInventoryItem(String userId, ItemModel item,
+  Future<void> addUserInventoryItem(String userId, ItemModel item,
       {int quantity = 1}) async {
     try {
       print(
           'ℹ️ [FirestoreService.addUserInventoryItem] Attempting to add item ${item.id} to inventory for user: $userId');
-      // Logic to check if item already exists and update quantity, or add new
-      // For simplicity, this example always adds a new document.
-      // You might want to query first if items are stackable.
-      final docRef = await _db
-          .collection('users')
-          .doc(userId)
-          .collection('inventory')
-          .add({
-        'itemId': item.id, // Store the ID of the base item
-        'quantity': quantity,
-        'acquiredAt': DateTime.now().millisecondsSinceEpoch,
-      });
-      print(
-          '✅ [FirestoreService.addUserInventoryItem] Item added to user inventory successfully, docId: ${docRef.id}');
-      return docRef;
+
+      final inventoryCollection =
+          _db.collection('users').doc(userId).collection('inventory');
+
+      // Query for existing item
+      final querySnapshot = await inventoryCollection
+          .where('itemId', isEqualTo: item.id)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Item exists, update quantity
+        final doc = querySnapshot.docs.first;
+        final currentQuantity = doc.data()['quantity'] as int? ?? 0;
+        await doc.reference.update({'quantity': currentQuantity + quantity});
+        print(
+            '✅ [FirestoreService.addUserInventoryItem] Updated quantity for item ${item.id} to ${currentQuantity + quantity} for user $userId');
+      } else {
+        // Item does not exist, add new document
+        await inventoryCollection.add({
+          'itemId': item.id, // Store the ID of the base item
+          'quantity': quantity,
+          'acquiredAt': DateTime.now().millisecondsSinceEpoch,
+        });
+        print(
+            '✅ [FirestoreService.addUserInventoryItem] Added new item ${item.id} (qty: $quantity) for user $userId');
+      }
     } catch (e) {
       print(
-          '❌ [FirestoreService.addUserInventoryItem] Error adding item ${item.id} to user inventory for $userId: $e');
+          '❌ [FirestoreService.addUserInventoryItem] Error adding/updating item ${item.id} for user $userId: $e');
       rethrow;
     }
   }
 
-  Future<void> removeUserInventoryItem(
-      String userId, String inventoryDocId) async {
+  Future<void> removeUserInventoryItem(String userId, String inventoryDocId,
+      {int quantityToRemove = 1}) async {
     try {
       print(
-          'ℹ️ [FirestoreService.removeUserInventoryItem] Attempting to remove inventory item: $inventoryDocId for user: $userId');
-      await _db
+          'ℹ️ [FirestoreService.removeUserInventoryItem] Attempting to remove $quantityToRemove of inventory item: $inventoryDocId for user: $userId');
+      final docRef = _db
           .collection('users')
           .doc(userId)
           .collection('inventory')
-          .doc(inventoryDocId)
-          .delete();
-      print(
-          '✅ [FirestoreService.removeUserInventoryItem] User inventory item removed successfully: $inventoryDocId');
+          .doc(inventoryDocId);
+      final docSnapshot = await docRef.get();
+
+      if (docSnapshot.exists) {
+        final currentQuantity = docSnapshot.data()?['quantity'] as int? ?? 0;
+        if (currentQuantity > quantityToRemove) {
+          await docRef.update({'quantity': currentQuantity - quantityToRemove});
+          print(
+              '✅ [FirestoreService.removeUserInventoryItem] Decremented quantity for $inventoryDocId to ${currentQuantity - quantityToRemove}');
+        } else {
+          await docRef.delete();
+          print(
+              '✅ [FirestoreService.removeUserInventoryItem] Removed item document $inventoryDocId as quantity reached zero or less.');
+        }
+      } else {
+        print(
+            '⚠️ [FirestoreService.removeUserInventoryItem] Item document $inventoryDocId not found for removal.');
+      }
     } catch (e) {
       print(
           '❌ [FirestoreService.removeUserInventoryItem] Error removing user inventory item $inventoryDocId for user $userId: $e');

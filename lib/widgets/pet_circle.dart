@@ -175,9 +175,8 @@ class _PetCircleState extends ConsumerState<PetCircle>
                                           Container(
                                             padding: const EdgeInsets.all(8),
                                             child: Text(
-                                              widget.pet.isUnique
-                                                  ? '✨'
-                                                  : widget.pet.emoji,
+                                              widget.pet
+                                                  .emoji, // ✅ Sempre mostrar o emoji do pet
                                               style: TextStyle(
                                                 fontSize:
                                                     64, // ✅ Tamanho controlado

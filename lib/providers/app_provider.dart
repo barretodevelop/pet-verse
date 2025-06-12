@@ -1,9 +1,13 @@
 ﻿// lib/providers/app_provider.dart - AppProvider
+import 'dart:async'; // For StreamSubscription
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/pet_model.dart'; // Import PetModel for type in listener
 import '../models/user_model.dart';
 import '../providers/inventory_provider.dart'; // Importar InventoryProvider
+import '../providers/pet_provider.dart'; // Import PetProvider
 import '../providers/user_provider.dart'; // Importar o userProvider real
 import '../services/auth_service.dart';
 
@@ -34,9 +38,11 @@ class AppState {
 
 class AppNotifier extends StateNotifier<AppState> {
   final Ref _ref;
+  ProviderSubscription? _petListSubscription; // To listen to pet changes
 
   AppNotifier(this._ref) : super(AppState()) {
     _init();
+    _listenToPetChanges(); // Start listening to pet changes
   }
 
   void _init() async {
@@ -95,11 +101,76 @@ class AppNotifier extends StateNotifier<AppState> {
     }
   }
 
-  void setActivePetIndex(int index) {
-    state = state.copyWith(activePetIndex: index);
+  void _old_setActivePetIndex(int index) {
+    // Renamed to avoid conflict, will be replaced
+    final pets = _ref.read(petProvider); // Read the CURRENT list of pets
+    int newActualIndex = 0; // Default to 0 if list becomes empty or for safety
+
+    if (pets.isNotEmpty) {
+      // Clamp the desired index to be within the valid range of the current pet list
+      newActualIndex = index.clamp(0, pets.length - 1);
+    }
+
+    // Only update the state if the calculated new index is different from the current one,
+    // or if the list is empty and the index wasn't already 0 (to ensure reset).
+    if (state.activePetIndex != newActualIndex) {
+      state = state.copyWith(activePetIndex: newActualIndex);
+      print(
+          'AppProvider: Active pet index updated to $newActualIndex. Pet count: ${pets.length}');
+    } else if (pets.isEmpty && state.activePetIndex != 0) {
+      // Special case: if the list became empty and the index wasn't 0, force it to 0.
+      // This ensures that if the last pet is removed, activePetIndex is 0.
+      state = state.copyWith(activePetIndex: 0);
+      print('AppProvider: Pet list empty. Active pet index set to 0.');
+    }
+  }
+
+  void _listenToPetChanges() {
+    _petListSubscription = _ref.listen<List<PetModel>>(petProvider,
+        (previousPets, newPets) {
+      print(
+          'AppNotifier: Detected pet list change. Previous count: ${previousPets?.length}, New count: ${newPets.length}');
+      _validateActivePetIndex(newPets);
+    },
+        fireImmediately:
+            true); // fireImmediately to validate on initial load too
+  }
+
+  // Validates and adjusts the activePetIndex based on the current list of pets
+  void _validateActivePetIndex(List<PetModel> currentPets) {
+    int currentActiveIdx = state.activePetIndex;
+    int newValidIndex = 0; // Default to 0 if list is empty
+
+    if (currentPets.isNotEmpty) {
+      newValidIndex = currentActiveIdx.clamp(0, currentPets.length - 1);
+    }
+
+    if (state.activePetIndex != newValidIndex) {
+      state = state.copyWith(activePetIndex: newValidIndex);
+      print(
+          'AppProvider (validated): Active pet index set to $newValidIndex. Pet count: ${currentPets.length}');
+    }
+  }
+
+  // Public method to set active pet index, e.g., when user clicks a slot
+  void setActivePetIndex(int desiredIndex) {
+    final pets = _ref.read(petProvider); // Get the latest pet list
+    int newActualIndex =
+        pets.isNotEmpty ? desiredIndex.clamp(0, pets.length - 1) : 0;
+    if (state.activePetIndex != newActualIndex) {
+      state = state.copyWith(activePetIndex: newActualIndex);
+      print(
+          'AppProvider (direct set): Active pet index set to $newActualIndex. Pet count: ${pets.length}');
+    }
   }
 
   void setError(String? error) {
     state = state.copyWith(error: error, isLoading: false);
+  }
+
+  @override
+  void dispose() {
+    _petListSubscription?.close();
+    super.dispose();
   }
 }
