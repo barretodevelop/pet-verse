@@ -1,42 +1,37 @@
-﻿// PetSlots
-// lib/widgets/pet_slots.dart - PetSlots
+﻿// lib/widgets/pet_slots.dart - SECURE REFACTOR
+// ✅ SEGURANÇA: Desbloqueio de slots agora validado server-side
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/providers/app_provider.dart';
 import 'package:petverse/providers/pet_provider.dart';
 import 'package:petverse/providers/theme_provider.dart';
-// import 'package:petverse/services/firestore_service.dart'; // Não mais necessário aqui diretamente
 import 'package:petverse/providers/user_provider.dart';
+import 'package:petverse/services/secure_firestore_service.dart'; // ✅ NOVO
 
-class PetSlots extends ConsumerWidget {
+class PetSlots extends ConsumerStatefulWidget {
   final VoidCallback? onSlotClick;
 
   const PetSlots({super.key, this.onSlotClick});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PetSlots> createState() => _PetSlotsState();
+}
+
+class _PetSlotsState extends ConsumerState<PetSlots> {
+  // ✅ NOVO: Estado para tracking de desbloqueios em andamento
+  bool _isUnlocking = false;
+
+  @override
+  Widget build(BuildContext context) {
     final pets = ref.watch(petProvider);
     final user = ref.watch(userProvider);
     final appState = ref.watch(appProvider);
     final isDark = ref.watch(themeProvider);
 
-    // final maxSlots = 2 + ((user?.level ?? 1) ~/ 5);
-    // final unlockedSlots =
-    //     pets.length + 1; // +1 para sempre ter um slot vazio disponível
-    // final totalSlots = maxSlots.clamp(unlockedSlots, 10); // Máximo 10 slots
-// Número de slots que o usuário comprou/desbloqueou permanentemente.
-    // Assumindo que UserModel tem `purchasedSlotsCount`, inicializado com 2.
     final purchasedSlots = user?.purchasedSlotsCount ?? 2;
+    final maxPossibleSlotsByLevel = 3 + ((user?.level ?? 1) ~/ 5);
+    final absoluteMaxSlots = 10;
 
-    // Número máximo de slots que o usuário pode ter, baseado no nível (ou um limite fixo).
-    final maxPossibleSlotsByLevel = 3 +
-        ((user?.level ?? 1) ~/
-            5); // ✅ Ajuste: Base 3 para permitir o 3º slot desde o nível 1
-    final absoluteMaxSlots = 10; // Limite rígido global
-
-    // Número de slots a serem exibidos na UI:
-    // Mostra os slots comprados + 1 para o próximo bloqueado (se houver espaço para mais).
-    // Não deve exceder o máximo permitido pelo nível ou o limite absoluto.
     int displaySlotsCount = purchasedSlots;
     if (purchasedSlots < maxPossibleSlotsByLevel &&
         purchasedSlots < absoluteMaxSlots) {
@@ -70,7 +65,6 @@ class PetSlots extends ConsumerWidget {
           return Container(
             margin: const EdgeInsets.only(right: 12),
             child: GestureDetector(
-              // ✅ CORREÇÃO CRÍTICA: Funcionalidade completa do onTap
               onTap: () => _handleSlotTap(context, ref, index, pet, isLocked),
               child: Container(
                 width: 64,
@@ -99,22 +93,30 @@ class PetSlots extends ConsumerWidget {
                   children: [
                     Center(
                       child: pet != null
-                          ? Text(
-                              pet.emoji, // ✅ Sempre mostrar o emoji do pet
-                              style: const TextStyle(fontSize: 28),
-                            )
+                          ? Text(pet.emoji,
+                              style: const TextStyle(fontSize: 28))
                           : isLocked
-                              ? const Icon(Icons.lock,
-                                  color: Colors.grey, size: 24)
+                              ? (_isUnlocking
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.grey),
+                                      ),
+                                    )
+                                  : const Icon(Icons.lock,
+                                      color: Colors.grey, size: 24))
                               : Icon(Icons.add,
                                   color:
                                       isDark ? Colors.grey[400] : Colors.grey,
                                   size: 24),
                     ),
 
-                    // ✅ Pet badges melhorados
+                    // ✅ Pet badges mantidos iguais
                     if (pet != null) ...[
-                      // Level badge
                       Positioned(
                         top: 2,
                         right: 2,
@@ -141,8 +143,6 @@ class PetSlots extends ConsumerWidget {
                           ),
                         ),
                       ),
-
-                      // Collaboration badge
                       if (pet.isCollab)
                         Positioned(
                           bottom: 2,
@@ -157,8 +157,6 @@ class PetSlots extends ConsumerWidget {
                                 size: 10, color: Colors.white),
                           ),
                         ),
-
-                      // Unique badge
                       if (pet.isUnique)
                         Positioned(
                           top: 2,
@@ -177,8 +175,6 @@ class PetSlots extends ConsumerWidget {
                                 size: 10, color: Colors.white),
                           ),
                         ),
-
-                      // Accessories indicator
                       if (pet.accessories.isNotEmpty)
                         Positioned(
                           bottom: 2,
@@ -198,8 +194,8 @@ class PetSlots extends ConsumerWidget {
                         ),
                     ],
 
-                    // ✅ CORREÇÃO: Badge de gemas para slots bloqueados
-                    if (isLocked)
+                    // ✅ Badge de gemas melhorado para slots bloqueados
+                    if (isLocked && !_isUnlocking)
                       Positioned(
                         bottom: 2,
                         right: 2,
@@ -221,7 +217,6 @@ class PetSlots extends ConsumerWidget {
                         ),
                       ),
 
-                    // ✅ ADIÇÃO: Indicador de slot vazio disponível
                     if (pet == null && !isLocked)
                       Positioned(
                         top: 4,
@@ -245,19 +240,16 @@ class PetSlots extends ConsumerWidget {
     );
   }
 
-  // ✅ CORREÇÃO CRÍTICA: Método centralizado para lidar com toque nos slots
   void _handleSlotTap(
       BuildContext context, WidgetRef ref, int index, pet, bool isLocked) {
     print(
-        '🎯 Slot $index clicado - Pet: ${pet?.name ?? 'null'}, Locked: $isLocked'); // Debug
+        '🎯 Slot $index clicado - Pet: ${pet?.name ?? 'null'}, Locked: $isLocked');
 
     try {
       if (pet != null) {
-        // ✅ Slot com pet - ativar pet
         ref.read(appProvider.notifier).setActivePetIndex(index);
         print('✅ Pet ativado: ${pet.name} (índice $index)');
 
-        // Feedback visual
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -276,11 +268,9 @@ class PetSlots extends ConsumerWidget {
           ),
         );
       } else if (!isLocked) {
-        // ✅ Slot vazio desbloqueado - abrir adoção
         print('✅ Abrindo adoção para slot $index');
-
-        if (onSlotClick != null) {
-          onSlotClick!();
+        if (widget.onSlotClick != null) {
+          widget.onSlotClick!();
         } else {
           print('⚠️ onSlotClick é null - não é possível abrir adoção');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -292,7 +282,6 @@ class PetSlots extends ConsumerWidget {
           );
         }
       } else {
-        // ✅ Slot bloqueado - mostrar dialog de desbloqueio
         print('🔒 Slot $index bloqueado - abrindo dialog de desbloqueio');
         _showUnlockDialog(context, ref, index);
       }
@@ -308,10 +297,8 @@ class PetSlots extends ConsumerWidget {
     }
   }
 
-  // ✅ CORREÇÃO CRÍTICA: Dialog completo de desbloqueio de slot
   void _showUnlockDialog(BuildContext context, WidgetRef ref, int slotIndex) {
-    final user = ref.watch(
-        userProvider); // Usar watch para reatividade se o dialog depender de estado que muda
+    final user = ref.watch(userProvider);
     final isDark = ref.watch(themeProvider);
     const gemCost = 5;
 
@@ -403,8 +390,6 @@ class PetSlots extends ConsumerWidget {
                 ],
               ),
             ),
-
-            // ✅ Aviso se não tem gemas suficientes
             if ((user?.gems ?? 0) < gemCost) ...[
               const SizedBox(height: 16),
               Container(
@@ -434,9 +419,7 @@ class PetSlots extends ConsumerWidget {
                           Text(
                             'Você precisa de mais ${gemCost - (user?.gems ?? 0)} gemas',
                             style: const TextStyle(
-                              color: Color(0xFFEF4444),
-                              fontSize: 12,
-                            ),
+                                color: Color(0xFFEF4444), fontSize: 12),
                           ),
                         ],
                       ),
@@ -490,8 +473,9 @@ class PetSlots extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: (user?.gems ?? 0) >= gemCost
-                ? () => _unlockSlot(context, ref, slotIndex, gemCost)
+            onPressed: (user?.gems ?? 0) >= gemCost && !_isUnlocking
+                ? () => _unlockSlotSecure(
+                    context, ref, slotIndex, gemCost) // ✅ NOVO
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8B5CF6),
@@ -500,16 +484,25 @@ class PetSlots extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.diamond, size: 18),
-                SizedBox(width: 6),
-                Text('Desbloquear',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ],
-            ),
+            child: _isUnlocking // ✅ NOVO: Loading state
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.diamond, size: 18),
+                      SizedBox(width: 6),
+                      Text('Desbloquear',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
           ),
         ],
         actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -517,101 +510,104 @@ class PetSlots extends ConsumerWidget {
     );
   }
 
-  // ✅ CORREÇÃO CRÍTICA: Lógica de desbloqueio de slot funcional
-  Future<void> _unlockSlot(
+  // ✅ NOVO: Método seguro para desbloqueio de slot
+  Future<void> _unlockSlotSecure(
       BuildContext context, WidgetRef ref, int slotIndex, int cost) async {
-    final userNotifier = ref.read(userProvider.notifier);
     final user = ref.read(userProvider);
-    // final firestoreService = FirestoreService(); // Não mais necessário aqui diretamente
+    final userNotifier = ref.read(userProvider.notifier);
 
-    if (user != null && user.gems >= cost) {
-      final newGemAmount = user.gems - cost;
+    if (user == null || user.gems < cost) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '❌ Gemas insuficientes! Você tem ${user?.gems ?? 0}, precisa de $cost.'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
 
-      try {
-        // Agora o UserNotifier lida com a persistência e atualização do estado
-        await userNotifier.updateGems(newGemAmount);
-        // Incrementar o número de slots comprados (este método precisa ser adicionado ao UserNotifier)
-        await userNotifier.incrementPurchasedSlots();
+    setState(() => _isUnlocking = true);
 
-        // Fechar dialog
-        if (context.mounted) Navigator.of(context).pop();
+    try {
+      // ✅ USA OPERAÇÃO SEGURA com validação server-side
+      await userNotifier.purchaseSlot(gemCost: cost);
 
-        // Feedback de sucesso
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.lock_open,
-                        color: Colors.white, size: 24),
+      if (context.mounted) Navigator.of(context).pop();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Slot ${slotIndex + 1} desbloqueado!',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text('Gemas restantes: $newGemAmount',
-                            style: const TextStyle(fontSize: 12)),
-                      ],
-                    ),
+                  child: const Icon(Icons.lock_open,
+                      color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('🎉 Slot ${slotIndex + 1} desbloqueado!',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('Gemas restantes: ${user.gems - cost}',
+                          style: const TextStyle(fontSize: 12)),
+                    ],
                   ),
-                  const Icon(Icons.celebration, color: Colors.white, size: 24),
-                ],
-              ),
-              backgroundColor: const Color(0xFF10B981),
-              duration: const Duration(seconds: 4),
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                ),
+                const Icon(Icons.celebration, color: Colors.white, size: 24),
+              ],
             ),
-          );
-        }
-        print(
-            '✅ Slot $slotIndex desbloqueado localmente! Gemas: ${user.gems} → $newGemAmount');
-      } catch (e) {
-        // Se falhar ao atualizar no Firebase
-        print('❌ Falha ao desbloquear slot (erro vindo do UserNotifier): $e');
-        if (context.mounted)
-          Navigator.of(context).pop(); // Fechar dialog mesmo em erro
-        if (context.mounted) {
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+      print('✅ Slot $slotIndex desbloqueado com segurança! Custo: $cost gemas');
+    } catch (e) {
+      print('❌ Falha no desbloqueio seguro do slot: $e');
+
+      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) {
+        // ✅ Tratamento específico de erros
+        if (e is InsufficientFundsException) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  'Erro ao desbloquear slot. Tente novamente. (Erro: ${e.toString().substring(0, (e.toString().length > 50) ? 50 : e.toString().length)})'),
-              backgroundColor: const Color(0xFFEF4444),
+                content: Text('💸 ${e.message}'),
+                backgroundColor: const Color(0xFFEF4444)),
+          );
+        } else if (e is SecurityException) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('🔒 ${e.message}'),
+                backgroundColor: const Color(0xFFEF4444)),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ Erro no desbloqueio. Tente novamente.'),
+              backgroundColor: Color(0xFFEF4444),
             ),
           );
         }
       }
-    } else {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text(
-                      'Gemas insuficientes! Você tem ${user?.gems ?? 0}, precisa de $cost.')),
-            ],
-          ),
-          backgroundColor: const Color(0xFFEF4444),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-      print('❌ Gemas insuficientes: ${user?.gems ?? 0}/$cost');
+    } finally {
+      if (mounted) {
+        setState(() => _isUnlocking = false);
+      }
     }
   }
 }

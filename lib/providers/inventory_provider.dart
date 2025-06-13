@@ -1,4 +1,3 @@
-﻿﻿// InventoryProvider
 // lib/providers/inventory_provider.dart - InventoryProvider
 import 'dart:async';
 

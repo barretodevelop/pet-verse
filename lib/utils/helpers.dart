@@ -1,7 +1,9 @@
 ﻿// Helpers
 // lib/utils/helpers.dart - Helpers
-import 'package:flutter/material.dart';
 import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:petverse/utils/constants.dart';
 
 class Helpers {
   static String formatTimestamp(DateTime timestamp) {
@@ -40,26 +42,55 @@ class Helpers {
 
   static Color getRarityColor(String rarity) {
     switch (rarity.toLowerCase()) {
-      case 'comum': return const Color(0xFF9CA3AF);
-      case 'incomum': return const Color(0xFF10B981);
-      case 'raro': return const Color(0xFF3B82F6);
-      case 'épico': return const Color(0xFF8B5CF6);
-      case 'lendário': return const Color(0xFFF59E0B);
-      case 'único': return const Color(0xFFEC4899);
-      default: return const Color(0xFF6B7280);
+      case 'comum':
+        return const Color(0xFF9CA3AF);
+      case 'incomum':
+        return const Color(0xFF10B981);
+      case 'raro':
+        return const Color(0xFF3B82F6);
+      case 'épico':
+        return const Color(0xFF8B5CF6);
+      case 'lendário':
+        return const Color(0xFFF59E0B);
+      case 'único':
+        return const Color(0xFFEC4899);
+      default:
+        return const Color(0xFF6B7280);
     }
   }
 
   static String generateRandomId() {
     final random = Random();
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     return String.fromCharCodes(
-      Iterable.generate(16, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+      Iterable.generate(
+          16, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
     );
   }
 
   static List<String> getRandomAvatars() {
-    return ['👨', '👩', '🧑', '👱', '👨‍💻', '👩‍💻', '🧔', '👴', '👵', '👦', '👧'];
+    return [
+      '👨',
+      '👩',
+      '🧑',
+      '👱',
+      '👨‍💻',
+      '👩‍💻',
+      '🧔',
+      '👴',
+      '👵',
+      '👦',
+      '👧'
+    ];
+  }
+
+  static String getRandomCategoryWithEmoji() {
+    final random = Random();
+    final keys = Constants.categoryEmojis.keys.toList();
+    final key = keys[random.nextInt(keys.length)];
+    final emoji = Constants.categoryEmojis[key];
+    return '$emoji';
   }
 
   static String getRandomAvatar() {
@@ -82,7 +113,7 @@ class Helpers {
 
   static String pluralize(String word, int count) {
     if (count == 1) return word;
-    
+
     // Simple Portuguese pluralization rules
     if (word.endsWith('ão')) {
       return word.replaceAll('ão', 'ões');
@@ -95,11 +126,13 @@ class Helpers {
     }
   }
 
-  static void showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  static void showSnackBar(BuildContext context, String message,
+      {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        backgroundColor:
+            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -133,4 +166,3 @@ class Helpers {
     return result ?? false;
   }
 }
-

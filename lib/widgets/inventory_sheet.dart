@@ -1,4 +1,4 @@
-﻿﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petverse/models/inventory_user_item_model.dart'; // ✅ ADICIONADO: Import para InventoryUserItem
 import 'package:petverse/models/item_model.dart'; // To cast item.baseItem
